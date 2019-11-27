@@ -106,6 +106,17 @@ If you want to go back to a specific experiment, run:
 
     $ au load exp_tag
 
+If you want to export the experiment to be sent and run somewhere else, Aurum will create a zip
+package containing the requirements.txt, the dataset, the metrics, the logs, and everything else
+specific to the experiment. If you'd rather not add specific artifact to the package, you can
+leave it out by passing configuration arguments.
+
+    $ au export exp_tag
+
+If you want to leave the dataset out of the package, do as follows:
+
+    $ au export exp_tag --no-data
+
 
 ## How does Aurum keeps track of my experiments?
 
