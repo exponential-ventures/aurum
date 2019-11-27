@@ -1,6 +1,10 @@
 # aurum
 
-Aurum is a new and simplified approach for data scientists to keep track of data and code without having to get another PhD for it. Aurum keeps track of all code and data changes, and lets you easily reproduce any experiment as well as easily compare metrics across experiments.
+Aurum is a new and simplified approach for data scientists to keep track of
+data and code without having to get another PhD for it.
+
+Aurum keeps track of all code and data changes, and lets you easily reproduce
+any experiment as well as easily compare metrics across experiments.
 
 ## Give it a try!
 
@@ -12,34 +16,89 @@ To create a new repository:
     $ cd newproject
     $ au init
 
-Aurum will create three directories for you:
+Aurum will create the following directories for you:
 
-    newproject/data
+    newproject/.au
     newproject/src
-    newproject/metrics
+    newproject/logs
+
+During the initialization step, Aurum will also create (or append to) the .gitignore file:
+
+    newproject/.gitignore
 
 If your data lives in a remote system, configure aurum to retrieve and store data using your credentials:
 
-    $ au remote add s3://
+    $ au data add s3://bucket-name/dataset.csv --api kdljhkhsdskh --key lksjhdlkshsklh
+    
+or
 
-Then, add your data:
+    $ au data add ftp://dir/dataset.csv --user username --passwd password
+
+If the data lives locally (in a directory outside the project directory), you must add it to Aurum manually:
+
+    $ au data add /absolute/path/to/dataset.csv
+
+If you want your data to just live inside the project, add it like this:
 
     $ wget https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
     $ au data add adult.data
+    
+or
 
-If your data already exists in the remote file system, add it by doing this:
+    $ au data add https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
 
-    $ au data add remote remote_path_to_dataset  
+When the data being added is remote, Aurum will keep track of the dataset attributes to monitor any changes.
 
-Now work on it!
+
+Once your project is initialized, and the data is added, you're ready to start working on it!
 
     $ cd src
-    $ wget EXAMPLE_CODE_THAT_WORKS_WITH_EXAMPLE_DATASET.py
-    $ python EXAMPLE_CODE_THAT_WORKS_WITH_EXAMPLE_DATASET.py
+    $ emacs experiment.py
+    
+Make sure to import aurum inside your experiment:
+    
+    #!/usr/bin/env python
+    
+    import aurum as au
+
+It is also useful to keep track of the parameters used for training:
+
+    au.parameters(a=0.01, b=1000, c=46, epochs=100, batch_size=200)
+    
+These parameters are then saved with the version to help you better keep track of all aspects of your experiment. Once the parameters are set, you can use them inside the code as follows:
+
+    print(f"Parameter a = {au.a}")
+    >>> Parameter a = 0.01
+
+One of the advantages of registering the parameters with aurum before using is that you can pass them via command line to the experiment execution, as follows:
+
+    python experiment.py a=0.01 b=1000 c=46 epochs=100 batch_size=200
+   
+If the parameters are also specified inside the code, the command line arguments will take precedence.
+This trick is specially interesting if you'd like to automate the execution of multiple experiments, varying the parameters
+automatically.
+
+At the end of your script, make sure to add the relevant metrics for comparison, and tell aurum that the experiment ends there.    
+    
+    au.register_metric(error=0.01, accuracy=0.99, ...)
+    au.end_experiment()
+
+If you're using Stripping, aurum will by default prevent the local cache from being added to the repository.
+
+If you're using Catalysis to retrieve data, aurum will automatically keep track of the all data used in the project.
+
+Once you're ready to test your experiment, just run it: 
+
+    $ python experiment.py
 
 Everytime you run your code, aurum will track the changes and keep track of every experiment as well as its recorded metrics.
 
-Check the performance evolution of your experiments by running:
+If you make changes to your code that you want to commit to the repository but you're not yet ready to run it, just use git! Because aurum is just an extension of git, all git commands will work as usual inside an aurum project:
+
+    $ git commit -m "Staged x, y, and z. Changes related to a, b, and c."
+    $ git push
+
+After you're run your experiment a few times, you can check the performance and compare the results from the command line:
 
     $ au metrics
 
@@ -47,8 +106,20 @@ If you want to go back to a specific experiment, run:
 
     $ au load exp_tag
 
-Did we mention that Aurum runs on top of git? Now you can keep track of your data, code, and experiments all from any git server:
 
-    $ git remote add origin https://github.com/user/repo.git
-    $ git push origin master
+## How does Aurum keeps track of my experiments?
+
+At the end of each experiment, Aurum will create a new version for the experiment making sure
+to save the logs, metrics, data attributes, code, requirements, etc. into the repository.
+
+Once the commit is made, a tag is created to mark the experiment.
+
+In order to deal with concurrency (and avoid conflicts) the experiments won't make changes to
+any files. Instead, they'll create a brand new file for the current experiment and drop the
+ones that are not related to the current experiment.
+
+The experiment itself should use the aurum parameters to allow for the experiment to change
+without requiring any code changes.
+
+
 
