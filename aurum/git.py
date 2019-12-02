@@ -34,7 +34,7 @@ def check_git():
     if "git version" in output:
         logging.debug("Git found.")
         return
-    
+
     logging.error("Git not installed. Aborting.")
     sys.exit(1)
 

@@ -58,7 +58,7 @@ def run_init(parser):
 def create_default_dirs():
     for path in DEFAULT_DIRS:
         if path.exists():
-            logging.error("Can't create .au directory. Already exists.")
+            logging.error("Can't create {} directory. Already exists.".format(path))
             sys.exit(1)
 
         os.makedirs(path)

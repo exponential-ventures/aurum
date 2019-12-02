@@ -27,7 +27,6 @@ __license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
 __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
-
 import sys
 import os
 import argparse
@@ -44,7 +43,7 @@ def config_parser():
     epilog = "And that's how you make your live easier. You're welcome."
     parser = argparse.ArgumentParser(description=description,
                                      epilog=epilog)
-    
+
     subparsers = parser.add_subparsers()
 
     #######
@@ -58,11 +57,10 @@ def config_parser():
     parser_data.set_defaults(subcommand='data')
 
     subparser_data = parser_data.add_subparsers()
-    
+
     parser_data_add = subparser_data.add_parser("add", help="add specified data file(s) to the data index")
     parser_data_add.set_defaults(subcommand2="add")
     parser_data_add.add_argument('files', type=str, nargs="*")
-
 
     parser_data_rm = subparser_data.add_parser("rm", help="remove specified data file(s) from the data index")
     parser_data_rm.set_defaults(subcommand2='rm')
@@ -79,7 +77,6 @@ def config_parser():
     parser_add_files.set_defaults(subcommand2="add")
     parser_add_files.add_argument('files', type=str, nargs="*")
 
-
     parser_rm_files = subparser_add.add_parser("rm", help="remove specified file(s) from the data index")
     parser_rm_files.set_defaults(subcommand2='rm')
     parser_rm_files.add_argument('files', type=str, nargs="*", help="")
@@ -93,7 +90,8 @@ def config_parser():
 
     #######
     # pull
-    parser_pull = subparsers.add_parser("pull", help="fetch from and integrate with another repository or a local branch")
+    parser_pull = subparsers.add_parser("pull",
+                                        help="fetch from and integrate with another repository or a local branch")
     parser_pull.set_defaults(subcommand='pull')
 
     #######
@@ -105,15 +103,12 @@ def config_parser():
     # Other arguments
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action='store_true')
 
-
-
     return parser.parse_args()
 
 
 def main():
     parser = config_parser()
     au.execute_commands(parser)
-
 
 
 if __name__ == '__main__':
