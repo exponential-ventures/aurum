@@ -27,12 +27,7 @@ __license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
 __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
-
-import sys
-import os
 import argparse
-
-import aurum as au
 
 
 def config_parser():
@@ -44,7 +39,7 @@ def config_parser():
     epilog = "And that's how you make your live easier. You're welcome."
     parser = argparse.ArgumentParser(description=description,
                                      epilog=epilog)
-    
+
     subparsers = parser.add_subparsers()
 
     #######
@@ -65,9 +60,7 @@ def config_parser():
 
 
 def main():
-    parser = config_parser()
-    au.execute_commands(parser)
-
+    print(f"parsed: {config_parser()}")
 
 
 if __name__ == '__main__':
