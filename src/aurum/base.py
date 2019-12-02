@@ -2,7 +2,7 @@
 ##
 ## Authors: Adriano Marques
 ##          Nathan Martins
-##          Thales Ribeiro 
+##          Thales Ribeiro
 ##
 ## Copyright (C) 2019 Exponential Ventures LLC
 ##
@@ -29,14 +29,14 @@ from pathlib import Path
 
 from aurum import git
 
+cwd = Path(os.getcwd())
 
-cwd = pathPath(os.getcwd())
-dot_au = cwd / ".au"
+DEFAULT_DIRS = [cwd / ".au", cwd / "src", cwd / "logs"]
 
 
 def execute_commands(parser):
-    logging.basicConfig(format="%(levelname)s: %(message)s" ,level=logging.DEBUG if parser.verbose else logging.WARNING)
-    
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
+
     logging.debug("Parser arguments: {}".format(parser))
 
     git.check_git()
@@ -52,15 +52,17 @@ def run_init(parser):
     logging.info("Initializing aurum...")
     au_init()
 
-    logging.debug("Repository {} initialized.".format(current_dir))
+    logging.debug("Repository {} initialized.".format(cwd))
 
 
-def create_dot_au(path):
-    if path.exists():
-        logging.error("Can't create .au directory. Already exists.")
-        sys.exit(1)
-    
-    os.makedirs(path)
+def create_default_dirs():
+    for path in DEFAULT_DIRS:
+        if path.exists():
+            logging.error("Can't create .au directory. Already exists.")
+            sys.exit(1)
+
+        os.makedirs(path)
+
 
 def au_init():
-    create_dot_au(dot_au)
+    create_default_dirs()
