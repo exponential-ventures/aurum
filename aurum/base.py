@@ -2,7 +2,7 @@
 ##
 ## Authors: Adriano Marques
 ##          Nathan Martins
-##          Thales Ribeiro 
+##          Thales Ribeiro
 ##
 ## Copyright (C) 2019 Exponential Ventures LLC
 ##
@@ -22,26 +22,47 @@
 ##
 
 import sys
+import os
 import logging
 
-from subprocess import Popen, PIPE, STDOUT
+from pathlib import Path
+
+from aurum import git
+
+cwd = Path(os.getcwd())
+
+DEFAULT_DIRS = [cwd / ".au", cwd / "src", cwd / "logs"]
 
 
-def check_git():
-    process = run_git('--version')
-    output = process.communicate()[0].decode('utf-8')
+def execute_commands(parser):
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
 
-    if "git version" in output:
-        logging.debug("Git found.")
-        return
-    
-    logging.error("Git not installed. Aborting.")
-    sys.exit(1)
+    logging.debug("Parser arguments: {}".format(parser))
 
+    git.check_git()
 
-def init():
-    run_git('init')
+    if parser.subcommand == 'init':
+        run_init(parser)
 
 
-def run_git(*args):
-    return Popen(['git'] + list(args), stdout=PIPE)
+def run_init(parser):
+    logging.info("Initializing git...")
+    git.init()
+
+    logging.info("Initializing aurum...")
+    au_init()
+
+    logging.debug("Repository {} initialized.".format(cwd))
+
+
+def create_default_dirs():
+    for path in DEFAULT_DIRS:
+        if path.exists():
+            logging.error("Can't create {} directory. Already exists.".format(path))
+            sys.exit(1)
+
+        os.makedirs(path)
+
+
+def au_init():
+    create_default_dirs()

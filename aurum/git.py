@@ -22,45 +22,26 @@
 ##
 
 import sys
-import os
 import logging
 
-from pathlib import Path
-
-from aurum import git
+from subprocess import Popen, PIPE, STDOUT
 
 
-cwd = pathPath(os.getcwd())
-dot_au = cwd / ".au"
+def check_git():
+    process = run_git('--version')
+    output = process.communicate()[0].decode('utf-8')
+
+    if "git version" in output:
+        logging.debug("Git found.")
+        return
+
+    logging.error("Git not installed. Aborting.")
+    sys.exit(1)
 
 
-def execute_commands(parser):
-    logging.basicConfig(format="%(levelname)s: %(message)s" ,level=logging.DEBUG if parser.verbose else logging.WARNING)
-    
-    logging.debug("Parser arguments: {}".format(parser))
-
-    git.check_git()
-
-    if parser.subcommand == 'init':
-        run_init(parser)
+def init():
+    run_git('init')
 
 
-def run_init(parser):
-    logging.info("Initializing git...")
-    git.init()
-
-    logging.info("Initializing aurum...")
-    au_init()
-
-    logging.debug("Repository {} initialized.".format(current_dir))
-
-
-def create_dot_au(path):
-    if path.exists():
-        logging.error("Can't create .au directory. Already exists.")
-        sys.exit(1)
-    
-    os.makedirs(path)
-
-def au_init():
-    create_dot_au(dot_au)
+def run_git(*args):
+    return Popen(['git'] + list(args), stdout=PIPE)
