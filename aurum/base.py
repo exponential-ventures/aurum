@@ -24,7 +24,7 @@
 import sys
 import os
 import logging
-
+import argparse
 from pathlib import Path
 
 from aurum import git
@@ -43,6 +43,8 @@ def execute_commands(parser):
 
     if parser.subcommand == 'init':
         run_init(parser)
+    elif parser.subcommand == 'rm':
+        run_rm(parser)
 
 
 def run_init(parser):
@@ -53,6 +55,12 @@ def run_init(parser):
     au_init()
 
     logging.debug("Repository {} initialized.".format(cwd))
+
+
+def run_rm(parser):
+    logging.info("Removing {} from git".format(parser.filepath))
+    git.rm(parser.filepath)
+    logging.info("{} removed from git".format(parser.filepath))
 
 
 def create_default_dirs():
