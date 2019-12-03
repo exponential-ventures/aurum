@@ -75,7 +75,7 @@ def config_parser():
     deletion_type_parser = parser_data_rm.add_mutually_exclusive_group(required=False)
     deletion_type_parser.add_argument('--soft-delete', dest='soft_delete', action='store_true')
     deletion_type_parser.add_argument('--hard-delete', dest='soft_delete', action='store_false')
-    parser.set_defaults(soft_delete=True)
+    parser_data_rm.set_defaults(soft_delete=True)
 
     ##################
     # Other arguments
