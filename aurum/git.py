@@ -2,7 +2,7 @@
 ##
 ## Authors: Adriano Marques
 ##          Nathan Martins
-##          Thales Ribeiro 
+##          Thales Ribeiro
 ##
 ## Copyright (C) 2019 Exponential Ventures LLC
 ##
@@ -41,6 +41,13 @@ def check_git():
 
 def init():
     run_git('init')
+
+def rm(filepath, soft_delete : bool = True):
+    # TODO: remove the file from metadata
+    if soft_delete:
+        run_git('rm --cached {}'.format(filepath))
+    else:
+        run_git('rm {}'.format(filepath))
 
 
 def run_git(*args):
