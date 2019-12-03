@@ -45,9 +45,9 @@ def init():
 def rm(filepath, soft_delete : bool = True):
     # TODO: remove the file from metadata
     if soft_delete:
-        run_git('rm --cached {}'.format(filepath))
+        run_git('rm','--cached', filepath)
     else:
-        run_git('rm {}'.format(filepath))
+        run_git('rm', filepath)
 
 
 def run_git(*args):

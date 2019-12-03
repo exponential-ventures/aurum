@@ -43,8 +43,9 @@ def execute_commands(parser):
 
     if parser.subcommand == 'init':
         run_init(parser)
-    elif parser.subcommand == 'rm':
-        run_rm(parser)
+    elif parser.subcommand == 'data':
+        if parser.subcommand2 == 'rm':
+            run_rm(parser)
 
 
 def run_init(parser):
@@ -58,9 +59,10 @@ def run_init(parser):
 
 
 def run_rm(parser):
-    logging.info("Removing {} from git".format(parser.filepath))
-    git.rm(parser.filepath)
-    logging.info("{} removed from git".format(parser.filepath))
+    for filepath in parser.files:
+        logging.info("Removing {} from git".format(filepath))
+        git.rm(filepath, soft_delete=parser.soft_delete)
+        logging.info("{} removed from git".format(filepath))
 
 
 def create_default_dirs():

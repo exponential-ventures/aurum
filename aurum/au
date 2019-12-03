@@ -58,12 +58,24 @@ def config_parser():
     # data
     parser_data = subparsers.add_parser("data", help="operations on data files")
     parser_data.set_defaults(subcommand='data')
+    subparser_data = parser_data.add_subparsers()
 
     #######
-    # rm
-    parser_rm = subparsers.add_parser("rm", help="delete data files")
-    parser_rm.set_defaults(subcommand='rm')
-    parser_rm.add_argument('filepath', nargs='?', default=sys.stdin)
+    # data add
+    parser_data_add = subparser_data.add_parser("add", help="add specified data file(s) to the data index")
+    parser_data_add.set_defaults(subcommand2="add")
+    parser_data_add.add_argument('files', type=str, nargs="*")
+
+    #######
+    # data rm
+    parser_data_rm = subparser_data.add_parser("rm", help="remove specified data file(s) from the data index")
+    parser_data_rm.set_defaults(subcommand2='rm')
+    parser_data_rm.add_argument('files', type=str, nargs="*", help="")
+
+    deletion_type_parser = parser_data_rm.add_mutually_exclusive_group(required=False)
+    deletion_type_parser.add_argument('--soft-delete', dest='soft_delete', action='store_true')
+    deletion_type_parser.add_argument('--hard-delete', dest='soft_delete', action='store_false')
+    parser.set_defaults(soft_delete=True)
 
     ##################
     # Other arguments
