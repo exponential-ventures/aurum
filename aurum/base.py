@@ -125,14 +125,43 @@ def run_add(parser: argparse.Namespace):
             sys.exit(1)
 
 
-
 def run_rm(parser):
     for filepath in parser.files:
-        logging.info("Removing {} from git".format(filepath))
+        logging.info(f"Removing {filepath} from git")
         git.rm(filepath, soft_delete=parser.soft_delete)
-        logging.info("{} removed from git".format(filepath))
+        logging.info(f"{filepath} removed from git")
+
+        meta_data_path, _ = get_metadata(filepath)
+
+        if meta_data_path:
+
+            logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
+
+            git.rm(meta_data_path, soft_delete=parser.soft_delete)
+
+            # might have been removed by git, might not.
+            if os.path.exists(meta_data_path):
+                os.remove(meta_data_path)
+
+            logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
+
+        else:
+            logging.warning(f"Unable to find metadata for file: '{filepath}' ")
 
 
+def get_metadata(file_name: str) -> (str, dict):
+    full_path = os.path.abspath(file_name)
+
+    for mdf in os.listdir(".au"):
+
+        mdf_path = os.path.join(".au", mdf)
+
+        with open(mdf_path, 'r') as f:
+            mdo = json.loads(f.read())
+            if mdo["file_name"] == full_path:
+                return mdf_path, mdo
+
+    return None, None
 
 
 def create_default_dirs():
