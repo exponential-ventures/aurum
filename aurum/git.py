@@ -41,12 +41,13 @@ def check_git():
 def init():
     run_git('init')
 
-def rm(filepath, soft_delete : bool = True):
-    # TODO: remove the file from metadata
+
+def rm(filepath, soft_delete: bool = True):
+
     if soft_delete:
-        run_git('rm','--cached', filepath)
+        run_git('rm', '--cached', filepath).wait()
     else:
-        run_git('rm', filepath)
+        run_git('rm', filepath).wait()
 
 
 def run_git(*args):
