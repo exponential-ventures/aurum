@@ -109,6 +109,12 @@ def run_add(parser: argparse.Namespace):
         with open(meta_data_file_name, "w+") as f:
             f.write(meta_data_str)
 
+        git.run_git(
+            "add",
+            f"{meta_data_file_name}",
+            f"{file}",
+        )
+
 
 def create_default_dirs():
     for path in DEFAULT_DIRS:
