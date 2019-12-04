@@ -20,11 +20,10 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-
-import sys
-import os
+import argparse
 import logging
-
+import os
+import sys
 from pathlib import Path
 
 from aurum import git
@@ -34,18 +33,20 @@ cwd = Path(os.getcwd())
 DEFAULT_DIRS = [cwd / ".au.py", cwd / "src", cwd / "logs"]
 
 
-def execute_commands(parser):
+def execute_commands(parser: argparse.Namespace):
     logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
 
     logging.debug("Parser arguments: {}".format(parser))
 
     git.check_git()
 
-    if parser.subcommand == 'init':
+    if parser.subcommand == "init":
         run_init(parser)
+    elif parser.subcommand == "add":
+        run_add(parser)
 
 
-def run_init(parser):
+def run_init(parser: argparse.Namespace):
     logging.info("Initializing git...")
     git.init()
 
@@ -53,6 +54,10 @@ def run_init(parser):
     au_init()
 
     logging.debug("Repository {} initialized.".format(cwd))
+
+
+def run_add(parser: argparse.Namespace):
+    logging.debug(f"Adding files to aurum: {parser.files}")
 
 
 def create_default_dirs():
