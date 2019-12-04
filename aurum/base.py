@@ -125,14 +125,11 @@ def run_add(parser: argparse.Namespace):
             sys.exit(1)
 
 
-
 def run_rm(parser):
     for filepath in parser.files:
         logging.info("Removing {} from git".format(filepath))
         git.rm(filepath, soft_delete=parser.soft_delete)
         logging.info("{} removed from git".format(filepath))
-
-
 
 
 def create_default_dirs():
