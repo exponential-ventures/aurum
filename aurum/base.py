@@ -31,7 +31,7 @@ from aurum import git
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / ".au", cwd / "src", cwd / "logs"]
+DEFAULT_DIRS = [cwd / ".au.py", cwd / "src", cwd / "logs"]
 
 
 def execute_commands(parser):

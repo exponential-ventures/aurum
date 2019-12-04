@@ -28,3 +28,4 @@ __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
 from aurum.base import execute_commands
+from aurum.au import main
