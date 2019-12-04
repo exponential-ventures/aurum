@@ -9,12 +9,12 @@ from datetime import datetime
 class MetaData:
     """
     Responsible for interacting with Meta Data files:
-    - Accessing attributes such as hashes and timestamps.
-    - Traverse a dataset's history.
+    - Accessing attributes such as hashes and timestamps ect.
     - Serialize and deserialize from file format.
-    - Generate file hash
-    - Generate meta data hash
-    - Generate meta data file name
+    - Generate file hash.
+    - Generate meta data hash.
+    - Generate meta data file name.
+    - TODO: Traverse a dataset's history.
     """
 
     file_hash: str
