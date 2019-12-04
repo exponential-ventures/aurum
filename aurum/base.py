@@ -49,8 +49,11 @@ def execute_commands(parser: argparse.Namespace):
 
     if parser.subcommand == "init":
         run_init(parser)
-    elif parser.subcommand == "add":
-        run_add(parser)
+    elif parser.subcommand == 'data':
+        if parser.subcommand2 == 'rm':
+            run_rm(parser)
+        if parser.subcommand2 == 'add':
+            run_add(parser)
 
 
 def run_init(parser: argparse.Namespace):
@@ -120,6 +123,16 @@ def run_add(parser: argparse.Namespace):
         if result != 0:
             sys.stderr.write(f"Unable to run 'git add {meta_data_file_name} {file}' {git_proc.stderr.read()}\n")
             sys.exit(1)
+
+
+
+def run_rm(parser):
+    for filepath in parser.files:
+        logging.info("Removing {} from git".format(filepath))
+        git.rm(filepath, soft_delete=parser.soft_delete)
+        logging.info("{} removed from git".format(filepath))
+
+
 
 
 def create_default_dirs():
