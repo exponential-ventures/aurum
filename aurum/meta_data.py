@@ -17,11 +17,11 @@ class MetaData:
     - TODO: Traverse a dataset's history.
     """
 
-    file_hash: str
-    parent_hash: str
-    file_name: str
-    size: int
-    timestamp: datetime
+    file_hash: str = None
+    parent_hash: str = None
+    file_name: str = None
+    size: int = 0
+    timestamp: datetime = datetime.now()
 
     def __init__(self, file_name: str = '') -> None:
         self.file_name = file_name
