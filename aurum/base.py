@@ -109,11 +109,17 @@ def run_add(parser: argparse.Namespace):
         with open(meta_data_file_name, "w+") as f:
             f.write(meta_data_str)
 
-        git.run_git(
+        git_proc = git.run_git(
             "add",
             f"{meta_data_file_name}",
             f"{file}",
         )
+
+        result = git_proc.wait()
+
+        if result != 0:
+            sys.stderr.write(f"Unable to run 'git add {meta_data_file_name} {file}' {git_proc.stderr.read()}\n")
+            sys.exit(1)
 
 
 def create_default_dirs():
