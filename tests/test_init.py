@@ -1,5 +1,5 @@
-import unittest
 import shutil
+import unittest
 
 from aurum import base
 
@@ -14,3 +14,7 @@ class TestInitMethod(unittest.TestCase):
         base.au_init()
         for path in base.DEFAULT_DIRS:
             self.assertTrue(path.exists())
+
+
+if __name__ == '__main__':
+    unittest.main()
