@@ -21,10 +21,9 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-import sys
 import logging
-
-from subprocess import Popen, PIPE, STDOUT
+import sys
+from subprocess import Popen, PIPE
 
 
 def check_git():
@@ -44,4 +43,5 @@ def init():
 
 
 def run_git(*args):
+    logging.debug(f"Running git {args}")
     return Popen(['git'] + list(args), stdout=PIPE)
