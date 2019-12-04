@@ -103,7 +103,7 @@ def run_add(parser: argparse.Namespace):
 
         meta_data_file_name = hashlib.sha1()
         meta_data_file_name.update(str.encode(meta_data_str))
-        meta_data_file_name = meta_data_file_name.hexdigest()
+        meta_data_file_name = meta_data_file_name.hexdigest() + ".json"
         meta_data_file_name = os.path.join(".au", meta_data_file_name)
 
         with open(meta_data_file_name, "w+") as f:
