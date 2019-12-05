@@ -28,7 +28,7 @@ from datetime import datetime
 from pathlib import Path
 
 from aurum import git
-from aurum.meta_data import MetaData, get_metadata
+from aurum.dataset_meta_data import DatasetMetaData, get_dataset_metadata
 
 cwd = Path(os.getcwd())
 
@@ -81,7 +81,7 @@ def run_add(parser: argparse.Namespace):
             sys.stderr.write(f"Path '{file}' must be a file! \n")
             sys.exit(1)
 
-        mdf = MetaData()
+        mdf = DatasetMetaData()
         mdf.file_name = file
         mdf.timestamp = datetime.now()
         mdf.size = os.path.getsize(file)
@@ -108,7 +108,7 @@ def run_rm(parser):
         git.rm(filepath, soft_delete=parser.soft_delete)
         logging.info(f"{filepath} removed from git")
 
-        meta_data_path, _ = get_metadata(filepath)
+        meta_data_path, _ = get_dataset_metadata(filepath)
 
         if meta_data_path:
 

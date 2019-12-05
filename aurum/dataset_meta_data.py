@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 @dataclass
-class MetaData:
+class DatasetMetaData:
     """
     Responsible for interacting with Meta Data files:
     - Accessing attributes such as hashes and timestamps ect.
@@ -90,7 +90,7 @@ class MetaData:
         return meta_data_file_name.hexdigest()
 
 
-def get_metadata(file_name: str) -> (str, MetaData):
+def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
     full_path = os.path.abspath(file_name)
 
     logging.info(f"get_metadata for file: {full_path}")
@@ -100,7 +100,7 @@ def get_metadata(file_name: str) -> (str, MetaData):
         mdf_path = os.path.join(".au", mdf)
 
         try:
-            mdo = MetaData(mdf_path)
+            mdo = DatasetMetaData(mdf_path)
             if mdo.file_name == full_path:
                 return mdf_path, mdo
         except FileNotFoundError:
