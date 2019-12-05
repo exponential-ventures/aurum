@@ -21,8 +21,6 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import hashlib
-import json
 import logging
 import os
 import sys
@@ -30,6 +28,7 @@ from datetime import datetime
 from pathlib import Path
 
 from aurum import git
+from aurum.meta_data import MetaData, get_metadata
 
 cwd = Path(os.getcwd())
 
@@ -82,35 +81,13 @@ def run_add(parser: argparse.Namespace):
             sys.stderr.write(f"Path '{file}' must be a file! \n")
             sys.exit(1)
 
-        # File Hashing
-        # Using buffers to not use tons of memory.
-        sha1 = hashlib.sha1()
-        buf_size = 65536  # lets read stuff in 64kb chunks!
-
-        with open(file, 'rb') as f:
-            while True:
-                data = f.read(buf_size)
-                if not data:
-                    break
-                sha1.update(data)
-
-        meta_data = {
-            "file_name": file,
-            "added": str(datetime.now()),
-            "size": os.path.getsize(file),
-            "hash": sha1.hexdigest(),
-            "parent_hash": None,
-        }
-
-        meta_data_str = json.dumps(meta_data)
-
-        meta_data_file_name = hashlib.sha1()
-        meta_data_file_name.update(str.encode(meta_data_str))
-        meta_data_file_name = meta_data_file_name.hexdigest() + ".json"
-        meta_data_file_name = os.path.join(".au", meta_data_file_name)
-
-        with open(meta_data_file_name, "w+") as f:
-            f.write(meta_data_str)
+        mdf = MetaData()
+        mdf.file_name = file
+        mdf.timestamp = datetime.now()
+        mdf.size = os.path.getsize(file)
+        mdf.parent_hash = None
+        mdf.gen_file_hash()
+        meta_data_file_name = mdf.deserialize()
 
         git_proc = git.run_git(
             "add",
@@ -147,21 +124,6 @@ def run_rm(parser):
 
         else:
             logging.warning(f"Unable to find metadata for file: '{filepath}' ")
-
-
-def get_metadata(file_name: str) -> (str, dict):
-    full_path = os.path.abspath(file_name)
-
-    for mdf in os.listdir(".au"):
-
-        mdf_path = os.path.join(".au", mdf)
-
-        with open(mdf_path, 'r') as f:
-            mdo = json.loads(f.read())
-            if mdo["file_name"] == full_path:
-                return mdf_path, mdo
-
-    return None, None
 
 
 def create_default_dirs():

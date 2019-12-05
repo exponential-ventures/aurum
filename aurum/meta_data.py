@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime
@@ -38,7 +39,11 @@ class MetaData:
         self.file_hash = so.get("hash")
         self.parent_hash = so.get("parent_hash")
 
-    def deserialize(self):
+    def deserialize(self) -> str:
+        """
+        This method saves the Meta Data to a file.
+        Returns the path to the saved location
+        """
 
         meta_data = {
             "file_name": self.file_name,
@@ -55,11 +60,13 @@ class MetaData:
         with open(meta_data_file_name, "w+") as f:
             f.write(meta_data_str)
 
-    def gen_file_hash(self, file_name):
+        return meta_data_file_name
+
+    def gen_file_hash(self):
         sha1 = hashlib.sha1()
         buf_size = 65536  # lets read stuff in 64kb chunks!
 
-        with open(file_name, 'rb') as f:
+        with open(self.file_name, 'rb') as f:
             while True:
                 data = f.read(buf_size)
                 if not data:
@@ -78,3 +85,22 @@ class MetaData:
         meta_data_file_name = hashlib.sha1()
         meta_data_file_name.update(str.encode(meta_data_str))
         return meta_data_file_name.hexdigest()
+
+
+def get_metadata(file_name: str) -> (str, MetaData):
+    full_path = os.path.abspath(file_name)
+
+    logging.info(f"get_metadata for file: {full_path}")
+
+    for mdf in os.listdir(".au"):
+
+        mdf_path = os.path.join(".au", mdf)
+
+        try:
+            mdo = MetaData(mdf_path)
+            if mdo.file_name == full_path:
+                return mdf_path, mdo
+        except FileNotFoundError:
+            continue
+
+    return None, None
