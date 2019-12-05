@@ -72,19 +72,19 @@ def run_add(parser: argparse.Namespace):
         sys.stderr.write(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
-    for file in parser.files:
-        if not os.path.exists(file):
-            sys.stderr.write(f"Path '{file}' does not exist! \n")
+    for f in parser.files:
+        if not os.path.exists(f):
+            sys.stderr.write(f"Path '{f}' does not exist! \n")
             sys.exit(1)
 
-        if not os.path.isfile(file):
-            sys.stderr.write(f"Path '{file}' must be a file! \n")
+        if not os.path.isfile(f):
+            sys.stderr.write(f"Path '{f}' must be a file! \n")
             sys.exit(1)
 
         mdf = DatasetMetaData()
-        mdf.file_name = file
+        mdf.file_name = f
         mdf.timestamp = datetime.now()
-        mdf.size = os.path.getsize(file)
+        mdf.size = os.path.getsize(f)
         mdf.parent_hash = None
         mdf.gen_file_hash()
         meta_data_file_name = mdf.deserialize()
@@ -92,13 +92,17 @@ def run_add(parser: argparse.Namespace):
         git_proc = git.run_git(
             "add",
             f"{meta_data_file_name}",
-            f"{file}",
+            f"{f}",
         )
 
         result = git_proc.wait()
 
         if result != 0:
-            sys.stderr.write(f"Unable to run 'git add {meta_data_file_name} {file}' {git_proc.stderr.read()}\n")
+            message = f"Unable to run 'git add {meta_data_file_name} {f}' \n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+
+            sys.stderr.write(message)
             sys.exit(1)
 
 
