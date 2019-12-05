@@ -2,12 +2,12 @@ import hashlib
 import json
 import logging
 import os
-from dataclasses import dataclass
 from datetime import datetime
 
+from aurum.metadata import MetaData
 
-@dataclass
-class DatasetMetaData:
+
+class DatasetMetaData(MetaData):
     """
     Responsible for interacting with Meta Data files:
     - Accessing attributes such as hashes and timestamps ect.
@@ -42,28 +42,13 @@ class DatasetMetaData:
         self.file_hash = so.get("hash")
         self.parent_hash = so.get("parent_hash")
 
-    def deserialize(self) -> str:
-        """
-        This method saves the Meta Data to a file.
-        Returns the path to the saved location
-        """
+    def save(self, destination: str = None) -> None:
 
-        meta_data = {
-            "file_name": self.file_name,
-            "timestamp": str(self.timestamp),
-            "size": self.size,
-            "hash": self.file_hash,
-            "parent_hash": self.parent_hash,
-        }
+        if destination is None:
+            meta_data_str = json.dumps(self.deserialize())
+            destination = self.gen_meta_file_name(meta_data_str)
 
-        meta_data_str = json.dumps(meta_data)
-
-        meta_data_file_name = self.gen_meta_file_name(meta_data_str)
-
-        with open(meta_data_file_name, "w+") as f:
-            f.write(meta_data_str)
-
-        return meta_data_file_name
+        super().save(destination)
 
     def gen_file_hash(self):
         sha1 = hashlib.sha1()

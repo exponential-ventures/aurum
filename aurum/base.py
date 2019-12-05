@@ -28,7 +28,7 @@ from datetime import datetime
 from pathlib import Path
 
 from aurum import git
-from aurum.dataset_meta_data import DatasetMetaData, get_dataset_metadata
+from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
 
 cwd = Path(os.getcwd())
 
