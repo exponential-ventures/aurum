@@ -27,15 +27,14 @@ import shutil
 import sys
 from pathlib import Path
 
-from aurum import constants
+from aurum import constants as cons
 from aurum import git
-from aurum.constants import DATASET_METADATA_DIR
 from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
 from aurum.utils import make_safe_filename
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / constants.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / constants.DATASET_METADATA_DIR]
+DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / cons.DATASET_METADATA_DIR]
 
 
 def execute_commands(parser: argparse.Namespace):
@@ -121,7 +120,7 @@ def run_rm(parser):
                 os.remove(meta_data_path)
 
             # remove parent dir if empty to avoid lots of empty dirs.
-            parent_dir = os.path.join(DATASET_METADATA_DIR, make_safe_filename(filepath))
+            parent_dir = os.path.join(cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
             if len(os.listdir(parent_dir)) <= 1:
                 shutil.rmtree(parent_dir, ignore_errors=True)
 
