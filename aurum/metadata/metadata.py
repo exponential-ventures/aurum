@@ -47,12 +47,12 @@ class _ExtendedEncoder(json.JSONEncoder):
 
 class MetaData:
 
-    def deserialize(self) -> str:
+    def serialize(self) -> str:
         """convert MetaData object to json string."""
         return json.dumps(self.__dict__, cls=_ExtendedEncoder)
 
     def save(self, destination: str) -> None:
-        """perform a deserialization and save to file"""
+        """perform a serialization and save to file"""
 
         with open(destination, "w+") as f:
-            f.write(self.deserialize())
+            f.write(self.serialize())

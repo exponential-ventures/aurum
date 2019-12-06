@@ -6,11 +6,11 @@ from aurum.metadata import MetaData
 
 class MetaDataTestCase(unittest.TestCase):
 
-    def test_deserialize(self):
+    def test_serialize(self):
         md = MetaData()
         md.timestamp = datetime(2019, 12, 5, 15, 30)
         md.name = "test"
-        raw_json = md.deserialize()
+        raw_json = md.serialize()
         self.assertEqual(raw_json, '{"timestamp": 1575559800.0, "name": "test"}')
 
     def test_save(self):
