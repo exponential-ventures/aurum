@@ -62,9 +62,16 @@ class DatasetMetaData(MetaData):
         self.file_hash = sha1.hexdigest()
 
     def gen_meta_file_name(self, meta_data_str):
+
+        meta_data_dir = os.path.join(DATASET_METADATA_DIR, make_safe_filename(self.file_name))
+
+        if not os.path.exists(meta_data_dir):
+            os.mkdir(meta_data_dir)
+
         meta_hash = self.gen_meta_hash(meta_data_str)
         meta_data_file_name = meta_hash + ".json"
-        return os.path.join(DATASET_METADATA_DIR, meta_data_file_name)
+
+        return os.path.join(meta_data_dir, meta_data_file_name)
 
     @staticmethod
     def gen_meta_hash(meta_data_str):
@@ -74,12 +81,25 @@ class DatasetMetaData(MetaData):
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
-    for mdf in os.listdir(DATASET_METADATA_DIR):
+    meta_data_dir = os.path.join(DATASET_METADATA_DIR, make_safe_filename(file_name))
 
-        mdf_path = os.path.join(DATASET_METADATA_DIR, mdf)
+    if os.path.exists(meta_data_dir):
+        for mdf in os.listdir(meta_data_dir):
 
-        mdo = DatasetMetaData(mdf_path)
-        if mdo.file_name == file_name:
-            return mdf_path, mdo
+            mdf_path = os.path.join(meta_data_dir, mdf)
+
+            mdo = DatasetMetaData(mdf_path)
+            if mdo.file_name == file_name:
+                return mdf_path, mdo
 
     return None, None
+
+
+def make_safe_filename(s):
+    def safe_char(c):
+        if c.isalnum():
+            return c
+        else:
+            return "_"
+
+    return "".join(safe_char(c) for c in s).rstrip("_")
