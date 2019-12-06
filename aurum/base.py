@@ -89,11 +89,7 @@ def run_add(parser: argparse.Namespace):
         mdf.size = os.path.getsize(f)
         meta_data_file_name = mdf.save()
 
-        git_proc = git.run_git(
-            "add",
-            f"{meta_data_file_name}",
-            f"{f}",
-        )
+        git_proc = git.run_git("add", meta_data_file_name, f, )
 
         result = git_proc.wait()
 
