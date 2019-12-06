@@ -77,19 +77,13 @@ class DatasetMetaData(MetaData):
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
-    full_path = os.path.abspath(file_name)
-
-    logging.info(f"get_metadata for file: {full_path}")
 
     for mdf in os.listdir(REPOSITORY_DIR):
 
         mdf_path = os.path.join(REPOSITORY_DIR, mdf)
 
-        try:
-            mdo = DatasetMetaData(mdf_path)
-            if mdo.file_name == full_path:
-                return mdf_path, mdo
-        except FileNotFoundError:
-            continue
+        mdo = DatasetMetaData(mdf_path)
+        if mdo.file_name == file_name:
+            return mdf_path, mdo
 
     return None, None
