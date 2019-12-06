@@ -1,10 +1,9 @@
 import hashlib
 import json
-import logging
 import os
 from datetime import datetime
 
-from aurum.constants import REPOSITORY_DIR
+from aurum.constants import DATASET_METADATA_DIR
 from aurum.metadata import MetaData
 
 
@@ -19,14 +18,12 @@ class DatasetMetaData(MetaData):
     - TODO: Traverse a dataset's history.
     """
 
-    file_hash: str = None
-    parent_hash: str = None
-    file_name: str = None
-    size: int = 0
-    timestamp: datetime = datetime.now()
-
     def __init__(self, file_name: str = '') -> None:
         self.file_name = file_name
+        self.file_hash = None
+        self.parent_hash = None
+        self.size = 0
+        self.timestamp = datetime.now()
 
         if file_name != '':
             with open(file_name, 'r') as f:
@@ -67,7 +64,7 @@ class DatasetMetaData(MetaData):
     def gen_meta_file_name(self, meta_data_str):
         meta_hash = self.gen_meta_hash(meta_data_str)
         meta_data_file_name = meta_hash + ".json"
-        return os.path.join(REPOSITORY_DIR, meta_data_file_name)
+        return os.path.join(DATASET_METADATA_DIR, meta_data_file_name)
 
     @staticmethod
     def gen_meta_hash(meta_data_str):
@@ -77,10 +74,9 @@ class DatasetMetaData(MetaData):
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
+    for mdf in os.listdir(DATASET_METADATA_DIR):
 
-    for mdf in os.listdir(REPOSITORY_DIR):
-
-        mdf_path = os.path.join(REPOSITORY_DIR, mdf)
+        mdf_path = os.path.join(DATASET_METADATA_DIR, mdf)
 
         mdo = DatasetMetaData(mdf_path)
         if mdo.file_name == file_name:

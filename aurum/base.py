@@ -28,12 +28,12 @@ from datetime import datetime
 from pathlib import Path
 
 from aurum import git
-from aurum.constants import REPOSITORY_DIR
+from aurum import constants
 from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / REPOSITORY_DIR, cwd / "src", cwd / "logs"]
+DEFAULT_DIRS = [cwd / constants.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / constants.DATASET_METADATA_DIR]
 
 
 def execute_commands(parser: argparse.Namespace):
