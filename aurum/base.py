@@ -70,7 +70,7 @@ def run_init(parser: argparse.Namespace):
 def run_add(parser: argparse.Namespace):
     logging.debug(f"Adding files to aurum: {parser.files}")
 
-    if not os.path.exists('.au'):
+    if not os.path.exists(cons.REPOSITORY_DIR):
         logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
