@@ -4,6 +4,7 @@ import logging
 import os
 from datetime import datetime
 
+from aurum.constants import REPOSITORY_DIR
 from aurum.metadata import MetaData
 
 
@@ -66,7 +67,7 @@ class DatasetMetaData(MetaData):
     def gen_meta_file_name(self, meta_data_str):
         meta_hash = self.gen_meta_hash(meta_data_str)
         meta_data_file_name = meta_hash + ".json"
-        return os.path.join(".au", meta_data_file_name)
+        return os.path.join(REPOSITORY_DIR, meta_data_file_name)
 
     @staticmethod
     def gen_meta_hash(meta_data_str):
@@ -80,9 +81,9 @@ def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
 
     logging.info(f"get_metadata for file: {full_path}")
 
-    for mdf in os.listdir(".au"):
+    for mdf in os.listdir(REPOSITORY_DIR):
 
-        mdf_path = os.path.join(".au", mdf)
+        mdf_path = os.path.join(REPOSITORY_DIR, mdf)
 
         try:
             mdo = DatasetMetaData(mdf_path)

@@ -4,6 +4,7 @@ import shutil
 import unittest
 
 from aurum import base, git
+from aurum.constants import REPOSITORY_DIR
 
 
 class AddTestCase(unittest.TestCase):
@@ -33,7 +34,7 @@ class AddTestCase(unittest.TestCase):
 
         self.assertIn(b"new file:   README.md", prod_res)
 
-        meta_data_file_path = os.path.join(".au", os.listdir(".au")[0])
+        meta_data_file_path = os.path.join(REPOSITORY_DIR, os.listdir(REPOSITORY_DIR)[0])
         meta_data_assert = f'new file:   {meta_data_file_path}'
         self.assertIn(str.encode(meta_data_assert), prod_res)
 
