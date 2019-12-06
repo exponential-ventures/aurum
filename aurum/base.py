@@ -21,19 +21,20 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import hashlib
-import json
 import logging
 import os
+import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 
+from aurum import constants as cons
 from aurum import git
+from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
+from aurum.utils import make_safe_filename
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / ".au", cwd / "src", cwd / "logs"]
+DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / cons.DATASET_METADATA_DIR]
 
 
 def execute_commands(parser: argparse.Namespace):
@@ -44,7 +45,7 @@ def execute_commands(parser: argparse.Namespace):
     git.check_git()
 
     if not hasattr(parser, "subcommand"):
-        sys.stderr.write(f"No command was passed in \n")
+        logging.error(f"No command was passed in \n")
         sys.exit(1)
 
     if parser.subcommand == "init":
@@ -70,58 +71,33 @@ def run_add(parser: argparse.Namespace):
     logging.debug(f"Adding files to aurum: {parser.files}")
 
     if not os.path.exists('.au'):
-        sys.stderr.write(f"Path '.au' does not exist, please run au init \n")
+        logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
-    for file in parser.files:
-        if not os.path.exists(file):
-            sys.stderr.write(f"Path '{file}' does not exist! \n")
+    for f in parser.files:
+        if not os.path.exists(f):
+            logging.error(f"Path '{f}' does not exist! \n")
             sys.exit(1)
 
-        if not os.path.isfile(file):
-            sys.stderr.write(f"Path '{file}' must be a file! \n")
+        if not os.path.isfile(f):
+            logging.error(f"Path '{f}' must be a file! \n")
             sys.exit(1)
 
-        # File Hashing
-        # Using buffers to not use tons of memory.
-        sha1 = hashlib.sha1()
-        buf_size = 65536  # lets read stuff in 64kb chunks!
+        mdf = DatasetMetaData()
+        mdf.file_name = f
+        mdf.size = os.path.getsize(f)
+        meta_data_file_name = mdf.save()
 
-        with open(file, 'rb') as f:
-            while True:
-                data = f.read(buf_size)
-                if not data:
-                    break
-                sha1.update(data)
-
-        meta_data = {
-            "file_name": file,
-            "added": str(datetime.now()),
-            "size": os.path.getsize(file),
-            "hash": sha1.hexdigest(),
-            "parent_hash": None,
-        }
-
-        meta_data_str = json.dumps(meta_data)
-
-        meta_data_file_name = hashlib.sha1()
-        meta_data_file_name.update(str.encode(meta_data_str))
-        meta_data_file_name = meta_data_file_name.hexdigest() + ".json"
-        meta_data_file_name = os.path.join(".au", meta_data_file_name)
-
-        with open(meta_data_file_name, "w+") as f:
-            f.write(meta_data_str)
-
-        git_proc = git.run_git(
-            "add",
-            f"{meta_data_file_name}",
-            f"{file}",
-        )
+        git_proc = git.run_git("add", meta_data_file_name, f, )
 
         result = git_proc.wait()
 
         if result != 0:
-            sys.stderr.write(f"Unable to run 'git add {meta_data_file_name} {file}' {git_proc.stderr.read()}\n")
+            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+
+            logging.error(message)
             sys.exit(1)
 
 
@@ -131,7 +107,7 @@ def run_rm(parser):
         git.rm(filepath, soft_delete=parser.soft_delete)
         logging.info(f"{filepath} removed from git")
 
-        meta_data_path, _ = get_metadata(filepath)
+        meta_data_path, _ = get_dataset_metadata(filepath)
 
         if meta_data_path:
 
@@ -143,25 +119,15 @@ def run_rm(parser):
             if os.path.exists(meta_data_path):
                 os.remove(meta_data_path)
 
+            # remove parent dir if empty to avoid lots of empty dirs.
+            parent_dir = os.path.join(cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
+            if len(os.listdir(parent_dir)) <= 1:
+                shutil.rmtree(parent_dir, ignore_errors=True)
+
             logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
 
         else:
             logging.warning(f"Unable to find metadata for file: '{filepath}' ")
-
-
-def get_metadata(file_name: str) -> (str, dict):
-    full_path = os.path.abspath(file_name)
-
-    for mdf in os.listdir(".au"):
-
-        mdf_path = os.path.join(".au", mdf)
-
-        with open(mdf_path, 'r') as f:
-            mdo = json.loads(f.read())
-            if mdo["file_name"] == full_path:
-                return mdf_path, mdo
-
-    return None, None
 
 
 def create_default_dirs():
