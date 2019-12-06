@@ -68,20 +68,13 @@ def run_init(parser: argparse.Namespace):
 
 
 def run_add(parser: argparse.Namespace):
-    logging.debug(f"Adding files to aurum: {parser.files}")
-
     if not os.path.exists(cons.REPOSITORY_DIR):
         logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
     for f in parser.files:
-        if not os.path.exists(f):
-            logging.error(f"Path '{f}' does not exist! \n")
-            sys.exit(1)
 
-        if not os.path.isfile(f):
-            logging.error(f"Path '{f}' must be a file! \n")
-            sys.exit(1)
+        f = check_file(f)
 
         mdf = DatasetMetaData()
         mdf.file_name = f
@@ -103,6 +96,9 @@ def run_add(parser: argparse.Namespace):
 
 def run_rm(parser):
     for filepath in parser.files:
+
+        filepath = check_file(filepath)
+
         logging.info(f"Removing {filepath} from git")
         git.rm(filepath, soft_delete=parser.soft_delete)
         logging.info(f"{filepath} removed from git")
@@ -133,6 +129,7 @@ def run_rm(parser):
 def create_default_dirs():
     for path in DEFAULT_DIRS:
         if path.exists():
+            breakpoint()
             logging.error("Can't create {} directory. Already exists.".format(path))
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
@@ -141,3 +138,27 @@ def create_default_dirs():
 
 def au_init():
     create_default_dirs()
+
+
+def check_file(file_path: str) -> str:
+    """
+    Checks if path exists, is a file, and if absolute if can be made into a au relative path.
+    If not raises SystemExit.
+    """
+    if not os.path.exists(file_path):
+        logging.error(f"Path '{file_path}' does not exist")
+        sys.exit(1)
+
+    if not os.path.isfile(file_path):
+        logging.error(f"Path '{file_path}' must be a file")
+        sys.exit(1)
+
+    if os.path.isabs(file_path):
+
+        if str(cwd) in file_path:
+            file_path = file_path.split(str(cwd), 1)[1][1:]
+        else:
+            logging.error(f"File '{file_path}' is not relative to au repository")
+            sys.exit(1)
+
+    return file_path

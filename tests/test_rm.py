@@ -15,10 +15,18 @@ class RmTestCase(unittest.TestCase):
             shutil.rmtree(path, ignore_errors=True)
 
         base.run_init(argparse.Namespace())
-        self.file_path = "README.md"
+
+        self.relative_path = "README.md"
+        self.absolute_path = os.path.abspath("README.md")
+
+        self.absolute_path_outside_script = "/tmp/copy.txt"
+        tmp_file = open(self.absolute_path_outside_script, "w")
+        tmp_file.write("Your text goes here")
+        tmp_file.close()
+
         self.parser = argparse.Namespace(
             files=[
-                self.file_path,
+                self.relative_path,
             ],
             soft_delete=True,
         )
@@ -44,6 +52,25 @@ class RmTestCase(unittest.TestCase):
         )
         proc.wait()
         self.assertNotIn(b"new file:   README.md", proc.stdout.read())
+
+    def test_is_relevant_file(self):
+        parser = argparse.Namespace(
+            files=[
+                self.absolute_path,
+                self.relative_path,
+            ],
+            soft_delete=True,
+        )
+        base.run_rm(parser)
+
+        with self.assertRaises(SystemExit):
+            parser = argparse.Namespace(
+                files=[
+                    self.absolute_path_outside_script,
+                ],
+                soft_delete=True,
+            )
+            base.run_rm(parser)
 
 
 if __name__ == '__main__':
