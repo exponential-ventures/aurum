@@ -32,7 +32,6 @@ import argparse
 
 from aurum.base import execute_commands
 
-# params = ['a', 'b', 'batch_size']
 
 def parameters(**kwargs):
     # setattr(sys.modules[__name__], 'params', list(kwargs.keys()))
@@ -47,6 +46,7 @@ def parameters(**kwargs):
 
         setattr(sys.modules[__name__], key, value or kwargs[key])
 
+
 def main(params):
     description = """Aurum is a new and simplified approach for data scientists to
     keep track of data and code without having to get another PhD for it. Aurum
@@ -59,10 +59,8 @@ def main(params):
     for param in params:
         parser.add_argument(f'-{param}', required=False)
 
-    # setattr(sys.modules[__name__], 'parse_params',  parser.parse_args())
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     main()
-
-# main()
