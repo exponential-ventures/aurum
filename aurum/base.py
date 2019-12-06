@@ -23,13 +23,15 @@
 import argparse
 import logging
 import os
+import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 
-from aurum import git
 from aurum import constants
+from aurum import git
+from aurum.constants import DATASET_METADATA_DIR
 from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
+from aurum.utils import make_safe_filename
 
 cwd = Path(os.getcwd())
 
@@ -44,7 +46,7 @@ def execute_commands(parser: argparse.Namespace):
     git.check_git()
 
     if not hasattr(parser, "subcommand"):
-        sys.stderr.write(f"No command was passed in \n")
+        logging.error(f"No command was passed in \n")
         sys.exit(1)
 
     if parser.subcommand == "init":
@@ -70,25 +72,22 @@ def run_add(parser: argparse.Namespace):
     logging.debug(f"Adding files to aurum: {parser.files}")
 
     if not os.path.exists('.au'):
-        sys.stderr.write(f"Path '.au' does not exist, please run au init \n")
+        logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
     for f in parser.files:
         if not os.path.exists(f):
-            sys.stderr.write(f"Path '{f}' does not exist! \n")
+            logging.error(f"Path '{f}' does not exist! \n")
             sys.exit(1)
 
         if not os.path.isfile(f):
-            sys.stderr.write(f"Path '{f}' must be a file! \n")
+            logging.error(f"Path '{f}' must be a file! \n")
             sys.exit(1)
 
         mdf = DatasetMetaData()
         mdf.file_name = f
-        mdf.timestamp = datetime.now()
         mdf.size = os.path.getsize(f)
-        mdf.parent_hash = None
-        mdf.gen_file_hash()
-        meta_data_file_name = mdf.deserialize()
+        meta_data_file_name = mdf.save()
 
         git_proc = git.run_git(
             "add",
@@ -99,11 +98,11 @@ def run_add(parser: argparse.Namespace):
         result = git_proc.wait()
 
         if result != 0:
-            message = f"Unable to run 'git add {meta_data_file_name} {f}' \n"
+            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {result}\n"
             if git_proc.stderr:
                 message += f"{git_proc.stderr.read()}\n"
 
-            sys.stderr.write(message)
+            logging.error(message)
             sys.exit(1)
 
 
@@ -124,6 +123,11 @@ def run_rm(parser):
             # might have been removed by git, might not.
             if os.path.exists(meta_data_path):
                 os.remove(meta_data_path)
+
+            # remove parent dir if empty to avoid lots of empty dirs.
+            parent_dir = os.path.join(DATASET_METADATA_DIR, make_safe_filename(filepath))
+            if len(os.listdir(parent_dir)) <= 1:
+                shutil.rmtree(parent_dir, ignore_errors=True)
 
             logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
 

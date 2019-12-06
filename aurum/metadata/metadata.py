@@ -6,6 +6,7 @@ MetaData objects allow a user to:
   - save: perform a deserialization and save to file.
 """
 import json
+import logging
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
@@ -60,8 +61,11 @@ class MetaData:
         for k, v in json_obj.items():
             setattr(self, k, v)
 
-    def save(self, destination: str) -> None:
+    def save(self, destination: str) -> str:
         """perform a serialization and save to file"""
 
         with open(destination, "w+") as f:
+            logging.info(f"saving file: {destination}")
             f.write(self.serialize())
+
+        return destination

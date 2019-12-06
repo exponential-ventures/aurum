@@ -34,7 +34,7 @@ class DatasetMetaData(MetaData):
         super().deserialize(raw_json)
         self.timestamp = datetime.fromtimestamp(self.timestamp)
 
-    def save(self, destination: str = None) -> None:
+    def save(self, destination: str = None) -> str:
 
         if destination is None:
             meta_data_str = json.dumps(self.serialize())
@@ -43,7 +43,7 @@ class DatasetMetaData(MetaData):
         if self.file_hash is None:
             self.file_hash = gen_file_hash(self.file_name)
 
-        super().save(destination)
+        return super().save(destination)
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):

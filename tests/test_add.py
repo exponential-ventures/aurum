@@ -12,7 +12,7 @@ class AddTestCase(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         base.run_init(argparse.Namespace())
-        self.file_path = os.path.abspath("README.md")
+        self.file_path = "README.md"
 
     def tearDown(self) -> None:
         super().tearDown()

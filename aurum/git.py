@@ -39,7 +39,7 @@ def check_git():
 
 
 def init():
-    run_git('init')
+    run_git('init').wait()
 
 
 def rm(filepath, soft_delete: bool = True):
@@ -51,5 +51,4 @@ def rm(filepath, soft_delete: bool = True):
 
 
 def run_git(*args):
-    logging.debug(f"Running git {args}")
     return Popen(['git'] + list(args), stdout=PIPE)
