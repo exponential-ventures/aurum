@@ -129,7 +129,6 @@ def run_rm(parser):
 def create_default_dirs():
     for path in DEFAULT_DIRS:
         if path.exists():
-            breakpoint()
             logging.error("Can't create {} directory. Already exists.".format(path))
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
