@@ -29,16 +29,9 @@ class DatasetMetaData(MetaData):
             with open(file_name, 'r') as f:
                 self.serialize(f.read())
 
-    def serialize(self, raw_meta_data: str):
-        """
-        This method takes in a raw string and attempts to parse it into a meta data object.
-        """
-        so = json.loads(raw_meta_data)
-        self.file_name = so.get("file_name")
-        self.timestamp = so.get("timestamp")
-        self.size = so.get("size")
-        self.file_hash = so.get("hash")
-        self.parent_hash = so.get("parent_hash")
+    def deserialize(self, raw_json: str):
+        super().deserialize(raw_json)
+        self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     def save(self, destination: str = None) -> None:
 

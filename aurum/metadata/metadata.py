@@ -1,6 +1,7 @@
 """
 MetaData objects allow a user to:
   - dynamically add instance attributes and have them be json serializable.
+  - serialize: convert json string naive(str only) MetaData object.
   - deserialize: convert MetaData object to json string.
   - save: perform a deserialization and save to file.
 """
@@ -50,6 +51,14 @@ class MetaData:
     def serialize(self) -> str:
         """convert MetaData object to json string."""
         return json.dumps(self.__dict__, cls=_ExtendedEncoder)
+
+    def deserialize(self, raw_json: str):
+        """convert a json string to MetaData object."""
+
+        json_obj = json.loads(raw_json)
+
+        for k, v in json_obj.items():
+            setattr(self, k, v)
 
     def save(self, destination: str) -> None:
         """perform a serialization and save to file"""
