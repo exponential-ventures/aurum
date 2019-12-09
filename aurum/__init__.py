@@ -2,7 +2,7 @@
 ##
 ## Authors: Adriano Marques
 ##          Nathan Martins
-##          Thales Ribeiro 
+##          Thales Ribeiro
 ##
 ## Copyright (C) 2019 Exponential Ventures LLC
 ##
@@ -27,5 +27,38 @@ __license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
 __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
+import platform
+import psutil
 from aurum.base import execute_commands
-from aurum.au import main
+
+
+def register_metrics(**kwargs):
+    swap_mem = psutil.swap_memory()
+    virtual_memory = psutil.virtual_memory()
+
+    hardware_metric = {'pythton_version': platform.python_version(),
+      'swap_memory': {
+          'total': swap_mem.total,
+          'used': swap_mem.used,
+          'free': swap_mem.free
+      },
+      'virtual_memory': {
+          'total': size_in_gb(virtual_memory.total),
+          'free': size_in_gb(virtual_memory.free),
+          'used': virtual_memory.used,
+          'used_percent': virtual_memory.percent
+      },
+      'cpu': {
+        'physical_cores': psutil.cpu_count(logical=False),
+        'total_cores': psutil.cpu_count(),
+        'frequency': psutil.cpu_freq().current,
+      }
+
+    }
+
+    metrics = {**hardware_metric, **kwargs}
+    print(metrics)
+
+
+def size_in_gb(size):
+    return size / float(1 << 30)
