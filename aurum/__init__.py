@@ -31,11 +31,12 @@ import sys
 import argparse
 
 from aurum.base import execute_commands
+from aurum.au import main
 
 
 def parameters(**kwargs):
     # setattr(sys.modules[__name__], 'params', list(kwargs.keys()))
-    parse_params = main(list(kwargs.keys()))
+    parse_params = command_line_args(list(kwargs.keys()))
     for key in kwargs.keys():
         value = None
         try:
@@ -47,7 +48,7 @@ def parameters(**kwargs):
         setattr(sys.modules[__name__], key, value or kwargs[key])
 
 
-def main(params):
+def command_line_args(params):
     description = """Aurum is a new and simplified approach for data scientists to
     keep track of data and code without having to get another PhD for it. Aurum
     keeps track of all code and data changes, and lets you easily reproduce any

@@ -21,10 +21,9 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-import sys
 import logging
-
-from subprocess import Popen, PIPE, STDOUT
+import sys
+from subprocess import Popen, PIPE
 
 
 def check_git():
@@ -40,14 +39,15 @@ def check_git():
 
 
 def init():
-    run_git('init')
+    run_git('init').wait()
 
-def rm(filepath, soft_delete : bool = True):
-    # TODO: remove the file from metadata
+
+def rm(filepath, soft_delete: bool = True):
+
     if soft_delete:
-        run_git('rm','--cached', filepath)
+        run_git('rm', '--cached', filepath).wait()
     else:
-        run_git('rm', filepath)
+        run_git('rm', filepath).wait()
 
 
 def run_git(*args):
