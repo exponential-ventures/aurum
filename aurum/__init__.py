@@ -29,13 +29,20 @@ __version__ = "0.1"
 
 import sys
 import argparse
+import os
+import logging
 
-from aurum.base import execute_commands
+from aurum.base import execute_commands, save_parameters, load_parameters
 from aurum.au import main
 
 
 def parameters(**kwargs):
-    # setattr(sys.modules[__name__], 'params', list(kwargs.keys()))
+    if not os.path.exists('.au'):
+        logging.error(f"Path '.au' does not exist, please run au init \n")
+        sys.exit(1)
+
+    save_parameters('parameters', **kwargs)
+
     parse_params = command_line_args(list(kwargs.keys()))
     for key in kwargs.keys():
         value = None

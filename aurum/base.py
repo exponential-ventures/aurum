@@ -25,11 +25,12 @@ import logging
 import os
 import shutil
 import sys
+import json
 from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
+from aurum.metadata.dataset_meta_data import MetaData, DatasetMetaData, get_dataset_metadata
 from aurum.utils import make_safe_filename
 
 cwd = Path(os.getcwd())
@@ -141,3 +142,23 @@ def create_default_dirs():
 
 def au_init():
     create_default_dirs()
+
+def save_parameters(filename, **kwargs):
+    filepath = Path(cons.DATASET_METADATA_DIR, filename)
+    mdf = MetaData()
+    mdf.paremeters = json.dumps(kwargs)
+    meta_data_file_name = mdf.save(filepath)
+
+    git_proc = git.run_git("add", meta_data_file_name)
+
+    result = git_proc.wait()
+    if result != 0:
+        message = f"Unable to run 'git add {meta_data_file_name} {filename}' Exit code: {result}\n"
+        if git_proc.stderr:
+            message += f"{git_proc.stderr.read()}\n"
+        logging.error(message)
+
+def load_parameters(filename) -> dict:
+    filepath = Path(cons.DATASET_METADATA_DIR, filename)
+    with open(filepath, 'r') as f:
+        return json.loads(f.read())
