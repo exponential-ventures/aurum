@@ -45,6 +45,10 @@ def execute_commands(parser: argparse.Namespace):
 
     git.check_git()
 
+    if os.getcwd().startswith(os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)):
+        logging.error(f"Cannot run commands from inside '.au' folder")
+        sys.exit(1)
+
     if not hasattr(parser, "subcommand"):
         logging.error(f"No command was passed in")
         sys.exit(1)
@@ -69,9 +73,6 @@ def run_init(parser: argparse.Namespace):
 
 
 def run_add(parser: argparse.Namespace):
-    if not git.running_from_git_repo():
-        logging.error(f"You are not running from inside a au repository")
-        sys.exit(1)
 
     if len(parser.files) == 0:
         logging.error(f"Must pass at least one file to be added")
@@ -152,6 +153,10 @@ def check_file(file_path: str) -> str:
     Checks if path exists, is a file, and if absolute if can be made into a au relative path.
     If not raises SystemExit.
     """
+
+    if not git.running_from_git_repo():
+        logging.error(f"You are not running from inside a au repository")
+        sys.exit(1)
 
     full_path = os.path.join(os.getcwd(), file_path)
 

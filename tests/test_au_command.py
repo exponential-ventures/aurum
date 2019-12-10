@@ -17,7 +17,7 @@ class AuCommandTestCase(unittest.TestCase):
     -[x] au command is being run the root repository.
     -[x] au command is being run from inside a random inner dir inside the repository.
     -[x] au command is ran outside of the repository to see how it is going to behave.
-    -[ ] prevent the au command from being run from inside any of the sub-directories of the .au dir.
+    -[x] prevent the au command from being run from inside any of the sub-directories of the .au dir.
     """
 
     def setUp(self) -> None:
@@ -129,6 +129,26 @@ class AuCommandTestCase(unittest.TestCase):
         self.assertEqual(proc.returncode, 1)
         self.assertEqual(e, b"ERROR: You are not running from inside a au repository\n")
 
+    def test_add_from_inside_repo_root(self):
+
+        self._run_init()
+
+        chosen = random.choice(list(self.random_dirs.keys()))
+        path = f"0_{chosen}.txt"
+
+        proc = subprocess.Popen(
+            [f"au data add {path}", ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=os.path.join(self.repository_path, cons.REPOSITORY_DIR),
+        )
+
+        _, e = proc.communicate()
+
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(e, b"ERROR: Cannot run commands from inside '.au' folder\n")
+
     def _run_init(self):
         proc = subprocess.Popen(
             ["au -v init"],
@@ -138,10 +158,10 @@ class AuCommandTestCase(unittest.TestCase):
             cwd=self.repository_path,
         )
 
-        proc.communicate()
+        _, e = proc.communicate()
 
         if proc.returncode != 0:
-            raise RuntimeError(f"Unable to run init.")
+            raise RuntimeError(f"Unable to run init. {e} {proc.returncode}")
 
 
 if __name__ == '__main__':
