@@ -56,6 +56,17 @@ def execute_commands(parser: argparse.Namespace):
     if parser.subcommand == "init":
         run_init(parser)
     elif parser.subcommand == 'data':
+
+        if not git.running_from_git_repo():
+            logging.error(f"You are not running from inside a au repository")
+            sys.exit(1)
+
+        repo_root = git.get_git_repo_root()
+
+        if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
+            logging.error(f"Path '.au' does not exist, please run au init")
+            sys.exit(1)
+
         if parser.subcommand2 == 'rm':
             run_rm(parser)
         if parser.subcommand2 == 'add':
@@ -154,21 +165,10 @@ def check_file(file_path: str) -> str:
     If not raises SystemExit.
     """
 
-    if not git.running_from_git_repo():
-        logging.error(f"You are not running from inside a au repository")
-        sys.exit(1)
-
     full_path = os.path.join(os.getcwd(), file_path)
 
     # If file is not in root of the repository then we need to get its full relative path
     if not os.path.exists(os.path.join(cons.REPOSITORY_DIR, file_path)):
-
-        repo_root = git.get_git_repo_root()
-
-        if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
-            logging.error(f"Path '.au' does not exist, please run au init")
-            sys.exit(1)
-
         file_path = full_path.split(repo_root)[1]
 
     if not os.path.exists(full_path):
