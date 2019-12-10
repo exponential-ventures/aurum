@@ -48,26 +48,22 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
     git.check_git()
 
     if os.getcwd().startswith(os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)):
-        logging.error(f"Cannot run commands from inside '.au' folder")
-        sys.exit(1)
+        parser.error(f"Cannot run commands from inside '.au' folder")
 
     if not hasattr(parsed, "subcommand"):
-        logging.error(f"No command was passed in")
-        sys.exit(1)
+        parser.error(f"No command was passed in")
 
     if parsed.subcommand == "init":
         run_init(parsed)
     elif parsed.subcommand == "data":
 
         if not git.running_from_git_repo():
-            logging.error(f"You are not running from inside a au repository")
-            sys.exit(1)
+            parser.error(f"You are not running from inside a au repository")
 
         repo_root = git.get_git_repo_root()
 
         if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
-            logging.error(f"Path '.au' does not exist, please run au init")
-            sys.exit(1)
+            parser.error(f"Path '.au' does not exist, please run au init")
 
         if parsed.subcommand2 == "rm":
             run_rm(parsed)

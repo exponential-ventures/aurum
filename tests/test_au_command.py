@@ -126,8 +126,8 @@ class AuCommandTestCase(unittest.TestCase):
 
         _, e = proc.communicate()
 
-        self.assertEqual(proc.returncode, 1)
-        self.assertEqual(e, b"ERROR: You are not running from inside a au repository\n")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn(b"error: You are not running from inside a au repository\n", e)
 
     def test_add_from_inside_repo_root(self):
 
@@ -146,8 +146,8 @@ class AuCommandTestCase(unittest.TestCase):
 
         _, e = proc.communicate()
 
-        self.assertEqual(proc.returncode, 1)
-        self.assertEqual(e, b"ERROR: Cannot run commands from inside '.au' folder\n")
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn(b"error: Cannot run commands from inside '.au' folder\n", e)
 
     def _run_init(self):
         proc = subprocess.Popen(
