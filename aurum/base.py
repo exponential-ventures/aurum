@@ -84,7 +84,6 @@ def run_init(parser: argparse.Namespace):
 
 
 def run_add(parser: argparse.Namespace):
-
     if len(parser.files) == 0:
         logging.error(f"Must pass at least one file to be added")
         sys.exit(1)
@@ -169,7 +168,7 @@ def check_file(file_path: str) -> str:
 
     # If file is not in root of the repository then we need to get its full relative path
     if not os.path.exists(os.path.join(cons.REPOSITORY_DIR, file_path)):
-        file_path = full_path.split(repo_root)[1]
+        file_path = full_path.split(git.get_git_repo_root())[1]
 
     if not os.path.exists(full_path):
         logging.error(f"Path '{file_path}' does not exist")
