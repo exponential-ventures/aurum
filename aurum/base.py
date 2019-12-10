@@ -29,31 +29,47 @@ from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
+from aurum.metadata import get_dataset_metadata, DatasetMetaData
 from aurum.utils import make_safe_filename
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / cons.DATASET_METADATA_DIR]
+DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
+                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)]
 
 
 def execute_commands(parser: argparse.Namespace):
-
     logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
-    logging.debug(f"Parser arguments: {parser}")
+
+    logging.debug("Parser arguments: {}".format(parser))
 
     git.check_git()
 
+    if os.getcwd().startswith(os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)):
+        logging.error(f"Cannot run commands from inside '.au' folder")
+        sys.exit(1)
+
     if not hasattr(parser, "subcommand"):
-        logging.error(f"No command was passed in \n")
+        logging.error(f"No command was passed in")
         sys.exit(1)
 
     if parser.subcommand == "init":
         run_init(parser)
-    elif parser.subcommand == "data":
-        if parser.subcommand2 == "rm":
+    elif parser.subcommand == 'data':
+
+        if not git.running_from_git_repo():
+            logging.error(f"You are not running from inside a au repository")
+            sys.exit(1)
+
+        repo_root = git.get_git_repo_root()
+
+        if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
+            logging.error(f"Path '.au' does not exist, please run au init")
+            sys.exit(1)
+
+        if parser.subcommand2 == 'rm':
             run_rm(parser)
-        if parser.subcommand2 == "add":
+        if parser.subcommand2 == 'add':
             run_add(parser)
 
 
@@ -68,27 +84,22 @@ def run_init(parser: argparse.Namespace):
 
 
 def run_add(parser: argparse.Namespace):
-    logging.debug(f"Adding files to aurum: {parser.files}")
 
-    if not os.path.exists(".au"):
-        logging.error(f"Path '.au' does not exist, please run au init \n")
+    if len(parser.files) == 0:
+        logging.error(f"Must pass at least one file to be added")
         sys.exit(1)
 
     for f in parser.files:
-        if not os.path.exists(f):
-            logging.error(f"Path '{f}' does not exist! \n")
-            sys.exit(1)
 
-        if not os.path.isfile(f):
-            logging.error(f"Path '{f}' must be a file! \n")
-            sys.exit(1)
+        full_f = os.path.join(os.getcwd(), f)
+        f = check_file(f)
 
         mdf = DatasetMetaData()
         mdf.file_name = f
-        mdf.size = os.path.getsize(f)
+        mdf.size = os.path.getsize(full_f)
         meta_data_file_name = mdf.save()
 
-        git_proc = git.run_git("add", meta_data_file_name, f, )
+        git_proc = git.run_git("add", full_f, meta_data_file_name, )
 
         result = git_proc.wait()
 
@@ -100,9 +111,14 @@ def run_add(parser: argparse.Namespace):
             logging.error(message)
             sys.exit(1)
 
+    sys.stdout.write(f"Added: {parser.files}\n")
+
 
 def run_rm(parser):
     for filepath in parser.files:
+
+        filepath = check_file(filepath)
+
         logging.info(f"Removing {filepath} from git")
         git.rm(filepath, soft_delete=parser.soft_delete)
         logging.info(f"{filepath} removed from git")
@@ -120,7 +136,7 @@ def run_rm(parser):
                 os.remove(meta_data_path)
 
             # remove parent dir if empty to avoid lots of empty dirs.
-            parent_dir = os.path.join(cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
+            parent_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
             if len(os.listdir(parent_dir)) <= 1:
                 shutil.rmtree(parent_dir, ignore_errors=True)
 
@@ -141,3 +157,34 @@ def create_default_dirs():
 
 def au_init():
     create_default_dirs()
+
+
+def check_file(file_path: str) -> str:
+    """
+    Checks if path exists, is a file, and if absolute if can be made into a au relative path.
+    If not raises SystemExit.
+    """
+
+    full_path = os.path.join(os.getcwd(), file_path)
+
+    # If file is not in root of the repository then we need to get its full relative path
+    if not os.path.exists(os.path.join(cons.REPOSITORY_DIR, file_path)):
+        file_path = full_path.split(repo_root)[1]
+
+    if not os.path.exists(full_path):
+        logging.error(f"Path '{file_path}' does not exist")
+        sys.exit(1)
+
+    if not os.path.isfile(full_path):
+        logging.error(f"Path '{file_path}' must be a file")
+        sys.exit(1)
+
+    if os.path.isabs(file_path):
+
+        if str(cwd) in file_path:
+            file_path = file_path.split(str(cwd), 1)[1][1:]
+        else:
+            logging.error(f"File '{file_path}' is not relative to au repository")
+            sys.exit(1)
+
+    return file_path
