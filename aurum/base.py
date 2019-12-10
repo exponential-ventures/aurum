@@ -38,9 +38,9 @@ DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / cons
 
 
 def execute_commands(parser: argparse.Namespace):
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
 
-    logging.debug("Parser arguments: {}".format(parser))
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
+    logging.debug(f"Parser arguments: {parser}")
 
     git.check_git()
 
@@ -50,10 +50,10 @@ def execute_commands(parser: argparse.Namespace):
 
     if parser.subcommand == "init":
         run_init(parser)
-    elif parser.subcommand == 'data':
-        if parser.subcommand2 == 'rm':
+    elif parser.subcommand == "data":
+        if parser.subcommand2 == "rm":
             run_rm(parser)
-        if parser.subcommand2 == 'add':
+        if parser.subcommand2 == "add":
             run_add(parser)
 
 
@@ -70,7 +70,7 @@ def run_init(parser: argparse.Namespace):
 def run_add(parser: argparse.Namespace):
     logging.debug(f"Adding files to aurum: {parser.files}")
 
-    if not os.path.exists('.au'):
+    if not os.path.exists(".au"):
         logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
 
