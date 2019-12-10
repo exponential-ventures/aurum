@@ -3,7 +3,7 @@ import os
 import shutil
 import unittest
 
-from aurum import base, git
+from aurum import base, git, commands
 from aurum.constants import REPOSITORY_DIR
 
 
@@ -11,7 +11,7 @@ class AddTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        base.run_init(argparse.Namespace())
+        commands.run_init(argparse.Namespace())
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")
 
@@ -29,7 +29,7 @@ class AddTestCase(unittest.TestCase):
         parser = argparse.Namespace(files=[
             self.relative_path,
         ])
-        base.run_add(parser)
+        commands.run_add(parser)
 
         proc = git.run_git(
             "status"
@@ -49,13 +49,13 @@ class AddTestCase(unittest.TestCase):
             self.absolute_path,
             self.relative_path,
         ])
-        base.run_add(parser)
+        commands.run_add(parser)
 
         with self.assertRaises(SystemExit):
             parser = argparse.Namespace(files=[
                 self.absolute_path_outside_script,
             ])
-            base.run_add(parser)
+            commands.run_add(parser)
 
 
 if __name__ == '__main__':
