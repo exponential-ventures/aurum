@@ -32,7 +32,7 @@ import argparse
 from aurum import execute_commands
 
 
-def config_parser():
+def config_parser() -> argparse.ArgumentParser:
     description = """Aurum is a new and simplified approach for data scientists to
     keep track of data and code without having to get another PhD for it. Aurum
     keeps track of all code and data changes, and lets you easily reproduce any
@@ -86,10 +86,10 @@ def config_parser():
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
 
-    return parser.parse_args()
+    return parser
 
 
-def main():
+def main() -> None:
     execute_commands(config_parser())
 
 

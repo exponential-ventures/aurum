@@ -38,10 +38,12 @@ DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
                 cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)]
 
 
-def execute_commands(parser: argparse.Namespace):
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
+def execute_commands(parser: argparse.ArgumentParser) -> None:
+    parsed = parser.parse_args()
 
-    logging.debug("Parser arguments: {}".format(parser))
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parsed.verbose else logging.WARNING)
+
+    logging.debug("Parser arguments: {}".format(parsed))
 
     git.check_git()
 
@@ -49,13 +51,13 @@ def execute_commands(parser: argparse.Namespace):
         logging.error(f"Cannot run commands from inside '.au' folder")
         sys.exit(1)
 
-    if not hasattr(parser, "subcommand"):
+    if not hasattr(parsed, "subcommand"):
         logging.error(f"No command was passed in")
         sys.exit(1)
 
-    if parser.subcommand == "init":
-        run_init(parser)
-    elif parser.subcommand == 'data':
+    if parsed.subcommand == "init":
+        run_init(parsed)
+    elif parsed.subcommand == "data":
 
         if not git.running_from_git_repo():
             logging.error(f"You are not running from inside a au repository")
@@ -67,13 +69,13 @@ def execute_commands(parser: argparse.Namespace):
             logging.error(f"Path '.au' does not exist, please run au init")
             sys.exit(1)
 
-        if parser.subcommand2 == 'rm':
-            run_rm(parser)
-        if parser.subcommand2 == 'add':
-            run_add(parser)
+        if parsed.subcommand2 == "rm":
+            run_rm(parsed)
+        if parsed.subcommand2 == "add":
+            run_add(parsed)
 
 
-def run_init(parser: argparse.Namespace):
+def run_init(parser: argparse.Namespace) -> None:
     logging.info("Initializing git...")
     git.init()
 
@@ -83,7 +85,7 @@ def run_init(parser: argparse.Namespace):
     logging.debug("Repository {} initialized.".format(cwd))
 
 
-def run_add(parser: argparse.Namespace):
+def run_add(parser: argparse.Namespace) -> None:
     if len(parser.files) == 0:
         logging.error(f"Must pass at least one file to be added")
         sys.exit(1)
@@ -113,7 +115,7 @@ def run_add(parser: argparse.Namespace):
     sys.stdout.write(f"Added: {parser.files}\n")
 
 
-def run_rm(parser):
+def run_rm(parser) -> None:
     for filepath in parser.files:
 
         filepath = check_file(filepath)
@@ -145,7 +147,7 @@ def run_rm(parser):
             logging.warning(f"Unable to find metadata for file: '{filepath}' ")
 
 
-def create_default_dirs():
+def create_default_dirs() -> None:
     for path in DEFAULT_DIRS:
         if path.exists():
             logging.error("Can't create {} directory. Already exists.".format(path))
@@ -154,7 +156,7 @@ def create_default_dirs():
         os.makedirs(path)
 
 
-def au_init():
+def au_init() -> None:
     create_default_dirs()
 
 
