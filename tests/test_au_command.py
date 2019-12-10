@@ -13,10 +13,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 class AuCommandTestCase(unittest.TestCase):
     """
+    Test scenarios:
     -[x] au command is being run the root repository.
     -[x] au command is being run from inside a random inner dir inside the repository.
+    -[x] au command is ran outside of the repository to see how it is going to behave.
     -[ ] prevent the au command from being run from inside any of the sub-directories of the .au dir.
-    -[ ] au command is ran outside of the repository to see how it is going to behave.
     """
 
     def setUp(self) -> None:
