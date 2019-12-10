@@ -73,18 +73,18 @@ def config_parser() -> argparse.ArgumentParser:
     #######
     # data rm
     parser_data_rm = subparser_data.add_parser("rm", help="remove specified data file(s) from the data index")
-    parser_data_rm.set_defaults(subcommand2='rm')
-    parser_data_rm.add_argument('files', type=str, nargs="*", help="")
+    parser_data_rm.set_defaults(subcommand2="rm")
+    parser_data_rm.add_argument("files", type=str, nargs="*", help="")
 
     deletion_type_parser = parser_data_rm.add_mutually_exclusive_group(required=False)
-    deletion_type_parser.add_argument('--soft-delete', dest='soft_delete', action='store_true')
-    deletion_type_parser.add_argument('--hard-delete', dest='soft_delete', action='store_false')
+    deletion_type_parser.add_argument("--soft-delete", dest="soft_delete", action="store_true")
+    deletion_type_parser.add_argument("--hard-delete", dest="soft_delete", action="store_false")
     parser_data_rm.set_defaults(soft_delete=True)
 
     ######
     # Other arguments
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     return parser
 
