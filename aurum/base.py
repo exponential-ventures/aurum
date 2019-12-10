@@ -43,7 +43,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parsed.verbose else logging.WARNING)
 
-    logging.debug("Parser arguments: {}".format(parsed))
+    logging.debug(f"Parser arguments: {parsed}")
 
     git.check_git()
 
@@ -82,7 +82,7 @@ def run_init(parser: argparse.Namespace) -> None:
     logging.info("Initializing aurum...")
     au_init()
 
-    logging.debug("Repository {} initialized.".format(cwd))
+    logging.debug(f"Repository {cwd} initialized.")
 
 
 def run_add(parser: argparse.Namespace) -> None:
@@ -150,7 +150,7 @@ def run_rm(parser) -> None:
 def create_default_dirs() -> None:
     for path in DEFAULT_DIRS:
         if path.exists():
-            logging.error("Can't create {} directory. Already exists.".format(path))
+            logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
         os.makedirs(path)
