@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 from aurum import base, git
-from aurum.constants import DATASET_METADATA_DIR
+from aurum import constants as cons
 
 
 class RmTestCase(unittest.TestCase):
@@ -39,12 +39,12 @@ class RmTestCase(unittest.TestCase):
 
     def test_rm_from_metadata(self):
         # Assert there is one metadata files
-        self.assertEqual(len(os.listdir(DATASET_METADATA_DIR)), 1)
+        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 1)
 
         base.run_rm(self.parser)
 
         # Assert there is no metadata files
-        self.assertEqual(len(os.listdir(DATASET_METADATA_DIR)), 0)
+        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 0)
 
         # Assert files are not in git.
         proc = git.run_git(
