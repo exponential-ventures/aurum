@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 class AuCommandTestCase(unittest.TestCase):
     """
     -[x] au command is being run the root repository.
-    -[ ] au command is being run from inside a random inner dir inside the repository.
+    -[x] au command is being run from inside a random inner dir inside the repository.
     -[ ] prevent the au command from being run from inside any of the sub-directories of the .au dir.
     -[ ] au command is ran outside of the repository to see how it is going to behave.
     """
@@ -107,6 +107,26 @@ class AuCommandTestCase(unittest.TestCase):
 
         s = f"Added: ['{path}']\n"
         self.assertEqual(o, s.encode())
+
+    def test_add_from_outside_repo(self):
+
+        self._run_init()
+
+        chosen = random.choice(list(self.random_dirs.keys()))
+        path = f"0_{chosen}.txt"
+
+        proc = subprocess.Popen(
+            [f"au data add {path}", ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd="/tmp/",
+        )
+
+        _, e = proc.communicate()
+
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(e, b"ERROR: You are not running from inside a au repository\n")
 
     def _run_init(self):
         proc = subprocess.Popen(

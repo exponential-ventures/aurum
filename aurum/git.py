@@ -24,7 +24,7 @@
 import logging
 import os
 import sys
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, DEVNULL
 
 
 def check_git():
@@ -42,6 +42,7 @@ def running_from_git_repo() -> bool:
     process = Popen(
         ["git", "rev-parse", "--is-inside-work-tree"],
         stdout=PIPE,
+        stderr=DEVNULL,
         cwd=os.getcwd(),
     )
     output, _ = process.communicate()
