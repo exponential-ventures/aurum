@@ -37,7 +37,8 @@ from aurum.commands import Parser
 cwd = Path(os.getcwd())
 
 DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
-                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)]
+                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
+                cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)]
 
 
 def execute_commands(parser: argparse.Namespace):
@@ -79,7 +80,6 @@ def execute_commands(parser: argparse.Namespace):
 def run_init(parser: argparse.Namespace):
     logging.info("Initializing git...")
     git.init()
-
 
     logging.info("Initializing aurum...")
     au_init()
@@ -194,22 +194,29 @@ def check_file(file_path: str) -> str:
 
 
 def parameters(**kwargs):
-    parse_params = {**Parser().known_params.__dict__, **dict.fromkeys(Parser().unknown_params)}
-    for key in kwargs.keys():
-        value = None
-        try:
-            if key in parse_params:
-                value = parse_params.__getattribute__(key)
-        except:
-            pass
+    unknown_params = {}
+    length = len(Parser().unknown_params)
 
-        setattr(sys.modules['aurum'], key, value or kwargs[key])
+    for i in range(length):
+        item = Parser().unknown_params[i]
+        if '-' in item:
+            if i + 1 <= length - 1:
+                unknown_params[item.replace('-', '')] = Parser().unknown_params[i + 1]
+            else:
+                unknown_params[item.replace('-', '')] = None
 
-    save_parameters(filename='parameters', **{**kwargs, **parse_params})
+    parse_params = {**Parser().known_params.__dict__, **unknown_params}
+
+    new_dict = {**kwargs, **parse_params}
+
+    for key in new_dict.keys():
+        setattr(sys.modules['aurum'], key, new_dict[key])
+
+    save_parameters(filename='parameters', **new_dict)
 
 
 def save_parameters(filename, **kwargs):
-    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, "parameters")
+    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
     filepath = Path(path, make_safe_filename(filename))
     mdf = MetaData()
     mdf.parameters = json.dumps(kwargs)
@@ -226,6 +233,7 @@ def save_parameters(filename, **kwargs):
 
 
 def load_parameters(filename) -> dict:
-    filepath = Path(cons.DATASET_METADATA_DIR, filename)
+    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
+    filepath = Path(path, filename)
     with open(filepath, 'r') as f:
         return json.loads(f.read())

@@ -51,7 +51,7 @@ class Parser:
         parser.add_argument('-d', '--dry-run', required=False, default=False)
 
         # known_params = load_parameters('parameters')
-        known_params = []
+        known_params = {}
 
         for param in known_params:
             parser.add_argument(f'-{param}', required=False)

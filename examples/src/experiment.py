@@ -11,7 +11,6 @@ except ImportError:
 
 au.parameters(a=0.01, b=1000, c=46, epochs=100, batch_size=200)
 
-
 print(f"Parameter a = {au.a}")
 print(f"Parameter b = {au.b}")
 print(f"Parameter epochs = {au.epochs}")
