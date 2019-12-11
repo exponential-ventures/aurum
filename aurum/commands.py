@@ -43,9 +43,6 @@ def run_init(parser: argparse.Namespace) -> None:
 
 
 def run_add(parser: argparse.Namespace) -> None:
-    if len(parser.files) == 0:
-        logging.error(f"Must pass at least one file to be added")
-        sys.exit(1)
 
     for f in parser.files:
 

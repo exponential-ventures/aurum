@@ -54,15 +54,22 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
         run_init(parsed)
     elif parsed.subcommand == "data":
 
-        if not git.running_from_git_repo():
-            parser.error(f"You are not running from inside a au repository")
-
-        repo_root = git.get_git_repo_root()
-
-        if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
-            parser.error(f"Path '.au' does not exist, please run au init")
-
-        if parsed.subcommand2 == "rm":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":
+            data_command_checker(parser, parsed)
             run_rm(parsed)
-        if parsed.subcommand2 == "add":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "add":
+            data_command_checker(parser, parsed)
             run_add(parsed)
+        else:
+            parser.error("Unknown command for data")
+
+
+def data_command_checker(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
+
+    if not git.running_from_git_repo():
+        parser.error(f"You are not running from inside a au repository")
+
+    repo_root = git.get_git_repo_root()
+
+    if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
+        parser.error(f"Path '.au' does not exist, please run au init")

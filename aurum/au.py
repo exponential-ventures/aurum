@@ -57,7 +57,7 @@ def config_parser() -> argparse.ArgumentParser:
 
     parser_data_add = subparser_data.add_parser("add", help="add specified data file(s) to the data index")
     parser_data_add.set_defaults(subcommand2="add")
-    parser_data_add.add_argument("files", type=str, nargs="*")
+    parser_data_add.add_argument("files", type=str, nargs='+')
 
     ######
     # add
@@ -68,13 +68,13 @@ def config_parser() -> argparse.ArgumentParser:
 
     parser_add_files = subparser_add.add_parser("add", help="add specified file(s) to the data index")
     parser_add_files.set_defaults(subcommand2="add")
-    parser_add_files.add_argument("files", type=str, nargs="*")
+    parser_add_files.add_argument("files", type=str, nargs="+")
 
     #######
     # data rm
     parser_data_rm = subparser_data.add_parser("rm", help="remove specified data file(s) from the data index")
     parser_data_rm.set_defaults(subcommand2="rm")
-    parser_data_rm.add_argument("files", type=str, nargs="*", help="")
+    parser_data_rm.add_argument("files", type=str, nargs="+")
 
     deletion_type_parser = parser_data_rm.add_mutually_exclusive_group(required=False)
     deletion_type_parser.add_argument("--soft-delete", dest="soft_delete", action="store_true")
@@ -94,4 +94,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    arguments = docopt(__doc__, version='0.1.1rc')
+    print(arguments)
