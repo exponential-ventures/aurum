@@ -55,16 +55,16 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
     elif parsed.subcommand == "data":
 
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":
-            data_command_checker(parser, parsed)
+            data_command_checker(parser)
             run_rm(parsed)
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "add":
-            data_command_checker(parser, parsed)
+            data_command_checker(parser)
             run_add(parsed)
         else:
             parser.error("Unknown command for data")
 
 
-def data_command_checker(parser: argparse.ArgumentParser, parsed: argparse.Namespace):
+def data_command_checker(parser: argparse.ArgumentParser):
 
     if not git.running_from_git_repo():
         parser.error(f"You are not running from inside a au repository")
