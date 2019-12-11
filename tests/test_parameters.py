@@ -5,7 +5,6 @@ import sys
 import os
 import tracemalloc
 import subprocess
-from io import StringIO
 from unittest.mock import patch
 
 try:

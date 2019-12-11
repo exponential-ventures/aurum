@@ -31,7 +31,7 @@ import argparse
 
 from aurum.utils import check_inside_au
 from aurum.singleton import SingletonDecorator
-# from aurum.base import load_parameters
+from aurum.base import load_parameters
 
 
 @SingletonDecorator
@@ -50,11 +50,13 @@ class Parser:
         parser.add_argument('-v', '--verbose', required=False, default=False)
         parser.add_argument('-d', '--dry-run', required=False, default=False)
 
-        # known_params = load_parameters('parameters')
-        known_params = {}
+        try:
+            known_params = load_parameters('parameters')
+        except FileNotFoundError:
+            known_params = {}
 
-        for param in known_params:
-            parser.add_argument(f'-{param}', required=False)
+        for param in known_params.keys():
+            parser.add_argument(f'-{param}', required=False, default=known_params[param])
 
         self.known_params, self.unknown_params = parser.parse_known_args()
 

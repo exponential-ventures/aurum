@@ -32,7 +32,6 @@ from aurum import constants as cons
 from aurum import git
 from aurum.metadata import get_dataset_metadata, DatasetMetaData, MetaData
 from aurum.utils import make_safe_filename
-from aurum.commands import Parser
 
 cwd = Path(os.getcwd())
 
@@ -194,6 +193,8 @@ def check_file(file_path: str) -> str:
 
 
 def parameters(**kwargs):
+    from aurum.commands import Parser
+
     unknown_params = {}
     length = len(Parser().unknown_params)
 
@@ -236,4 +237,5 @@ def load_parameters(filename) -> dict:
     path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
     filepath = Path(path, filename)
     with open(filepath, 'r') as f:
-        return json.loads(f.read())
+        root_json = json.loads(f.read())
+        return json.loads(root_json['parameters'])
