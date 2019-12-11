@@ -51,7 +51,7 @@ class Parser:
         parser.add_argument('-d', '--dry-run', required=False, default=False)
 
         try:
-            known_params = load_parameters('parameters')
+            known_params = load_parameters('parameters.json')
         except FileNotFoundError:
             known_params = {}
 

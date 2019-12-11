@@ -30,8 +30,8 @@ from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata import get_dataset_metadata, DatasetMetaData, MetaData
-from aurum.utils import make_safe_filename
+from aurum.metadata import get_dataset_metadata, DatasetMetaData, ParameterMetaData, get_parameter_metadata
+from aurum.utils import make_safe_filename, gen_file_hash
 
 cwd = Path(os.getcwd())
 
@@ -218,10 +218,16 @@ def parameters(**kwargs):
 
 def save_parameters(filename, **kwargs):
     path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
-    filepath = Path(path, make_safe_filename(filename))
-    mdf = MetaData()
+    filename = f"{make_safe_filename(filename)}.json"
+    filepath = Path(path, filename)
+
+    if not filepath.exists():
+        filepath.touch()
+
+    mdf = ParameterMetaData()
     mdf.parameters = json.dumps(kwargs)
-    meta_data_file_name = mdf.save(filepath)
+    mdf.file_name = filename
+    meta_data_file_name = mdf.save()
 
     git_proc = git.run_git("add", meta_data_file_name)
 
@@ -234,8 +240,11 @@ def save_parameters(filename, **kwargs):
 
 
 def load_parameters(filename) -> dict:
-    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
-    filepath = Path(path, filename)
-    with open(filepath, 'r') as f:
-        root_json = json.loads(f.read())
-        return json.loads(root_json['parameters'])
+    metadata = get_parameter_metadata(filename)
+    filepath = metadata[0]
+    if filepath:
+        with open(filepath, 'r') as f:
+            root_json = json.loads(f.read())
+            return json.loads(root_json['parameters'])
+    else:
+        return {}

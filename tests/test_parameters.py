@@ -5,7 +5,6 @@ import sys
 import os
 import tracemalloc
 import subprocess
-from unittest.mock import patch
 
 try:
     import aurum as au
@@ -39,17 +38,6 @@ class TestParameters(unittest.TestCase):
         self.assertEqual(au.c, 46)
         self.assertEqual(au.epochs, 100)
         self.assertEqual(au.batch_size, 200)
-
-    # def test_parameters_from_arg(self):
-    #     args = argparse.Namespace(a=300, b=None, c=None, epochs=None, batch_size=None)
-    #
-    #     with patch('aurum.commands.Parser.instance.unknown_params', return_value=args):
-    #         au.parameters(a=1.01, b=333, c=46, epochs=100, batch_size=200)
-    #         self.assertEqual(au.a, 300)
-    #         self.assertEqual(au.b, 333)
-    #         self.assertEqual(au.c, 46)
-    #         self.assertEqual(au.epochs, 100)
-    #         self.assertEqual(au.batch_size, 200)
 
     def test_parameters_from_arg_wo_mock(self):
         proc = subprocess.Popen(
