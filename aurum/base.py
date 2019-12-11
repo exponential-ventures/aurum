@@ -30,9 +30,9 @@ from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata.dataset_meta_data import MetaData, DatasetMetaData, get_dataset_metadata
-from aurum.metadata import get_dataset_metadata, DatasetMetaData
+from aurum.metadata import get_dataset_metadata, DatasetMetaData, MetaData
 from aurum.utils import make_safe_filename
+from aurum.commands import Parser
 
 cwd = Path(os.getcwd())
 
@@ -41,7 +41,8 @@ DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
 
 
 def execute_commands(parser: argparse.Namespace):
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
+    logging.basicConfig(format="%(levelname)s: %(message)s",
+                        level=logging.DEBUG if parser.verbose else logging.WARNING)
 
     logging.debug("Parser arguments: {}".format(parser))
 
@@ -79,6 +80,7 @@ def run_init(parser: argparse.Namespace):
     logging.info("Initializing git...")
     git.init()
 
+
     logging.info("Initializing aurum...")
     au_init()
 
@@ -86,7 +88,6 @@ def run_init(parser: argparse.Namespace):
 
 
 def run_add(parser: argparse.Namespace):
-
     if len(parser.files) == 0:
         logging.error(f"Must pass at least one file to be added")
         sys.exit(1)
@@ -160,25 +161,6 @@ def create_default_dirs():
 def au_init():
     create_default_dirs()
 
-def save_parameters(filename, **kwargs):
-    filepath = Path(cons.DATASET_METADATA_DIR, filename)
-    mdf = MetaData()
-    mdf.paremeters = json.dumps(kwargs)
-    meta_data_file_name = mdf.save(filepath)
-
-    git_proc = git.run_git("add", meta_data_file_name)
-
-    result = git_proc.wait()
-    if result != 0:
-        message = f"Unable to run 'git add {meta_data_file_name} {filename}' Exit code: {result}\n"
-        if git_proc.stderr:
-            message += f"{git_proc.stderr.read()}\n"
-        logging.error(message)
-
-def load_parameters(filename) -> dict:
-    filepath = Path(cons.DATASET_METADATA_DIR, filename)
-    with open(filepath, 'r') as f:
-        return json.loads(f.read())
 
 def check_file(file_path: str) -> str:
     """
@@ -209,3 +191,41 @@ def check_file(file_path: str) -> str:
             sys.exit(1)
 
     return file_path
+
+
+def parameters(**kwargs):
+    parse_params = {**Parser().known_params.__dict__, **dict.fromkeys(Parser().unknown_params)}
+    for key in kwargs.keys():
+        value = None
+        try:
+            if key in parse_params:
+                value = parse_params.__getattribute__(key)
+        except:
+            pass
+
+        setattr(sys.modules['aurum'], key, value or kwargs[key])
+
+    save_parameters(filename='parameters', **{**kwargs, **parse_params})
+
+
+def save_parameters(filename, **kwargs):
+    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, "parameters")
+    filepath = Path(path, make_safe_filename(filename))
+    mdf = MetaData()
+    mdf.parameters = json.dumps(kwargs)
+    meta_data_file_name = mdf.save(filepath)
+
+    git_proc = git.run_git("add", meta_data_file_name)
+
+    result = git_proc.wait()
+    if result != 0:
+        message = f"Unable to run 'git add {meta_data_file_name} {filename}' Exit code: {result}\n"
+        if git_proc.stderr:
+            message += f"{git_proc.stderr.read()}\n"
+        logging.error(message)
+
+
+def load_parameters(filename) -> dict:
+    filepath = Path(cons.DATASET_METADATA_DIR, filename)
+    with open(filepath, 'r') as f:
+        return json.loads(f.read())
