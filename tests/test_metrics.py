@@ -4,29 +4,19 @@ import shutil
 import sys
 import tracemalloc
 
-try:
-    import aurum as au
-    from aurum.constants import REPOSITORY_DIR
-    from aurum.metadata import load_metrics
-except ImportError:
-    import sys
-
-    sys.path.append("../aurum")
-    import aurum as au
-    from aurum.constants import REPOSITORY_DIR
-    from aurum.metadata import load_metrics
+import aurum as au
+from aurum.constants import REPOSITORY_DIR
+from aurum.metadata import load_metrics
 
 
 class TestMetrics(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
         tracemalloc.start()
         au.base.run_init(argparse.Namespace())
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
