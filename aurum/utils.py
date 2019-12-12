@@ -23,3 +23,7 @@ def make_safe_filename(s):
             return "_"
 
     return "".join(safe_char(c) for c in s).rstrip("_")
+
+
+def size_in_gb(size):
+    return f"{size / float(1 << 30)} GB"

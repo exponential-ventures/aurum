@@ -73,3 +73,6 @@ def data_command_checker(parser: argparse.ArgumentParser):
 
     if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
         parser.error(f"Path '.au' does not exist, please run au init")
+
+def save_metrics():
+    pass
