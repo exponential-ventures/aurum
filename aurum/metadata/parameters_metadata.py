@@ -23,6 +23,8 @@
 
 import hashlib
 import os
+import json
+import ntpath
 from datetime import datetime
 
 from aurum import constants as cons
@@ -43,7 +45,7 @@ class ParameterMetaData(MetaData):
     """
 
     def __init__(self, file_name: str = '') -> None:
-        self.parent_hash = None
+        self.parent_file_name = None
         self.timestamp = datetime.now()
 
         if file_name != '':
@@ -55,11 +57,21 @@ class ParameterMetaData(MetaData):
         self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     def save(self, destination: str = None) -> str:
+        create_file = True
 
-        if destination is None:
-            destination = gen_meta_file_name(str(self.timestamp), '')
+        old_parameters = load_parameters()
+        if old_parameters:
+            new_parameters = json.loads(self.parameters)
+            create_file = should_create_new_file(old_parameters, new_parameters)
+            metadata = get_parameter_metadata()
+            self.parent_file_name = ntpath.basename(metadata[0])
 
-        return super().save(destination)
+        if create_file:
+            if destination is None:
+                destination = gen_meta_file_name(str(self.timestamp), '')
+            return super().save(destination)
+
+        return None
 
 
 def get_parameter_metadata() -> (str, ParameterMetaData):
@@ -93,3 +105,35 @@ def gen_meta_file_name(meta_data_str, file_name):
     meta_data_file_name = meta_hash + ".json"
 
     return os.path.join(meta_data_dir, meta_data_file_name)
+
+
+def load_parameters() -> dict:
+    metadata = get_parameter_metadata()
+    filepath = metadata[0]
+    if filepath:
+        with open(filepath, 'r') as f:
+            root_json = json.loads(f.read())
+            return json.loads(root_json['parameters'])
+    else:
+        return {}
+
+
+def should_create_new_file(d1, d2):
+    d1_keys = set(d1.keys())
+    d2_keys = set(d2.keys())
+    intersect_keys = d1_keys.intersection(d2_keys)
+    same = set(o for o in intersect_keys if d1[o] == d2[o])
+    if (len(same) == len(d1)):
+        return False
+
+    added = d1_keys - d2_keys
+    removed = d2_keys - d1_keys
+
+    if (len(added) > 0) or (len(removed) > 0):
+        return True
+
+    for k in intersect_keys:
+        if d1[k] != d2[k]:
+            return True
+
+    return False

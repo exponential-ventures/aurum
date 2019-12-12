@@ -52,7 +52,6 @@ def running_from_git_repo() -> bool:
 
 
 def get_git_repo_root() -> str:
-
     if not running_from_git_repo():
         return ""
 

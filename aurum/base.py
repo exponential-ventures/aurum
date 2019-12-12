@@ -30,7 +30,8 @@ from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata import get_dataset_metadata, DatasetMetaData, ParameterMetaData, get_parameter_metadata
+from aurum.metadata import get_dataset_metadata, DatasetMetaData, ParameterMetaData, get_parameter_metadata, \
+    load_parameters
 from aurum.utils import make_safe_filename, gen_file_hash
 
 cwd = Path(os.getcwd())
@@ -217,22 +218,13 @@ def save_parameters(**kwargs):
     mdf.parameters = json.dumps(kwargs)
     meta_data_file_name = mdf.save()
 
-    git_proc = git.run_git("add", meta_data_file_name)
+    if meta_data_file_name:
 
-    result = git_proc.wait()
-    if result != 0:
-        message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
-        if git_proc.stderr:
-            message += f"{git_proc.stderr.read()}\n"
-        logging.error(message)
+        git_proc = git.run_git("add", meta_data_file_name)
 
-
-def load_parameters() -> dict:
-    metadata = get_parameter_metadata()
-    filepath = metadata[0]
-    if filepath:
-        with open(filepath, 'r') as f:
-            root_json = json.loads(f.read())
-            return json.loads(root_json['parameters'])
-    else:
-        return {}
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
