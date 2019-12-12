@@ -25,6 +25,8 @@ import hashlib
 import os
 import sys
 import logging
+from aurum import git
+import aurum.constants as cons
 
 
 def gen_file_hash(file_name):
@@ -52,7 +54,7 @@ def make_safe_filename(s):
 
 
 def check_inside_au():
-    # TODO: Make sure it will work from wherever it is run
-    if not os.path.exists('.au'):
+    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
+    if not os.path.exists(path):
         logging.error(f"Path '.au' does not exist, please run au init \n")
-        # sys.exit(1)
+        sys.exit(1)

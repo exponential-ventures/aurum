@@ -22,14 +22,13 @@
 ##
 
 import hashlib
-import json
 import os
 from datetime import datetime
 
 from aurum import constants as cons
 from aurum import git
 from aurum.metadata import MetaData
-from aurum.utils import gen_file_hash, make_safe_filename
+from aurum.utils import make_safe_filename
 
 
 class ParameterMetaData(MetaData):
@@ -44,10 +43,7 @@ class ParameterMetaData(MetaData):
     """
 
     def __init__(self, file_name: str = '') -> None:
-        self.file_name = file_name
-        self.file_hash = None
         self.parent_hash = None
-        self.size = 0
         self.timestamp = datetime.now()
 
         if file_name != '':
@@ -61,30 +57,20 @@ class ParameterMetaData(MetaData):
     def save(self, destination: str = None) -> str:
 
         if destination is None:
-            meta_data_str = json.dumps(self.serialize())
-            destination = gen_meta_file_name(meta_data_str, self.file_name)
-
-        if self.file_hash is None:
-            # this file path must be absolute
-            self.file_hash = gen_file_hash(
-                os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR,
-                             self.file_name))
+            destination = gen_meta_file_name(str(self.timestamp), '')
 
         return super().save(destination)
 
 
-def get_parameter_metadata(file_name: str) -> (str, ParameterMetaData):
-    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR,
-                                 make_safe_filename(file_name))
+def get_parameter_metadata() -> (str, ParameterMetaData):
+    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
 
     if os.path.exists(meta_data_dir):
         for mdf in os.listdir(meta_data_dir):
-
             mdf_path = os.path.join(meta_data_dir, mdf)
 
             mdo = ParameterMetaData(mdf_path)
-            if mdo.file_name == file_name:
-                return mdf_path, mdo
+            return mdf_path, mdo
 
     return None, None
 

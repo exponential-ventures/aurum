@@ -45,19 +45,25 @@ class Parser:
         experiment as well as easily compare metrics across experiments.
         """
         epilog = "And that's how you make your live easier. You're welcome."
-        parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
+        self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
 
-        parser.add_argument('-v', '--verbose', required=False, default=False)
-        parser.add_argument('-d', '--dry-run', required=False, default=False)
+        self.parser.add_argument('-v', '--verbose', required=False, default=False)
+        self.parser.add_argument('-d', '--dry-run', required=False, default=False)
 
         try:
-            known_params = load_parameters('parameters.json')
+            known_params = load_parameters()
         except FileNotFoundError:
             known_params = {}
 
         for param in known_params.keys():
-            parser.add_argument(f'-{param}', required=False, default=known_params[param])
+            self.parser.add_argument(f'-{param}', required=False, default=known_params[param])
 
-        self.known_params, self.unknown_params = parser.parse_known_args()
+        self.parse_args()
 
         # TODO: Save preference on verbose or dry run into the instance for easy access
+
+    def parse_args(self):
+        self.known_params, self.unknown_params = self.parser.parse_known_args()
+
+
+parser = Parser()

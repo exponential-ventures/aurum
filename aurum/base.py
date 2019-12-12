@@ -193,54 +193,42 @@ def check_file(file_path: str) -> str:
 
 
 def parameters(**kwargs):
-    from aurum.commands import Parser
+    from aurum.commands import parser as p
 
-    unknown_params = {}
-    length = len(Parser().unknown_params)
+    for param, default in kwargs.items():
+        if param not in p.known_params:
+            p.parser.add_argument(f'-{param}', required=False, default=default)
 
-    for i in range(length):
-        item = Parser().unknown_params[i]
-        if '-' in item:
-            if i + 1 <= length - 1:
-                unknown_params[item.replace('-', '')] = Parser().unknown_params[i + 1]
-            else:
-                unknown_params[item.replace('-', '')] = None
+    p.parse_args()
 
-    parse_params = {**Parser().known_params.__dict__, **unknown_params}
+    if len(p.unknown_params) > 0:
+        logging.warning(f"Unknown parameters passed to experiment are being ignored: {' '.join(p.unknown_params)}")
 
-    new_dict = {**kwargs, **parse_params}
+    new_dict = {**kwargs, **p.known_params.__dict__}
 
     for key in new_dict.keys():
         setattr(sys.modules['aurum'], key, new_dict[key])
 
-    save_parameters(filename='parameters', **new_dict)
+    save_parameters(**new_dict)
 
 
-def save_parameters(filename, **kwargs):
-    path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
-    filename = f"{make_safe_filename(filename)}.json"
-    filepath = Path(path, filename)
-
-    if not filepath.exists():
-        filepath.touch()
-
+def save_parameters(**kwargs):
     mdf = ParameterMetaData()
     mdf.parameters = json.dumps(kwargs)
-    mdf.file_name = filename
     meta_data_file_name = mdf.save()
 
     git_proc = git.run_git("add", meta_data_file_name)
 
     result = git_proc.wait()
     if result != 0:
-        message = f"Unable to run 'git add {meta_data_file_name} {filename}' Exit code: {result}\n"
+        message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
         if git_proc.stderr:
             message += f"{git_proc.stderr.read()}\n"
         logging.error(message)
 
 
-def load_parameters(filename) -> dict:
-    metadata = get_parameter_metadata(filename)
+def load_parameters() -> dict:
+    metadata = get_parameter_metadata()
     filepath = metadata[0]
     if filepath:
         with open(filepath, 'r') as f:
