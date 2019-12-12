@@ -1,7 +1,7 @@
 import shutil
 import unittest
 
-from aurum import base
+from aurum import commands, base
 
 
 class TestInitMethod(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestInitMethod(unittest.TestCase):
             shutil.rmtree(path, ignore_errors=True)
 
     def test_init(self):
-        base.au_init()
+        commands.au_init()
         for path in base.DEFAULT_DIRS:
             self.assertTrue(path.exists())
 

@@ -15,3 +15,8 @@ unit-test:
 .PHONY: ssh
 ssh:
 	docker run -it --rm --name aurum aurum:latest /bin/bash
+
+
+.PHONY: au
+au:
+	docker run -it --rm --name aurum aurum:latest au

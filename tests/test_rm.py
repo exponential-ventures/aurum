@@ -3,7 +3,7 @@ import os
 import shutil
 import unittest
 
-from aurum import base, git
+from aurum import base, git, commands
 from aurum import constants as cons
 
 
@@ -14,7 +14,7 @@ class RmTestCase(unittest.TestCase):
         for path in base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
-        base.run_init(argparse.Namespace())
+        commands.run_init(argparse.Namespace())
 
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")
@@ -30,7 +30,7 @@ class RmTestCase(unittest.TestCase):
             ],
             soft_delete=True,
         )
-        base.run_add(self.parser)
+        commands.run_add(self.parser)
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -41,7 +41,7 @@ class RmTestCase(unittest.TestCase):
         # Assert there is one metadata files
         self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 1)
 
-        base.run_rm(self.parser)
+        commands.run_rm(self.parser)
 
         # Assert there is no metadata files
         self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 0)
@@ -61,7 +61,7 @@ class RmTestCase(unittest.TestCase):
             ],
             soft_delete=True,
         )
-        base.run_rm(parser)
+        commands.run_rm(parser)
 
         with self.assertRaises(SystemExit):
             parser = argparse.Namespace(
@@ -70,7 +70,7 @@ class RmTestCase(unittest.TestCase):
                 ],
                 soft_delete=True,
             )
-            base.run_rm(parser)
+            commands.run_rm(parser)
 
 
 if __name__ == '__main__':
