@@ -35,7 +35,6 @@ from aurum.au import main
 from aurum.commands import Parser
 from aurum.base import execute_commands, save_metrics
 
-
 parser = Parser()
 
 if parser.known_params.verbose:

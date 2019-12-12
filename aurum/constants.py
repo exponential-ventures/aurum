@@ -2,3 +2,4 @@ REPOSITORY_DIR = ".au"
 
 DATASET_METADATA_DIR = "datasets"
 PARAMETER_METADATA_DIR = 'parameters'
+METRICS_METADATA_DIR = 'metrics'

@@ -31,7 +31,7 @@ from pathlib import Path
 from aurum import constants as cons
 from aurum import git
 from aurum.commands import run_init, run_rm, run_add
-from aurum.metadata import ParameterMetaData
+from aurum.metadata import ParameterMetaData, MetricsMetaData
 from aurum.utils import size_in_gb
 
 cwd = Path(os.getcwd())
@@ -153,8 +153,7 @@ def register_metrics(**kwargs):
                        }
 
     metrics = {**kwargs, **hardware_metric}
-    # save_metrics('metrics', **metrics)
-    print(metrics)
+    save_metrics(**metrics)
 
 
 def gpu_info():
@@ -183,5 +182,18 @@ def gpu_info():
     return info
 
 
-def save_metrics():
-    pass
+def save_metrics(**kwargs):
+    mdf = MetricsMetaData()
+    mdf.metrics = json.dumps(kwargs)
+    meta_data_file_name = mdf.save()
+
+    if meta_data_file_name:
+
+        git_proc = git.run_git("add", meta_data_file_name)
+
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
