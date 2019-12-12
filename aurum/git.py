@@ -22,33 +22,59 @@
 ##
 
 import logging
+import os
+import subprocess
 import sys
-from subprocess import Popen, PIPE
 
 
 def check_git():
-    process = run_git('--version')
-    output = process.communicate()[0].decode('utf-8')
+    process = run_git("--version")
+    output = process.communicate()[0].decode("utf-8")
 
-    if "git version" in output:
-        logging.debug("Git found.")
-        return
+    if "git version" not in output:
+        logging.error("Git not installed. Aborting.")
+        sys.exit(1)
 
-    logging.error("Git not installed. Aborting.")
-    sys.exit(1)
+    logging.debug("Git found.")
+
+
+def running_from_git_repo() -> bool:
+    process = subprocess.Popen(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        cwd=os.getcwd(),
+    )
+    output, _ = process.communicate()
+    output = output.decode("utf-8")
+
+    return str(output) == "true\n"
+
+
+def get_git_repo_root() -> str:
+
+    if not running_from_git_repo():
+        return ""
+
+    process = run_git(
+        "rev-parse",
+        "--show-toplevel"
+    )
+
+    output, _ = process.communicate()
+    return output.decode("utf-8").replace("\n", "/")
 
 
 def init():
-    run_git('init').wait()
+    run_git("init").wait()
 
 
 def rm(filepath, soft_delete: bool = True):
-
     if soft_delete:
-        run_git('rm', '--cached', filepath).wait()
+        run_git("rm", "--cached", filepath).wait()
     else:
-        run_git('rm', filepath).wait()
+        run_git("rm", filepath).wait()
 
 
 def run_git(*args):
-    return Popen(['git'] + list(args), stdout=PIPE)
+    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE)

@@ -23,121 +23,53 @@
 import argparse
 import logging
 import os
-import shutil
-import sys
 from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata.dataset_meta_data import DatasetMetaData, get_dataset_metadata
-from aurum.utils import make_safe_filename
+from aurum.commands import run_init, run_rm, run_add
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs", cwd / cons.DATASET_METADATA_DIR]
+DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
+                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)]
 
 
-def execute_commands(parser: argparse.Namespace):
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parser.verbose else logging.WARNING)
+def execute_commands(parser: argparse.ArgumentParser) -> None:
+    parsed = parser.parse_args()
 
-    logging.debug("Parser arguments: {}".format(parser))
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parsed.verbose else logging.WARNING)
+
+    logging.debug(f"Parser arguments: {parsed}")
 
     git.check_git()
 
-    if not hasattr(parser, "subcommand"):
-        logging.error(f"No command was passed in \n")
-        sys.exit(1)
+    if os.getcwd().startswith(os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)):
+        parser.error(f"Cannot run commands from inside '.au' folder")
 
-    if parser.subcommand == "init":
-        run_init(parser)
-    elif parser.subcommand == 'data':
-        if parser.subcommand2 == 'rm':
-            run_rm(parser)
-        if parser.subcommand2 == 'add':
-            run_add(parser)
+    if not hasattr(parsed, "subcommand"):
+        parser.error(f"No command was passed in")
 
+    if parsed.subcommand == "init":
+        run_init(parsed)
+    elif parsed.subcommand == "data":
 
-def run_init(parser: argparse.Namespace):
-    logging.info("Initializing git...")
-    git.init()
-
-    logging.info("Initializing aurum...")
-    au_init()
-
-    logging.debug("Repository {} initialized.".format(cwd))
-
-
-def run_add(parser: argparse.Namespace):
-    logging.debug(f"Adding files to aurum: {parser.files}")
-
-    if not os.path.exists('.au'):
-        logging.error(f"Path '.au' does not exist, please run au init \n")
-        sys.exit(1)
-
-    for f in parser.files:
-        if not os.path.exists(f):
-            logging.error(f"Path '{f}' does not exist! \n")
-            sys.exit(1)
-
-        if not os.path.isfile(f):
-            logging.error(f"Path '{f}' must be a file! \n")
-            sys.exit(1)
-
-        mdf = DatasetMetaData()
-        mdf.file_name = f
-        mdf.size = os.path.getsize(f)
-        meta_data_file_name = mdf.save()
-
-        git_proc = git.run_git("add", meta_data_file_name, f, )
-
-        result = git_proc.wait()
-
-        if result != 0:
-            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {result}\n"
-            if git_proc.stderr:
-                message += f"{git_proc.stderr.read()}\n"
-
-            logging.error(message)
-            sys.exit(1)
-
-
-def run_rm(parser):
-    for filepath in parser.files:
-        logging.info(f"Removing {filepath} from git")
-        git.rm(filepath, soft_delete=parser.soft_delete)
-        logging.info(f"{filepath} removed from git")
-
-        meta_data_path, _ = get_dataset_metadata(filepath)
-
-        if meta_data_path:
-
-            logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
-
-            git.rm(meta_data_path, soft_delete=parser.soft_delete)
-
-            # might have been removed by git, might not.
-            if os.path.exists(meta_data_path):
-                os.remove(meta_data_path)
-
-            # remove parent dir if empty to avoid lots of empty dirs.
-            parent_dir = os.path.join(cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
-            if len(os.listdir(parent_dir)) <= 1:
-                shutil.rmtree(parent_dir, ignore_errors=True)
-
-            logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
-
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":
+            data_command_checker(parser)
+            run_rm(parsed)
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "add":
+            data_command_checker(parser)
+            run_add(parsed)
         else:
-            logging.warning(f"Unable to find metadata for file: '{filepath}' ")
+            parser.error("Unknown command for data")
 
 
-def create_default_dirs():
-    for path in DEFAULT_DIRS:
-        if path.exists():
-            logging.error("Can't create {} directory. Already exists.".format(path))
-            sys.exit(1)
-        logging.debug(f"Creating dir {path}")
-        os.makedirs(path)
+def data_command_checker(parser: argparse.ArgumentParser):
 
+    if not git.running_from_git_repo():
+        parser.error(f"You are not running from inside a au repository")
 
-def au_init():
-    create_default_dirs()
+    repo_root = git.get_git_repo_root()
+
+    if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
+        parser.error(f"Path '.au' does not exist, please run au init")
