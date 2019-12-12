@@ -44,7 +44,7 @@ class DatasetMetaData(MetaData):
         if self.file_hash is None:
             # this file path must be absolute
             self.file_hash = gen_file_hash(os.path.join(git.get_git_repo_root(), self.file_name))
-
+      
         return super().save(destination)
 
 

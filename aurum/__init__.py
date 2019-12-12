@@ -27,9 +27,15 @@ __license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
 __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
+import logging
 import platform
 import psutil
 from pynvml import *
+
+from aurum.base import execute_commands, save_parameters, parameters
+from aurum.metadata import load_parameters
+from aurum.au import main
+from aurum.commands import Parser
 from aurum.base import execute_commands, save_metrics
 from aurum.utils import size_in_gb
 
@@ -97,3 +103,11 @@ def gpu_info():
     nvmlShutdown()
 
     return info
+
+
+parser = Parser()
+
+if parser.known_params.verbose:
+    logging.setLevel(logging.DEBUG)
+
+__all__ = [execute_commands, save_parameters, load_parameters, parameters]
