@@ -1,3 +1,4 @@
 REPOSITORY_DIR = ".au"
 
 DATASET_METADATA_DIR = "datasets"
+REQUIREMENTS_METADATA_DIR = "requirements"
