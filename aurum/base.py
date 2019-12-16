@@ -21,10 +21,10 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
+import json
 import logging
 import os
 import sys
-import json
 from pathlib import Path
 
 from aurum import constants as cons
@@ -56,7 +56,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
         parser.error(f"No command was passed in")
 
     if parsed.subcommand == "init":
-        run_init(parsed)
+        run_init()
     elif parsed.subcommand == "data":
 
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":

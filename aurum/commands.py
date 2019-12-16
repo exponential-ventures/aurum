@@ -36,8 +36,8 @@ import sys
 from aurum import constants as cons, base
 from aurum import git
 from aurum.metadata import get_dataset_metadata, DatasetMetaData, load_parameters
+from aurum.singleton import SingletonDecorator
 from aurum.utils import make_safe_filename, check_inside_au
-from aurum.common import SingletonDecorator
 
 
 @SingletonDecorator
@@ -75,7 +75,7 @@ class Parser:
 parser = Parser()
 
 
-def run_init(parser: argparse.Namespace) -> None:
+def run_init() -> None:
     logging.info("Initializing git...")
     git.init()
 
@@ -85,8 +85,8 @@ def run_init(parser: argparse.Namespace) -> None:
     logging.debug(f"Repository {base.cwd} initialized.")
 
 
-def run_add(parser: argparse.Namespace) -> None:
-    for f in parser.files:
+def run_add(parsed_result: argparse.Namespace) -> None:
+    for f in parsed_result.files:
 
         full_f = os.path.join(os.getcwd(), f)
         f = check_file(f)
@@ -108,16 +108,16 @@ def run_add(parser: argparse.Namespace) -> None:
             logging.error(message)
             sys.exit(1)
 
-    sys.stdout.write(f"Added: {parser.files}\n")
+    sys.stdout.write(f"Added: {parsed_result.files}\n")
 
 
-def run_rm(parser) -> None:
-    for filepath in parser.files:
+def run_rm(parsed_result) -> None:
+    for filepath in parsed_result.files:
 
         filepath = check_file(filepath)
 
         logging.info(f"Removing {filepath} from git")
-        git.rm(filepath, soft_delete=parser.soft_delete)
+        git.rm(filepath, soft_delete=parsed_result.soft_delete)
         logging.info(f"{filepath} removed from git")
 
         meta_data_path, _ = get_dataset_metadata(filepath)
@@ -126,7 +126,7 @@ def run_rm(parser) -> None:
 
             logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
 
-            git.rm(meta_data_path, soft_delete=parser.soft_delete)
+            git.rm(meta_data_path, soft_delete=parsed_result.soft_delete)
 
             # might have been removed by git, might not.
             if os.path.exists(meta_data_path):

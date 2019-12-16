@@ -22,7 +22,7 @@ class TestParameters(unittest.TestCase):
     def setUpClass(cls):
         tracemalloc.start()
         cls.current_dir = os.getcwd()
-        au.base.run_init(argparse.Namespace())
+        au.base.run_init()
 
     @classmethod
     def tearDownClass(cls):

@@ -2,7 +2,7 @@ import logging
 import sys
 from tempfile import TemporaryFile
 
-from aurum.common import SingletonMixin
+from aurum.singleton import SingletonDecorator
 
 
 class tee:
@@ -23,7 +23,8 @@ class tee:
         self.stream.flush()
 
 
-class LoggingTracker(SingletonMixin):
+@SingletonDecorator
+class LoggingTracker:
 
     def __init__(self) -> None:
         super().__init__()

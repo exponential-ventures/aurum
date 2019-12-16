@@ -14,7 +14,7 @@ class RmTestCase(unittest.TestCase):
         for path in base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
-        commands.run_init(argparse.Namespace())
+        commands.run_init()
 
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")

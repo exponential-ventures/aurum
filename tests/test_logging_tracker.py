@@ -22,7 +22,6 @@ class LoggingTrackerTestCase(unittest.TestCase):
         self.assertEqual(c, "hello world\n")
 
     def test_logging_stdout(self):
-
         lt = LoggingTracker()
         logging.critical("hello world")
         lt.stdout.temp_file.seek(0)
