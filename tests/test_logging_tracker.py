@@ -1,3 +1,4 @@
+import logging
 import sys
 import unittest
 
@@ -18,6 +19,14 @@ class LoggingTrackerTestCase(unittest.TestCase):
         print("hello world", file=sys.stderr)
         lt.stderr.temp_file.seek(0)
         c = lt.stderr.temp_file.read()
+        self.assertEqual(c, "hello world\n")
+
+    def test_logging_stdout(self):
+
+        lt = LoggingTracker()
+        logging.critical("hello world")
+        lt.stdout.temp_file.seek(0)
+        c = lt.stdout.temp_file.read()
         self.assertEqual(c, "hello world\n")
 
 
