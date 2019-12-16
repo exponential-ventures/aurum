@@ -89,8 +89,8 @@ class Theorem:
         self.parameters_changed = False
 
     def has_any_change(self):
-        return self.requirements_changed or self.code_changed or self.dataset_changed or self.parameters_changed \
-               or self.metrics_changed
+        return self.requirements_changed is not False or self.code_changed is not False or \
+               self.dataset_changed is not False or self.parameters_changed is not False 
 
     def requirements_did_change(self, requirements_metadata_location_hash: str) -> None:
         self.requirements_changed = requirements_metadata_location_hash
