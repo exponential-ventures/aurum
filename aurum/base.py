@@ -36,9 +36,14 @@ from aurum.utils import size_in_gb
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
-                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
-                cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)]
+DEFAULT_DIRS = [
+    cwd / cons.REPOSITORY_DIR,
+    cwd / "src",
+    cwd / "logs",
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+]
 
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
