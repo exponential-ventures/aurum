@@ -23,11 +23,14 @@
 import argparse
 import logging
 import os
+import sys
+import json
 from pathlib import Path
 
 from aurum import constants as cons
 from aurum import git
 from aurum.commands import run_init, run_rm, run_add
+from aurum.metadata import ParameterMetaData
 
 cwd = Path(os.getcwd())
 
@@ -37,13 +40,15 @@ DEFAULT_DIRS = [
     cwd / "logs",
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
 ]
 
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
     parsed = parser.parse_args()
 
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG if parsed.verbose else logging.WARNING)
+    logging.basicConfig(format="%(levelname)s: %(message)s",
+                        level=logging.DEBUG if parsed.verbose else logging.WARNING)
 
     logging.debug(f"Parser arguments: {parsed}")
 
@@ -70,7 +75,6 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
 
 def data_command_checker(parser: argparse.ArgumentParser):
-
     if not git.running_from_git_repo():
         parser.error(f"You are not running from inside a au repository")
 
@@ -78,3 +82,40 @@ def data_command_checker(parser: argparse.ArgumentParser):
 
     if not os.path.exists(os.path.join(repo_root, cons.REPOSITORY_DIR)):
         parser.error(f"Path '.au' does not exist, please run au init")
+
+
+def parameters(**kwargs):
+    from aurum.commands import parser as p
+
+    for param, default in kwargs.items():
+        if param not in p.known_params:
+            p.parser.add_argument(f'-{param}', required=False, default=default)
+
+    p.parse_args()
+
+    if len(p.unknown_params) > 0:
+        logging.warning(f"Unknown parameters passed to experiment are being ignored: {' '.join(p.unknown_params)}")
+
+    new_dict = {**kwargs, **p.known_params.__dict__}
+
+    for key in new_dict.keys():
+        setattr(sys.modules['aurum'], key, new_dict[key])
+
+    save_parameters(**new_dict)
+
+
+def save_parameters(**kwargs):
+    mdf = ParameterMetaData()
+    mdf.parameters = json.dumps(kwargs)
+    meta_data_file_name = mdf.save()
+
+    if meta_data_file_name:
+
+        git_proc = git.run_git("add", meta_data_file_name)
+
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
