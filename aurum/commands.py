@@ -75,6 +75,43 @@ class Parser:
 parser = Parser()
 
 
+@SingletonDecorator
+class InitExperiment:
+    """
+    Singleton class responsible act as a single source of truth regarding the experiment change's state
+    Eg. inform that the source-code has changed
+    """
+
+    def __init__(self):
+        self.requirements_changed = False
+        self.code_changed = False
+        self.dataset_changed = False
+        self.parameters_changed = False
+        self.metrics_changed = False
+
+    def has_any_change(self):
+        return self.requirements_changed or self.code_changed or self.dataset_changed or self.parameters_changed \
+               or self.metrics_changed
+
+    def requirements_did_change(self):
+        self.requirements_changed = True
+
+    def code_did_change(self):
+        self.code_did_change = True
+
+    def dataset_did_change(self):
+        self.dataset_changed = True
+
+    def parameters_did_change(self):
+        self.parameters_changed = True
+
+    def metrics_did_change(self):
+        self.metrics_changed = True
+
+
+init = InitExperiment()
+
+
 def run_init(parser: argparse.Namespace) -> None:
     logging.info("Initializing git...")
     git.init()
