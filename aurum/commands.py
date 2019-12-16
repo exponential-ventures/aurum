@@ -76,7 +76,7 @@ parser = Parser()
 
 
 @SingletonDecorator
-class VersionTheorem:
+class Theorem:
     """
     Singleton class responsible act as a single source of truth regarding the experiment change's state
     Eg. inform that the source-code has changed
@@ -105,7 +105,7 @@ class VersionTheorem:
         self.parameters_changed = parameters_metadata_location_hash
 
 
-init = VersionTheorem()
+theorem = Theorem()
 
 
 def run_init(parser: argparse.Namespace) -> None:

@@ -32,7 +32,7 @@ import logging
 from aurum.base import execute_commands, save_parameters, parameters
 from aurum.metadata import load_parameters
 from aurum.au import main
-from aurum.commands import Parser, init
+from aurum.commands import Parser, theorem
 
 parser = Parser()
 
