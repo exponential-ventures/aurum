@@ -37,7 +37,7 @@ from aurum import constants as cons, base
 from aurum import git
 from aurum.metadata import get_dataset_metadata, DatasetMetaData, load_parameters
 from aurum.utils import make_safe_filename, check_inside_au
-from aurum.singleton import SingletonDecorator
+from aurum.common import SingletonDecorator
 
 
 @SingletonDecorator
