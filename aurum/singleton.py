@@ -21,22 +21,13 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-__author__ = "Adriano Marques, Nathan Martins, Thales Ribeiro"
-__copyright__ = "Copyright (C) 2019 Exponential Ventures LLC"
-__license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
-__url__ = "https://github.com/exponential-ventures/aurum"
-__version__ = "0.1"
 
-import logging
+class SingletonDecorator:
+    def __init__(self, klass):
+        self.klass = klass
+        self.instance = None
 
-from aurum.base import execute_commands, save_parameters, parameters
-from aurum.metadata import load_parameters
-from aurum.au import main
-from aurum.commands import Parser
-
-parser = Parser()
-
-if parser.known_params.verbose:
-    logging.setLevel(logging.DEBUG)
-
-__all__ = [execute_commands, save_parameters, load_parameters, parameters]
+    def __call__(self, *args, **kwargs):
+        if self.instance is None:
+            self.instance = self.klass(*args, **kwargs)
+        return self.instance
