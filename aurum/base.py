@@ -126,26 +126,18 @@ def register_metrics(**kwargs):
     hardware_metric = {'environment': {'python_version': platform.python_version()},
                        'hardware': {
                            'swap_memory': {
-                               'total': size_in_gb(swap_mem.total),
-                               'used': size_in_gb(swap_mem.used),
-                               'free': size_in_gb(swap_mem.free)
+                               'total': size_in_gb(swap_mem.total)
                            },
                            'virtual_memory': {
-                               'total': size_in_gb(virtual_memory.total),
-                               'free': size_in_gb(virtual_memory.free),
-                               'used': size_in_gb(virtual_memory.used),
-                               'used_percent': virtual_memory.percent
+                               'total': size_in_gb(virtual_memory.total)
                            },
                            'cpu': {
                                'physical_cores': psutil.cpu_count(logical=False),
                                'total_cores': psutil.cpu_count(),
                                'frequency': psutil.cpu_freq().current,
                            },
-                           'disk_usage': {
+                           'disk': {
                                'total': size_in_gb(disk_usage.total),
-                               'used': size_in_gb(disk_usage.used),
-                               'free': size_in_gb(disk_usage.free),
-                               'used_percent': disk_usage.percent
                            },
                            'gpu(s)': gpu_info()
                        }
@@ -174,8 +166,6 @@ def gpu_info():
         memory = nvmlDeviceGetMemoryInfo(handle)
         info['device'][i] = nvmlDeviceGetName(handle)
         info['device'][i]['memory']['total'] = size_in_gb(memory.total)
-        info['device'][i]['memory']['free'] = size_in_gb(memory.free)
-        info['device'][i]['memory']['used'] = size_in_gb(memory.used)
 
     nvmlShutdown()
 
