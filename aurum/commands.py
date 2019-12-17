@@ -21,12 +21,6 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-__author__ = "Adriano Marques, Nathan Martins, Thales Ribeiro"
-__copyright__ = "Copyright (C) 2019 Exponential Ventures LLC"
-__license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
-__url__ = "https://github.com/exponential-ventures/aurum"
-__version__ = "0.1"
-
 import argparse
 import logging
 import os
