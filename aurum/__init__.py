@@ -34,6 +34,7 @@ from aurum.metadata import load_parameters
 from aurum.au import main
 from aurum.experiment_parser import ExperimentArgParser
 from aurum.theorem import Theorem
+from aurum.time_tracker import time_tracker
 
 parser = ExperimentArgParser()
 

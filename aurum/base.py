@@ -36,6 +36,7 @@ from aurum import git
 from aurum.commands import run_init, run_rm, run_add
 from aurum.metadata import ParameterMetaData, MetricsMetaData
 from aurum.utils import size_in_gb
+from aurum.time_tracker import time_tracker
 
 cwd = Path(os.getcwd())
 
@@ -132,6 +133,7 @@ def register_metrics(**kwargs):
     disk_usage = psutil.disk_usage('/')
 
     hardware_metric = {'environment': {'python_version': platform.python_version()},
+                       'run time': str(time_tracker.log_time()),
                        'hardware': {
                            'swap_memory': {
                                'total': size_in_gb(swap_mem.total)
