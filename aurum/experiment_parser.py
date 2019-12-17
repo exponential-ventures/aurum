@@ -6,10 +6,11 @@ from aurum.utils import check_inside_au
 
 
 @SingletonDecorator
-class Parser:
+class ExperimentArgParser:
     def __init__(self):
         # check_inside_au()
 
+        # TODO: Change this description so that it reflects what the ExperimentArgParser really is.
         description = """Aurum is a new and simplified approach for data scientists to
         keep track of data and code without having to get another PhD for it. Aurum
         keeps track of all code and data changes, and lets you easily reproduce any
