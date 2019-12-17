@@ -29,14 +29,14 @@ __version__ = "0.1"
 
 import logging
 
-from aurum.base import execute_commands, save_parameters, parameters
+from aurum.base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
 from aurum.metadata import load_parameters
 from aurum.au import main
-from aurum.commands import Parser
+from aurum.commands import Parser, theorem
 
 parser = Parser()
 
 if parser.known_params.verbose:
     logging.setLevel(logging.DEBUG)
 
-__all__ = [execute_commands, save_parameters, load_parameters, parameters]
+__all__ = [execute_commands, save_parameters, load_parameters, parameters, register_metrics]

@@ -23,6 +23,10 @@
 import argparse
 import json
 import logging
+import json
+import platform
+import psutil
+from pynvml import *
 import os
 import sys
 from pathlib import Path
@@ -30,13 +34,19 @@ from pathlib import Path
 from aurum import constants as cons
 from aurum import git
 from aurum.commands import run_init, run_rm, run_add
-from aurum.metadata import ParameterMetaData
+from aurum.metadata import ParameterMetaData, MetricsMetaData
+from aurum.utils import size_in_gb
 
 cwd = Path(os.getcwd())
 
-DEFAULT_DIRS = [cwd / cons.REPOSITORY_DIR, cwd / "src", cwd / "logs",
-                cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
-                cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)]
+DEFAULT_DIRS = [
+    cwd / cons.REPOSITORY_DIR,
+    cwd / "src",
+    cwd / "logs",
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+]
 
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
@@ -102,6 +112,77 @@ def parameters(**kwargs):
 def save_parameters(**kwargs):
     mdf = ParameterMetaData()
     mdf.parameters = json.dumps(kwargs)
+    meta_data_file_name = mdf.save()
+
+    if meta_data_file_name:
+
+        git_proc = git.run_git("add", meta_data_file_name)
+
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
+
+
+def register_metrics(**kwargs):
+    swap_mem = psutil.swap_memory()
+    virtual_memory = psutil.virtual_memory()
+    disk_usage = psutil.disk_usage('/')
+
+    hardware_metric = {'environment': {'python_version': platform.python_version()},
+                       'hardware': {
+                           'swap_memory': {
+                               'total': size_in_gb(swap_mem.total)
+                           },
+                           'virtual_memory': {
+                               'total': size_in_gb(virtual_memory.total)
+                           },
+                           'cpu': {
+                               'physical_cores': psutil.cpu_count(logical=False),
+                               'total_cores': psutil.cpu_count(),
+                               'frequency': psutil.cpu_freq().current,
+                           },
+                           'disk': {
+                               'total': size_in_gb(disk_usage.total),
+                           },
+                           'gpu(s)': gpu_info()
+                       }
+
+                       }
+
+    metrics = {**kwargs, **hardware_metric}
+    save_metrics(**metrics)
+
+
+def gpu_info():
+    info = {}
+    try:
+        nvmlInit()
+    except:
+        info['no-gpu'] = 'No Nvidia GPU detected'
+        return info
+
+    device_count = nvmlDeviceGetCount()
+
+    info['driver_version'] = nvmlSystemGetDriverVersion().decode()
+    info['device_count'] = device_count
+    info['device'] = {}
+    for i in range(device_count):
+        handle = nvmlDeviceGetHandleByIndex(i)
+        memory = nvmlDeviceGetMemoryInfo(handle)
+        info['device'][i] = nvmlDeviceGetName(handle)
+        info['device'][i]['memory']['total'] = size_in_gb(memory.total)
+
+    nvmlShutdown()
+
+    return info
+
+
+def save_metrics(**kwargs):
+    mdf = MetricsMetaData()
+    mdf.metrics = json.dumps(kwargs)
     meta_data_file_name = mdf.save()
 
     if meta_data_file_name:

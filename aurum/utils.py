@@ -53,6 +53,10 @@ def make_safe_filename(s):
     return "".join(safe_char(c) for c in s).rstrip("_")
 
 
+def size_in_gb(size):
+    return f"{size / float(1 << 30)} GB"
+
+
 def check_inside_au():
     path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
     if not os.path.exists(path):
