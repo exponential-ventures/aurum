@@ -21,94 +21,24 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-__author__ = "Adriano Marques, Nathan Martins, Thales Ribeiro"
-__copyright__ = "Copyright (C) 2019 Exponential Ventures LLC"
-__license__ = "GNU LESSER GENERAL PUBLIC LICENSE 2.0"
-__url__ = "https://github.com/exponential-ventures/aurum"
-__version__ = "0.1"
-
 import argparse
 import logging
 import os
 import shutil
 import sys
 
-from aurum import constants as cons, base
-from aurum import git
-from aurum.metadata import get_dataset_metadata, DatasetMetaData, load_parameters
-from aurum.utils import make_safe_filename, check_inside_au
-from aurum.singleton import SingletonDecorator
+from aurum import constants as cons, base, git
+from .metadata import get_dataset_metadata, DatasetMetaData
+from .experiment_parser import ExperimentArgParser
+from .theorem import Theorem
+from .utils import make_safe_filename
 
-
-@SingletonDecorator
-class Parser:
-    def __init__(self):
-        check_inside_au()
-
-        description = """Aurum is a new and simplified approach for data scientists to
-        keep track of data and code without having to get another PhD for it. Aurum
-        keeps track of all code and data changes, and lets you easily reproduce any
-        experiment as well as easily compare metrics across experiments.
-        """
-        epilog = "And that's how you make your live easier. You're welcome."
-        self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
-
-        self.parser.add_argument('-v', '--verbose', required=False, default=False)
-        self.parser.add_argument('-d', '--dry-run', required=False, default=False)
-
-        try:
-            known_params = load_parameters()
-        except FileNotFoundError:
-            known_params = {}
-
-        for param in known_params.keys():
-            self.parser.add_argument(f'-{param}', required=False, default=known_params[param])
-
-        self.parse_args()
-
-        # TODO: Save preference on verbose or dry run into the instance for easy access
-
-    def parse_args(self):
-        self.known_params, self.unknown_params = self.parser.parse_known_args()
-
-
-parser = Parser()
-
-
-@SingletonDecorator
-class Theorem:
-    """
-    Singleton class responsible act as a single source of truth regarding the experiment change's state
-    Eg. inform that the source-code has changed
-    """
-
-    def __init__(self):
-        self.requirements_changed = False
-        self.code_changed = False
-        self.dataset_changed = False
-        self.parameters_changed = False
-
-    def has_any_change(self):
-        return self.requirements_changed is not False or self.code_changed is not False or \
-               self.dataset_changed is not False or self.parameters_changed is not False 
-
-    def requirements_did_change(self, requirements_metadata_location_hash: str) -> None:
-        self.requirements_changed = requirements_metadata_location_hash
-
-    def code_did_change(self, code_metadata_location_hash: str) -> None:
-        self.code_changed = code_metadata_location_hash
-
-    def dataset_did_change(self, dataset_metadata_location_hash: str) -> None:
-        self.dataset_changed = dataset_metadata_location_hash
-
-    def parameters_did_change(self, parameters_metadata_location_hash: str) -> None:
-        self.parameters_changed = parameters_metadata_location_hash
-
+parser = ExperimentArgParser()
 
 theorem = Theorem()
 
 
-def run_init(parser: argparse.Namespace) -> None:
+def run_init() -> None:
     logging.info("Initializing git...")
     git.init()
 
@@ -118,8 +48,8 @@ def run_init(parser: argparse.Namespace) -> None:
     logging.debug(f"Repository {base.cwd} initialized.")
 
 
-def run_add(parser: argparse.Namespace) -> None:
-    for f in parser.files:
+def run_add(parsed_result: argparse.Namespace) -> None:
+    for f in parsed_result.files:
 
         full_f = os.path.join(os.getcwd(), f)
         f = check_file(f)
@@ -141,16 +71,16 @@ def run_add(parser: argparse.Namespace) -> None:
             logging.error(message)
             sys.exit(1)
 
-    sys.stdout.write(f"Added: {parser.files}\n")
+    sys.stdout.write(f"Added: {parsed_result.files}\n")
 
 
-def run_rm(parser) -> None:
-    for filepath in parser.files:
+def run_rm(parsed_result) -> None:
+    for filepath in parsed_result.files:
 
         filepath = check_file(filepath)
 
         logging.info(f"Removing {filepath} from git")
-        git.rm(filepath, soft_delete=parser.soft_delete)
+        git.rm(filepath, soft_delete=parsed_result.soft_delete)
         logging.info(f"{filepath} removed from git")
 
         meta_data_path, _ = get_dataset_metadata(filepath)
@@ -159,7 +89,7 @@ def run_rm(parser) -> None:
 
             logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
 
-            git.rm(meta_data_path, soft_delete=parser.soft_delete)
+            git.rm(meta_data_path, soft_delete=parsed_result.soft_delete)
 
             # might have been removed by git, might not.
             if os.path.exists(meta_data_path):

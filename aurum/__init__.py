@@ -32,11 +32,12 @@ import logging
 from aurum.base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
 from aurum.metadata import load_parameters
 from aurum.au import main
-from aurum.commands import Parser, theorem
+from aurum.experiment_parser import ExperimentArgParser
+from aurum.theorem import Theorem
 
-parser = Parser()
+parser = ExperimentArgParser()
 
 if parser.known_params.verbose:
-    logging.setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.DEBUG)
 
 __all__ = [execute_commands, save_parameters, load_parameters, parameters, register_metrics]

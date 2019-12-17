@@ -11,7 +11,7 @@ class AddTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        commands.run_init(argparse.Namespace())
+        commands.run_init()
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")
 

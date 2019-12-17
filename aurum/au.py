@@ -29,6 +29,8 @@ __version__ = "0.1"
 
 import argparse
 
+from aurum.logging_tracker import LoggingTracker
+
 from aurum import execute_commands
 
 
@@ -95,3 +97,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+else:
+    lt = LoggingTracker()
