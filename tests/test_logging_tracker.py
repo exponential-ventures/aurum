@@ -1,4 +1,5 @@
 import logging
+import shutil
 import sys
 import unittest
 
@@ -6,6 +7,11 @@ from aurum.logging_tracker import LoggingTracker
 
 
 class LoggingTrackerTestCase(unittest.TestCase):
+
+    def setUp(self) -> None:
+        super().setUp()
+        if hasattr(LoggingTracker, "instance"):
+            LoggingTracker.instance = None
 
     def test_stdout(self):
         lt = LoggingTracker()
