@@ -46,6 +46,7 @@ DEFAULT_DIRS = [
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
 ]
 
 
