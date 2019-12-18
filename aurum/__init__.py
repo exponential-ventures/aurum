@@ -29,10 +29,11 @@ __version__ = "0.1"
 
 import logging
 
-from aurum.base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
-from aurum.metadata import load_parameters
 from aurum.au import main
+from aurum.base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
+from aurum.dry_run import Dehydrator
 from aurum.experiment_parser import ExperimentArgParser
+from aurum.logging_tracker import LoggingTracker
 from aurum.theorem import Theorem
 from aurum.time_tracker import time_tracker
 
@@ -41,4 +42,9 @@ parser = ExperimentArgParser()
 if parser.known_params.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-__all__ = [execute_commands, save_parameters, load_parameters, parameters, register_metrics]
+if parser.known_params.dry_run:
+    Dehydrator().on()
+
+LoggingTracker()
+
+__all__ = [execute_commands, save_parameters, parameters, register_metrics]
