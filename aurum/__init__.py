@@ -42,9 +42,6 @@ parser = ExperimentArgParser()
 if parser.known_params.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-if parser.known_params.dry_run:
-    Dehydrator().on()
-
 LoggingTracker()
 
 __all__ = [execute_commands, save_parameters, parameters, register_metrics]
