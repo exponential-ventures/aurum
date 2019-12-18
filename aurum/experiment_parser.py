@@ -1,8 +1,11 @@
 import argparse
+import json
+import os
 
-from aurum.metadata import load_parameters
-from aurum.singleton import SingletonDecorator
-from aurum.utils import check_inside_au
+from . import constants as cons
+from . import git
+from .metadata.parameters import get_latest_parameter
+from .singleton import SingletonDecorator
 
 
 @SingletonDecorator
@@ -17,6 +20,10 @@ class ExperimentArgParser:
         experiment as well as easily compare metrics across experiments.
         """
         epilog = "And that's how you make your live easier. You're welcome."
+
+        self.known_params = None
+        self.unknown_params = None
+
         self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
 
         self.parser.add_argument('-v', '--verbose', required=False, default=False)
@@ -36,3 +43,20 @@ class ExperimentArgParser:
 
     def parse_args(self):
         self.known_params, self.unknown_params = self.parser.parse_known_args()
+
+
+def load_parameters() -> dict:
+    metadata = get_latest_parameter()
+    if metadata.file_name:
+        filepath = os.path.join(
+            git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR
+        )
+    else:
+        filepath = None
+
+    if filepath is not None:
+        with open(filepath, 'r') as f:
+            root_json = json.loads(f.read())
+            return json.loads(root_json['parameters'])
+    else:
+        return {}
