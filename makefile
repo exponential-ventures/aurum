@@ -20,3 +20,8 @@ ssh:
 .PHONY: au
 au:
 	docker run -it --rm --name aurum aurum:latest au
+
+
+.PHONY: example
+example:
+	docker run -it --rm --name aurum aurum:latest python examples/src/experiment.py
