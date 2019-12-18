@@ -29,13 +29,13 @@ __version__ = "0.1"
 
 import logging
 
-from aurum.au import main
-from aurum.base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
-from aurum.dry_run import Dehydrator
-from aurum.experiment_parser import ExperimentArgParser
-from aurum.logging_tracker import LoggingTracker
-from aurum.theorem import Theorem
-from aurum.time_tracker import time_tracker
+from .au import main
+from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
+from .dry_run import Dehydrator
+from .experiment_parser import ExperimentArgParser
+from .logging_tracker import LoggingTracker
+from .theorem import Theorem
+from .time_tracker import time_tracker
 
 parser = ExperimentArgParser()
 
