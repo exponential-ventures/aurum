@@ -2,7 +2,7 @@ import hashlib
 import logging
 import subprocess
 
-from aurum.metadata import get_latest_rmd, RequirementsMetaData
+from .metadata import get_latest_rmd, RequirementsMetaData
 
 
 def is_new_requirements() -> bool:

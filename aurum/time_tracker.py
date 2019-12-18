@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from aurum.singleton import SingletonDecorator
+from .singleton import SingletonDecorator
 
 
 @SingletonDecorator

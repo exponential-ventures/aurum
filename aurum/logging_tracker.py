@@ -2,7 +2,7 @@ import logging
 import sys
 from tempfile import TemporaryFile
 
-from aurum.singleton import SingletonDecorator
+from .singleton import SingletonDecorator
 
 
 class tee:

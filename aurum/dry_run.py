@@ -1,7 +1,7 @@
 import functools
 import logging
 
-from aurum.singleton import SingletonDecorator
+from .singleton import SingletonDecorator
 
 logger = logging.getLogger(__name__)
 

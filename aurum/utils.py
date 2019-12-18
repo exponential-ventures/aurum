@@ -22,11 +22,12 @@
 ##
 
 import hashlib
+import logging
 import os
 import sys
-import logging
-from aurum import git
-import aurum.constants as cons
+
+from . import constants as cons
+from . import git
 
 
 def gen_file_hash(file_name):
