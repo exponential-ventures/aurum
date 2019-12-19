@@ -30,20 +30,18 @@ __version__ = "0.1"
 import logging
 import sys
 
-from aurum.package_tracker import is_new_requirements
-
 from .au import main
 from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
 from .dry_run import Dehydrator
 from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
+from .package_tracker import is_new_requirements
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import check_inside_au
 
 
 def check_if_is_experiment():
-
     command = sys.argv[0]
 
     if 'au' not in command and 'unittest' not in command:
