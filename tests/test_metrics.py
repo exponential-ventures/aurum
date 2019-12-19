@@ -1,12 +1,9 @@
-import logging
 import shutil
 import tracemalloc
 import unittest
 
 import aurum as au
 from aurum.metadata.metrics import get_latest_metrics_metadata
-
-logging.getLogger().setLevel(logging.DEBUG)
 
 
 class TestMetrics(unittest.TestCase):

@@ -1,4 +1,3 @@
-import logging
 import shutil
 import subprocess
 import unittest
@@ -6,8 +5,6 @@ import unittest
 from aurum import base
 from aurum.commands import run_init
 from aurum.package_tracker import is_new_requirements
-
-logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 
 
 class PackageTrackerTestCase(unittest.TestCase):
