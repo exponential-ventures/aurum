@@ -1,4 +1,4 @@
-from aurum.singleton import SingletonDecorator
+from .singleton import SingletonDecorator
 
 
 @SingletonDecorator

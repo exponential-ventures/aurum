@@ -23,20 +23,18 @@
 import argparse
 import json
 import logging
-import json
 import platform
-import psutil
-from pynvml import *
-import os
-import sys
 from pathlib import Path
 
-from aurum import constants as cons
-from aurum import git
-from aurum.commands import run_init, run_rm, run_add
-from aurum.metadata import ParameterMetaData, MetricsMetaData
-from aurum.utils import size_in_gb
-from aurum.time_tracker import time_tracker
+import psutil
+from pynvml import *
+
+from . import constants as cons
+from . import git
+from .commands import run_init, run_rm, run_add
+from .metadata import ParameterMetaData, MetricsMetaData
+from .time_tracker import time_tracker
+from .utils import size_in_gb
 
 cwd = Path(os.getcwd())
 
@@ -48,6 +46,7 @@ DEFAULT_DIRS = [
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR)
 ]
 
 

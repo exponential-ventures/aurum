@@ -27,7 +27,7 @@ import os
 import shutil
 import sys
 
-from aurum import constants as cons, base, git
+from . import constants as cons, base, git
 from .metadata import get_dataset_metadata, DatasetMetaData
 from .experiment_parser import ExperimentArgParser
 from .theorem import Theorem

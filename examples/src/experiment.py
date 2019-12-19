@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 
-import argparse
-try:
-    import aurum as au
-except ImportError:
-    import sys
 
-    sys.path.append("../aurum")
-    import aurum as au
+import aurum as au
 
-# au.base.run_init(argparse.Namespace())
 au.parameters(a=0.01, b=1000, c=46, epochs=100, batch_size=200)
 
 print(f"Parameter a = {au.a}")
