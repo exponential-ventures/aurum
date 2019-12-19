@@ -45,6 +45,7 @@ DEFAULT_DIRS = [
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
 ]
 
@@ -182,9 +183,9 @@ def gpu_info():
 
 
 def save_metrics(**kwargs):
-    mdf = MetricsMetaData()
-    mdf.metrics = json.dumps(kwargs)
-    meta_data_file_name = mdf.save()
+    mmd = MetricsMetaData()
+    mmd.metrics = json.dumps(kwargs)
+    meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
 

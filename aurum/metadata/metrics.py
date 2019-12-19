@@ -20,7 +20,8 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-
+import json
+import logging
 import os
 
 from aurum import constants as cons
@@ -32,8 +33,8 @@ from aurum.metadata.metadata import gen_meta_file_name_from_hash
 class MetricsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.metrics = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         parent_metrics_metadata = get_latest_metrics_metadata()
@@ -48,8 +49,12 @@ class MetricsMetaData(MetaData):
         )
 
         destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
-
+        logging.debug(f"Saving metric file to: {destination}")
         return super().save(destination)
+
+    def deserialize(self, raw_json: str):
+        super().deserialize(raw_json)
+        self.metrics = json.loads(self.metrics)
 
 
 def get_latest_metrics_metadata() -> MetricsMetaData:
@@ -59,7 +64,7 @@ def get_latest_metrics_metadata() -> MetricsMetaData:
     for file in os.listdir(meta_data_dir):
 
         full_path = os.path.join(meta_data_dir, file)
-
+        logging.debug(f"Loading metric file: {full_path}")
         mmd = MetricsMetaData(full_path)
         if mmd.timestamp < newest.timestamp:
             newest = mmd

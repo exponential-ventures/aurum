@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from aurum import constants as cons
@@ -22,12 +23,17 @@ class DatasetMetaData(MetaData):
         )
 
         self.file_hash = gen_file_hash(os.path.join(git.get_git_repo_root(), self.file_name))
-
+        logging.debug(f"Saving dataset metadata file to: {destination}")
         return super().save(destination)
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
-    meta_data_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(file_name))
+    meta_data_dir = os.path.join(
+        git.get_git_repo_root(),
+        cons.REPOSITORY_DIR,
+        cons.DATASET_METADATA_DIR,
+        make_safe_filename(file_name),
+    )
 
     for mdf in os.listdir(meta_data_dir):
 

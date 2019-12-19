@@ -11,7 +11,10 @@ class MetaDataTestCase(unittest.TestCase):
         md.timestamp = datetime(2019, 12, 5, 15, 30)
         md.name = "test"
         raw_json = md.serialize()
-        self.assertEqual(raw_json, '{"timestamp": 1575559800.0, "name": "test"}')
+        self.assertEqual(
+            raw_json,
+            '{"parent_hash": null, "file_name": "", "file_hash": null, "timestamp": 1575559800.0, "name": "test"}'
+        )
 
     def test_save(self):
         md = MetaData()
@@ -19,7 +22,10 @@ class MetaDataTestCase(unittest.TestCase):
         md.name = "test"
         md.save("/tmp/a.json")
         with open("/tmp/a.json", 'r') as r:
-            self.assertEqual(r.read(), '{"timestamp": 1575559800.0, "name": "test"}')
+            self.assertEqual(
+                r.read(),
+                '{"parent_hash": null, "file_name": "", "file_hash": null, "timestamp": 1575559800.0, "name": "test"}'
+            )
 
 
 if __name__ == '__main__':

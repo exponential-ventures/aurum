@@ -89,7 +89,6 @@ class MetaData:
         """perform a serialization and save to file"""
 
         with open(destination, "w+") as f:
-            logging.info(f"saving file: {destination}")
             f.write(self.serialize())
 
         return destination

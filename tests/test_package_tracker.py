@@ -1,4 +1,3 @@
-import argparse
 import logging
 import shutil
 import subprocess
@@ -15,7 +14,7 @@ class PackageTrackerTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        run_init(argparse.Namespace())
+        run_init()
 
     def tearDown(self) -> None:
         super().tearDown()
