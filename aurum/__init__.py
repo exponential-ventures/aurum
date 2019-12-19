@@ -30,6 +30,8 @@ __version__ = "0.1"
 import logging
 import sys
 
+from aurum.package_tracker import is_new_requirements
+
 from .au import main
 from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
 from .dry_run import Dehydrator
@@ -56,6 +58,7 @@ def check_if_is_experiment():
             Dehydrator().on()
 
         LoggingTracker()
+        is_new_requirements()
 
 
 check_if_is_experiment()
