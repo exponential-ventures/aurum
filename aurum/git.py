@@ -76,5 +76,28 @@ def rm(filepath, soft_delete: bool = True):
         run_git("rm", filepath).wait()
 
 
+def add_default_dirs(default_dirs: list) -> None:
+    for p in default_dirs:
+        run_git('add', p).wait()
+
+
+def commit(commit_message: str) -> None:
+    process = run_git('commit', '-m', commit_message)
+
+    output, error = process.communicate()
+    if error:
+        logging.error(str(error))
+
+
+def last_commit_hash() -> str:
+    process = run_git('rev-parse', 'HEAD')
+
+    output, error = process.communicate()
+    if error:
+        logging.error(str(error))
+
+    return output.decode('utf-8').replace('\n', '')
+
+
 def run_git(*args):
     return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE)

@@ -32,9 +32,10 @@ from pynvml import *
 from . import constants as cons
 from . import git
 from .commands import run_init, run_rm, run_add
-from .metadata import ParameterMetaData, MetricsMetaData
+from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData
 from .time_tracker import time_tracker
 from .utils import size_in_gb
+from aurum.theorem import Theorem
 
 cwd = Path(os.getcwd())
 
@@ -196,3 +197,16 @@ def save_metrics(**kwargs):
             if git_proc.stderr:
                 message += f"{git_proc.stderr.read()}\n"
             logging.error(message)
+
+
+def end_experiment():
+    theorem = Theorem()
+    if theorem.has_any_change():
+        mdt = ExperimentMetaData()
+        git.add_default_dirs(DEFAULT_DIRS)
+        git.commit('bla, bla, bla')
+        mdt.commit_hash = git.last_commit_hash()
+        mdt.save()
+
+
+

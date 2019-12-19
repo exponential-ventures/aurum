@@ -30,7 +30,7 @@ __version__ = "0.1"
 import logging
 
 from .au import main
-from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
+from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics, end_experiment
 from .dry_run import Dehydrator
 from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
@@ -44,4 +44,4 @@ if parser.known_params.verbose:
 
 LoggingTracker()
 
-__all__ = [execute_commands, save_parameters, parameters, register_metrics]
+__all__ = [execute_commands, save_parameters, parameters, register_metrics, end_experiment]

@@ -3,3 +3,4 @@ from .dataset import DatasetMetaData, get_dataset_metadata
 from .metrics import MetricsMetaData
 from .parameters import ParameterMetaData
 from .requirements import RequirementsMetaData, get_latest_rmd
+from .experiment import ExperimentMetaData
