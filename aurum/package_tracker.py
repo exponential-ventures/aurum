@@ -5,7 +5,7 @@ import subprocess
 from .metadata import get_latest_rmd, RequirementsMetaData
 
 
-def is_new_requirements() -> bool:
+def is_new_requirements() -> (bool, str):
     """
     Run a pip freeze and create a hash to be saved in the requirements metadata, remember that we will also need to
     record the parent requirements (latest by date, if it exists) as well as all the contents of the pip freeze list
@@ -37,4 +37,4 @@ def is_new_requirements() -> bool:
         rmd.contents = output
         rmd.save()
 
-    return is_new
+    return is_new, packages_hash
