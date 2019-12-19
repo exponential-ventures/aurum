@@ -3,8 +3,6 @@ import logging
 
 from .singleton import SingletonDecorator
 
-logger = logging.getLogger(__name__)
-
 
 def log_call(func, *args, **kw):
     """
@@ -30,9 +28,7 @@ def log_call(func, *args, **kw):
 
         func_args.extend([f"{k}={v}" for k, v in kw.items()])
 
-    # print the log message
-    msg = f"[DRYRUN] call to '{func.__name__}({', '.join(func_args)})'"
-    logger.info(msg)
+    logging.debug(f"[DRYRUN] call to '{func.__name__}({', '.join(func_args)})'")
 
 
 def is_dry_run() -> bool:
