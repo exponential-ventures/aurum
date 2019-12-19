@@ -41,7 +41,7 @@ from .utils import check_inside_au
 
 
 def check_if_is_experiment():
-    breakpoint()
+
     command = sys.argv[0]
 
     if 'au' not in command and 'unittest' not in command:
