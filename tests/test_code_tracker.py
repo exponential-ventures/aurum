@@ -34,9 +34,18 @@ class TestCodeTracker(unittest.TestCase):
 
     def test_is_new_requirements_adding_requirement(self):
         self.assertFalse(is_new_code())
-        Path("src", "test.py").touch()
+        path = Path("src", "test.py")
+        path.touch()
 
         # added a new package so this is new.
+        self.assertTrue(is_new_code())
+
+        # should be false because there isn't any change
+        self.assertFalse(is_new_code())
+
+        with open(path, 'w+') as f:
+            f.write('print(foo)')
+
         self.assertTrue(is_new_code())
 
 

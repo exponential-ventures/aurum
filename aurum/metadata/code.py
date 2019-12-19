@@ -57,7 +57,8 @@ class CodeMetaData(MetaData):
 
     def deserialize(self, raw_json: str):
         super().deserialize(raw_json)
-        self.timestamp = datetime.fromtimestamp(self.timestamp)
+        if isinstance(self.timestamp, int):
+            self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     def save(self, destination: str = None) -> str:
         if destination is None:
@@ -85,11 +86,9 @@ def get_code_metadata() -> (str, CodeMetaData):
 
 def load_code() -> dict:
     metadata = get_code_metadata()
-    filepath = metadata[0]
-    if filepath:
-        with open(filepath, 'r') as f:
-            root_json = json.loads(f.read())
-            return json.loads(root_json['file_path_and_hash'])
+
+    if metadata[1]:
+        return metadata[1].file_path_and_hash
     else:
         return {}
 
