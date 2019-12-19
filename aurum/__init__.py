@@ -39,19 +39,25 @@ from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import check_inside_au
 
-command = sys.argv[0]
 
-if 'au' not in command:
+def check_if_is_experiment():
+    breakpoint()
+    command = sys.argv[0]
 
-    check_inside_au()
-    parser = ExperimentArgParser()
+    if 'au' not in command and 'unittest' not in command:
 
-    if parser.known_params.verbose:
-        logging.getLogger().setLevel(logging.DEBUG)
+        check_inside_au()
+        parser = ExperimentArgParser()
 
-    if parser.known_params.no_tracking is True:
-        Dehydrator().on()
+        if parser.known_params.verbose:
+            logging.getLogger().setLevel(logging.DEBUG)
 
-    LoggingTracker()
+        if parser.known_params.no_tracking is True:
+            Dehydrator().on()
+
+        LoggingTracker()
+
+
+check_if_is_experiment()
 
 __all__ = [execute_commands, save_parameters, parameters, register_metrics]
