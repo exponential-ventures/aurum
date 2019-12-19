@@ -24,7 +24,7 @@
 import ntpath
 
 from aurum.metadata import CodeMetaData, load_code, generate_src_files_hash, get_code_metadata
-from aurum.utils import should_create_new_file
+from aurum.utils import did_dict_change
 
 
 def is_new_code() -> bool:
@@ -32,7 +32,7 @@ def is_new_code() -> bool:
     old_code_references = load_code()
     new_code_references = generate_src_files_hash()
 
-    is_new = should_create_new_file(new_code_references, old_code_references)
+    is_new = did_dict_change(new_code_references, old_code_references)
 
     if is_new:
         metadata = get_code_metadata()

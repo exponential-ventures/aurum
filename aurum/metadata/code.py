@@ -29,8 +29,8 @@ from datetime import datetime
 
 from aurum import constants as cons
 from aurum import git
-from aurum.metadata import MetaData
-from aurum.utils import make_safe_filename, gen_file_hash
+from aurum.metadata import MetaData, gen_meta_file_name_from_hash
+from aurum.utils import gen_file_hash
 
 CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 
@@ -61,7 +61,14 @@ class CodeMetaData(MetaData):
 
     def save(self, destination: str = None) -> str:
         if destination is None:
-            destination = gen_meta_file_name(str(self.timestamp), '')
+            destination_path = os.path.join(git.get_git_repo_root(),
+                                            cons.REPOSITORY_DIR,
+                                            cons.CODE_METADATA_DIR)
+            destination = gen_meta_file_name_from_hash(
+                meta_data_str=str(self.timestamp),
+                file_name='',
+                path=destination_path
+            )
         return super().save(destination)
 
 
@@ -74,24 +81,6 @@ def get_code_metadata() -> (str, CodeMetaData):
             return mdf_path, mdo
 
     return None, None
-
-
-def gen_meta_hash(meta_data_str):
-    meta_data_file_name = hashlib.sha1()
-    meta_data_file_name.update(str.encode(meta_data_str))
-    return meta_data_file_name.hexdigest()
-
-
-def gen_meta_file_name(meta_data_str, file_name):
-    meta_data_dir = os.path.join(CODE_METADATA_PATH, make_safe_filename(file_name))
-
-    if not os.path.exists(meta_data_dir):
-        os.mkdir(meta_data_dir)
-
-    meta_hash = gen_meta_hash(meta_data_str)
-    meta_data_file_name = meta_hash + ".json"
-
-    return os.path.join(meta_data_dir, meta_data_file_name)
 
 
 def load_code() -> dict:

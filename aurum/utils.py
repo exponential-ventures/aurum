@@ -65,7 +65,11 @@ def check_inside_au():
         sys.exit(1)
 
 
-def should_create_new_file(d1, d2):
+def did_dict_change(d1, d2):
+    """
+    Compares two dict to detect if the first has any changes against the second.
+    In case of any changes it returns True. Otherwise, it returns false.
+    """
     d1_keys = set(d1.keys())
     d2_keys = set(d2.keys())
     intersect_keys = d1_keys.intersection(d2_keys)
