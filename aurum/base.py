@@ -91,7 +91,9 @@ def data_command_checker(parser: argparse.ArgumentParser):
 
 
 def parameters(**kwargs):
-    from aurum.commands import parser as p
+    from .experiment_parser import ExperimentArgParser
+
+    p = ExperimentArgParser()
 
     for param, default in kwargs.items():
         if param not in p.known_params:

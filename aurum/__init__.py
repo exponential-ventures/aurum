@@ -28,6 +28,7 @@ __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
 import logging
+import sys
 
 from .au import main
 from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
@@ -36,12 +37,21 @@ from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
 from .theorem import Theorem
 from .time_tracker import time_tracker
+from .utils import check_inside_au
 
-parser = ExperimentArgParser()
+command = sys.argv[0]
 
-if parser.known_params.verbose:
-    logging.getLogger().setLevel(logging.DEBUG)
+if 'au' not in command:
 
-LoggingTracker()
+    check_inside_au()
+    parser = ExperimentArgParser()
+
+    if parser.known_params.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    if parser.known_params.no_tracking is True:
+        Dehydrator().on()
+
+    LoggingTracker()
 
 __all__ = [execute_commands, save_parameters, parameters, register_metrics]
