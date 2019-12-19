@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .singleton import SingletonDecorator
 
@@ -9,7 +9,7 @@ class TimeTracker:
     def __init__(self):
         self.initial_time = datetime.now()
 
-    def log_time(self) -> datetime:
+    def log_time(self) -> timedelta:
         delta = datetime.now() - self.initial_time
         logging.info(f"The experiment took {str(delta)} to run")
 
