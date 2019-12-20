@@ -39,6 +39,7 @@ from .logging_tracker import LoggingTracker
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import check_inside_au
+from .dataset_tracker import use_datasets
 
 command = sys.argv[0]
 
@@ -56,4 +57,10 @@ if 'au' not in command and 'unittest' not in command:
     if requirements_changed:
         Theorem().requirements_did_change(r_hash)
 
-__all__ = [execute_commands, save_parameters, parameters, register_metrics]
+__all__ = [
+    execute_commands,
+    save_parameters,
+    parameters,
+    register_metrics,
+    use_datasets,
+]
