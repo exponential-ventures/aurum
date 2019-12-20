@@ -5,7 +5,7 @@ import subprocess
 from .metadata import get_latest_rmd, RequirementsMetaData
 
 
-def is_new_requirements() -> bool:
+def is_new_requirements() -> (bool, str):
     """
     Run a pip freeze and create a hash to be saved in the requirements metadata, remember that we will also need to
     record the parent requirements (latest by date, if it exists) as well as all the contents of the pip freeze list
@@ -18,7 +18,6 @@ def is_new_requirements() -> bool:
     create the metadata to document this. If there is no previous metadata (experiment is being run for the first time)
     then the code should proceed as if this is a brand new experiment, except that parent will be None.
     """
-    is_new = False
 
     process = subprocess.run("pip freeze", shell=True, check=True, capture_output=True)
     output = process.stdout
@@ -30,11 +29,11 @@ def is_new_requirements() -> bool:
     latest_mdf = get_latest_rmd()
     if latest_mdf.file_hash != packages_hash:
         logging.debug("This is a new requirements")
-        is_new = True
         rmd = RequirementsMetaData()
         rmd.file_hash = packages_hash
         rmd.parent_hash = latest_mdf.file_hash
         rmd.contents = output
         rmd.save()
+        return True, rmd.file_hash
 
-    return is_new
+    return False, ""
