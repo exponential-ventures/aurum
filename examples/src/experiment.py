@@ -99,13 +99,3 @@ benchmark.add_label('end_of_script')
 benchmark.end()
 
 benchmark.print()
-
-
-
-
-
-
-print(f"Parameter a = {au.a}")
-print(f"Parameter b = {au.b}")
-print(f"Parameter epochs = {au.epochs}")
-print(f"Parameter batch_size = {au.batch_size}")
