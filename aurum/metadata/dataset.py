@@ -1,10 +1,11 @@
 import json
 import os
+from datetime import datetime
 
-from aurum import constants as cons
-from aurum import git
-from aurum.metadata import MetaData, gen_meta_file_name_from_hash
-from aurum.utils import gen_file_hash, make_safe_filename
+from .. import constants as cons
+from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import git
+from ..utils import gen_file_hash, make_safe_filename
 
 
 class DatasetMetaData(MetaData):
@@ -39,3 +40,25 @@ def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
             return mdf_path, mdo
 
     raise FileNotFoundError(f"Metadata not found for {file_name}")
+
+
+def get_latest_dataset_metadata() -> DatasetMetaData:
+    newest = None
+    now = datetime.now()
+
+    dataset_metadata_dir = os.path.join(
+        git.get_git_repo_root(),
+        cons.REPOSITORY_DIR,
+        cons.DATASET_METADATA_DIR,
+    )
+
+    for file in os.listdir(dataset_metadata_dir):
+
+        full_path = os.path.join(dataset_metadata_dir, file)
+
+        dmd = DatasetMetaData(full_path)
+        if now > dmd.timestamp:
+            newest = dmd
+            now = dmd.timestamp
+
+    return newest
