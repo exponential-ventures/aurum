@@ -36,6 +36,7 @@ from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
 from .theorem import Theorem
 from .time_tracker import time_tracker
+from .dataset_tracker import use_datasets
 
 parser = ExperimentArgParser()
 
@@ -44,4 +45,10 @@ if parser.known_params.verbose:
 
 LoggingTracker()
 
-__all__ = [execute_commands, save_parameters, parameters, register_metrics]
+__all__ = [
+    execute_commands,
+    save_parameters,
+    parameters,
+    register_metrics,
+    use_datasets,
+]
