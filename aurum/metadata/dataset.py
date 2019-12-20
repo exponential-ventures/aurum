@@ -2,8 +2,8 @@ import json
 import os
 from datetime import datetime
 
-from .. import constants as cons
 from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import constants as cons
 from .. import git
 from ..utils import gen_file_hash, make_safe_filename
 
@@ -28,8 +28,8 @@ class DatasetMetaData(MetaData):
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
-    meta_data_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(file_name))
-
+    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR,
+                                 make_safe_filename(file_name))
     for mdf in os.listdir(meta_data_dir):
 
         mdf_path = os.path.join(meta_data_dir, mdf)
