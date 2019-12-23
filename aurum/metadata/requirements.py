@@ -8,8 +8,8 @@ from aurum.metadata import MetaData
 class RequirementsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.contents = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         name = f"{uuid.uuid4()}.json"
@@ -27,8 +27,10 @@ def get_latest_rmd() -> RequirementsMetaData:
 
         full_path = os.path.join(requirements_metadata_dir, file)
 
-        rmd = RequirementsMetaData(full_path)
-        if rmd.timestamp < newest.timestamp:
-            newest = rmd
+        if cons.KEEP_FILE not in full_path:
+
+            rmd = RequirementsMetaData(full_path)
+            if rmd.timestamp < newest.timestamp:
+                newest = rmd
 
     return newest

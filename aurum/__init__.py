@@ -32,7 +32,7 @@ import sys
 
 from aurum.package_tracker import is_new_requirements
 from .au import main
-from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics
+from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics, end_experiment
 from .dry_run import Dehydrator
 from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
@@ -63,4 +63,5 @@ __all__ = [
     parameters,
     register_metrics,
     use_datasets,
+    end_experiment
 ]
