@@ -25,6 +25,7 @@ import logging
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def check_git():
@@ -76,13 +77,27 @@ def rm(filepath, soft_delete: bool = True):
         run_git("rm", filepath).wait()
 
 
-def add_default_dirs(default_dirs: list) -> None:
-    for p in default_dirs:
-        run_git('add', p).wait()
+def add_dirs(dirs: list) -> None:
+    for path in dirs:
+        process = run_git('add', path)
+        output, error = process.communicate()
+
+        if error:
+            logging.error(str(error))
 
 
-def commit(commit_message: str) -> None:
-    process = run_git('commit', '-m', commit_message)
+def tag(experiment_id: str, message: str) -> None:
+    process = run_git('tag', '-a', experiment_id, '-m', message)
+    output, error = process.communicate()
+    if error:
+        logging.error(str(error))
+
+
+def commit(commit_message: str, secondary_msg: str = '') -> None:
+    if secondary_msg is not '':
+        process = run_git('commit', '-am', commit_message, '-m', secondary_msg)
+    else:
+        process = run_git('commit', '-am', commit_message)
 
     output, error = process.communicate()
     if error:

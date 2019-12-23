@@ -63,3 +63,13 @@ def check_inside_au():
     if not os.path.exists(path):
         logging.error(f"Path '.au' does not exist, please run au init \n")
         sys.exit(1)
+
+
+def dic_to_str(dictionary: dict, title: str = None) -> str:
+    aux_str = ""
+    if title:
+        aux_str += f"\n {title}:"
+    for k, v in sorted(dictionary.items()):
+        aux_str += f"\n\t {k}={v}"
+    aux_str += "\n"
+    return aux_str

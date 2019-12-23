@@ -32,8 +32,8 @@ from aurum.metadata.metadata import gen_meta_file_name_from_hash
 class ParameterMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.parameters = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         parent_parameter_metadata = get_latest_parameter()
@@ -61,9 +61,11 @@ def get_latest_parameter() -> ParameterMetaData:
 
         full_path = os.path.join(parameter_metadata_dir, file)
 
-        pmd = ParameterMetaData(full_path)
+        if cons.KEEP_FILE not in full_path:
 
-        if pmd.timestamp < newest.timestamp:
-            newest = pmd
+            pmd = ParameterMetaData(full_path)
+
+            if pmd.timestamp < newest.timestamp:
+                newest = pmd
 
     return newest

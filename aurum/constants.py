@@ -1,4 +1,5 @@
 REPOSITORY_DIR = ".au"
+KEEP_FILE = ".keep"
 
 DATASET_METADATA_DIR = "datasets"
 PARAMETER_METADATA_DIR = "parameters"

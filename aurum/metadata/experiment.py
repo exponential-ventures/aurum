@@ -9,12 +9,12 @@ from aurum.utils import gen_file_hash
 class ExperimentMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.name = None
         self.dataset_hash = None
         self.code_hash = None
         self.parameter_hash = None
         self.logging_hash = None
+        super().__init__(file_name)
 
     def save(self, destination: str) -> str:
 
@@ -36,9 +36,10 @@ class ExperimentMetaData(MetaData):
         for file in os.listdir(meta_data_dir):
 
             full_path = os.path.join(meta_data_dir, file)
+            if cons.KEEP_FILE not in full_path:
 
-            emd = ExperimentMetaData(full_path)
-            if emd.name == self.name and emd.timestamp > self.timestamp:
-                newest = emd
+                emd = ExperimentMetaData(full_path)
+                if emd.name == self.name and emd.timestamp > self.timestamp:
+                    newest = emd
 
         return newest

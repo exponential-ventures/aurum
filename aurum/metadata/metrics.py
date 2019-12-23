@@ -32,8 +32,8 @@ from aurum.metadata.metadata import gen_meta_file_name_from_hash
 class MetricsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.metrics = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         parent_metrics_metadata = get_latest_metrics_metadata()
@@ -60,8 +60,11 @@ def get_latest_metrics_metadata() -> MetricsMetaData:
 
         full_path = os.path.join(meta_data_dir, file)
 
-        mmd = MetricsMetaData(full_path)
-        if mmd.timestamp < newest.timestamp:
-            newest = mmd
+        if cons.KEEP_FILE not in full_path:
+
+            mmd = MetricsMetaData(full_path)
+
+            if mmd.timestamp < newest.timestamp:
+                newest = mmd
 
     return newest
