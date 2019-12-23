@@ -115,7 +115,7 @@ def parameters(**kwargs):
 
 def save_parameters(**kwargs):
     mdf = ParameterMetaData()
-    mdf.parameters = json.dumps(kwargs)
+    mdf.parameters = kwargs
     meta_data_file_name = mdf.save()
 
     if meta_data_file_name:

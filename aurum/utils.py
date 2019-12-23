@@ -25,6 +25,8 @@ import hashlib
 import logging
 import os
 import sys
+import collections
+import json
 
 from . import constants as cons
 from . import git
@@ -41,6 +43,16 @@ def gen_file_hash(file_name):
                 break
             sha1.update(data)
 
+    return sha1.hexdigest()
+
+
+def gen_dict_hash(dictionary: dict) -> str:
+    if not isinstance(dictionary, dict):
+        raise TypeError('Parameter provided is not a dictionary')
+
+    sha1 = hashlib.sha1()
+    ordered_dict = collections.OrderedDict(dictionary.items())
+    sha1.update(json.dumps(ordered_dict).encode('utf-8'))
     return sha1.hexdigest()
 
 
