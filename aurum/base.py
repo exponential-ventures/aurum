@@ -24,17 +24,16 @@ import argparse
 import json
 import logging
 import platform
-import uuid
 from pathlib import Path
 
 import psutil
 from pynvml import *
 
 from . import constants as cons
-from . import git
+from . import git, EXPERIMENT_ID
 from .commands import run_init, run_rm, run_add
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
-    get_latest_parameter, get_latest_rmd, get_dataset_metadata
+    get_latest_parameter, get_latest_rmd, get_dataset_metadata, get_code_metadata
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 from aurum.theorem import Theorem
@@ -52,6 +51,7 @@ DEFAULT_DIRS = [
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
+
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
     parsed = parser.parse_args()
@@ -207,21 +207,22 @@ def end_experiment():
 
     theorem = Theorem()
     if theorem.has_any_change():
-        experiment_id = str(uuid.uuid4())
+
         mdt = ExperimentMetaData()
 
-        mdt.file_name = experiment_id
+        mdt.file_name = EXPERIMENT_ID
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
-        # dataset_metadata = get_dataset_metadata()
+        dataset_metadata = get_dataset_metadata()
+        code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
-                                   f"{experiment_id}.json")
+                                   f"{EXPERIMENT_ID}.json")
 
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
-        # mdt.dataset_hash = dataset_metadata.file_hash
+        mdt.code_hash = code_metadata.file_hash
 
         if metrics_metadata.metrics:
             dict_aux = json.loads(metrics_metadata.metrics)
@@ -235,10 +236,15 @@ def end_experiment():
             dict_aux = json.loads(requirements_metadata.contents)
             commit_msg += dic_to_str(dict_aux, 'Requirements')
 
-        # if dataset_metadata[1]:
-        #     commit_msg += f"\n Dataset hash: {dataset_metadata[1].file_hash}"
+        if dataset_metadata[1]:
+            mdt.dataset_hash = dataset_metadata.file_hash
+            commit_msg += f"\n Dataset hash: {dataset_metadata[1].file_hash}"
+
+        if code_metadata[1]:
+            mdt.code_hash = code_metadata.file_hash
+            commit_msg += f"\n Code hash: {code_metadata[1].file_hash}"
 
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
-        git.commit(f"Experiment ID {experiment_id}", commit_msg)
-        git.tag(experiment_id, commit_msg)
+        git.commit(f"Experiment ID {EXPERIMENT_ID}", commit_msg)
+        git.tag(EXPERIMENT_ID, commit_msg)
