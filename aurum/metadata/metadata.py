@@ -16,7 +16,7 @@ from typing import Collection, Mapping, Union
 from uuid import UUID
 
 from aurum.utils import make_safe_filename
-from aurum import EXPERIMENT_ID
+from aurum.theorem import Theorem
 
 
 def _isinstance_safe(o, t):
@@ -67,7 +67,7 @@ class MetaData:
         self.file_name = file_name
         self.file_hash = None
         self.timestamp = datetime.now()
-        self.experiment_id = EXPERIMENT_ID
+        self.experiment_id = Theorem().experiment_id
 
         if file_name != '':
             with open(file_name, 'r') as f:
