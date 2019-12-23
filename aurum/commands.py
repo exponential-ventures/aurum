@@ -29,10 +29,10 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
-from .metadata import get_dataset_metadata, DatasetMetaData
 from .experiment_parser import ExperimentArgParser
+from .metadata import get_dataset_metadata, DatasetMetaData
 from .theorem import Theorem
-from .utils import make_safe_filename
+from .utils import make_safe_filename, is_unnitest_running
 
 parser = ExperimentArgParser()
 
@@ -117,12 +117,15 @@ def create_default_dirs() -> None:
         os.makedirs(path)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
+
 def au_init() -> None:
     create_default_dirs()
     git.add_dirs(base.DEFAULT_DIRS)
     logging.info("Adding directories to git...")
-    git.commit('Initial Commit')
-    logging.info("Initial commit")
+
+    if not is_unnitest_running():
+        git.commit('Initial Commit')
+        logging.info("Initial commit")
 
 
 def check_file(file_path: str) -> str:

@@ -1,7 +1,5 @@
 import unittest
-import argparse
 import shutil
-import sys
 import os
 import tracemalloc
 import subprocess
@@ -21,7 +19,9 @@ class TestParameters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         tracemalloc.start()
+        sys.modules.keys()
         cls.current_dir = os.getcwd()
+
         au.base.run_init()
 
     @classmethod

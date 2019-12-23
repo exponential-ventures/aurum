@@ -21,12 +21,12 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
+import collections
 import hashlib
+import json
 import logging
 import os
 import sys
-import collections
-import json
 
 from . import constants as cons
 from . import git
@@ -110,3 +110,7 @@ def did_dict_change(d1, d2):
             return True
 
     return False
+
+
+def is_unnitest_running() -> bool:
+    return 'unittest' in sys.modules.keys()

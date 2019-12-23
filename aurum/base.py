@@ -187,7 +187,7 @@ def gpu_info():
 
 def save_metrics(**kwargs):
     mdf = MetricsMetaData()
-    mdf.metrics = json.dumps(kwargs)
+    mdf.metrics = kwargs
     meta_data_file_name = mdf.save()
 
     if meta_data_file_name:

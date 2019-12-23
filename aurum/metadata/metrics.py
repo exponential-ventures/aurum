@@ -27,6 +27,7 @@ from aurum import constants as cons
 from aurum import git
 from aurum.metadata import MetaData
 from aurum.metadata.metadata import gen_meta_file_name_from_hash
+from aurum.utils import gen_dict_hash
 
 
 class MetricsMetaData(MetaData):
@@ -37,19 +38,22 @@ class MetricsMetaData(MetaData):
 
     def save(self, destination: str = None) -> str:
         parent_metrics_metadata = get_latest_metrics_metadata()
+        self.file_hash = gen_dict_hash(self.metrics)
 
         if parent_metrics_metadata.timestamp < self.timestamp:
             self.parent_hash = parent_metrics_metadata.file_hash
 
-        destination_path = os.path.join(
-            git.get_git_repo_root(),
-            cons.REPOSITORY_DIR,
-            cons.METRICS_METADATA_DIR,
-        )
+        if self.file_hash != parent_metrics_metadata.file_hash:
 
-        destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
+            destination_path = os.path.join(
+                git.get_git_repo_root(),
+                cons.REPOSITORY_DIR,
+                cons.METRICS_METADATA_DIR,
+            )
 
-        return super().save(destination)
+            destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
+
+            return super().save(destination)
 
 
 def get_latest_metrics_metadata() -> MetricsMetaData:
