@@ -222,7 +222,6 @@ def end_experiment():
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
-        mdt.code_hash = code_metadata.file_hash
 
         if metrics_metadata.metrics:
             dict_aux = json.loads(metrics_metadata.metrics)
