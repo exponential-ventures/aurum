@@ -29,7 +29,6 @@ __version__ = "0.1"
 
 import logging
 import sys
-import uuid
 
 from aurum.package_tracker import is_new_requirements
 from .au import main
@@ -42,7 +41,6 @@ from .time_tracker import time_tracker
 from .utils import check_inside_au
 from .dataset_tracker import use_datasets
 
-EXPERIMENT_ID = str(uuid.uuid4())
 command = sys.argv[0]
 
 if 'au' not in command and 'unittest' not in command:
@@ -65,6 +63,5 @@ __all__ = [
     parameters,
     register_metrics,
     use_datasets,
-    end_experiment,
-    EXPERIMENT_ID
+    end_experiment
 ]

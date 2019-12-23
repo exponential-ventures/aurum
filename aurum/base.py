@@ -30,7 +30,7 @@ import psutil
 from pynvml import *
 
 from . import constants as cons
-from . import git, EXPERIMENT_ID
+from . import git
 from .commands import run_init, run_rm, run_add
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_dataset_metadata, get_code_metadata
@@ -210,14 +210,14 @@ def end_experiment():
 
         mdt = ExperimentMetaData()
 
-        mdt.file_name = EXPERIMENT_ID
+        mdt.file_name = theorem.experiment_id
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
         dataset_metadata = get_dataset_metadata()
         code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
-                                   f"{EXPERIMENT_ID}.json")
+                                   f"{theorem.experiment_id}.json")
 
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
@@ -238,12 +238,17 @@ def end_experiment():
         if dataset_metadata[1]:
             mdt.dataset_hash = dataset_metadata.file_hash
             commit_msg += f"\n Dataset hash: {dataset_metadata[1].file_hash}"
+        else:
+            logging.warning("No dataset detected. Please, run 'au data add' or 'au.use_dataset")
 
         if code_metadata[1]:
             mdt.code_hash = code_metadata.file_hash
             commit_msg += f"\n Code hash: {code_metadata[1].file_hash}"
+        else:
+            logging.warning("Please, add the source-code under the 'src' folder")
+
 
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
-        git.commit(f"Experiment ID {EXPERIMENT_ID}", commit_msg)
-        git.tag(EXPERIMENT_ID, commit_msg)
+        git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
+        git.tag(theorem.experiment_id, commit_msg)
