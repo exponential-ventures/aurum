@@ -50,8 +50,8 @@ DEFAULT_DIRS = [
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
     cwd / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
+    cwd / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
-
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
     parsed = parser.parse_args()

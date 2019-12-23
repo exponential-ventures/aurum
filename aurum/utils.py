@@ -73,3 +73,28 @@ def dic_to_str(dictionary: dict, title: str = None) -> str:
         aux_str += f"\n\t {k}={v}"
     aux_str += "\n"
     return aux_str
+
+
+def did_dict_change(d1, d2):
+    """
+    Compares two dict to detect if the first has any changes against the second.
+    In case of any changes it returns True. Otherwise, it returns false.
+    """
+    d1_keys = set(d1.keys())
+    d2_keys = set(d2.keys())
+    intersect_keys = d1_keys.intersection(d2_keys)
+    same = set(o for o in intersect_keys if d1[o] == d2[o])
+    if (len(same) == len(d1)):
+        return False
+
+    added = d1_keys - d2_keys
+    removed = d2_keys - d1_keys
+
+    if (len(added) > 0) or (len(removed) > 0):
+        return True
+
+    for k in intersect_keys:
+        if d1[k] != d2[k]:
+            return True
+
+    return False

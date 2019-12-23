@@ -1,8 +1,10 @@
 REPOSITORY_DIR = ".au"
 KEEP_FILE = ".keep"
+SOURCE_CODE_DIR = "src"
 
 DATASET_METADATA_DIR = "datasets"
 PARAMETER_METADATA_DIR = "parameters"
 METRICS_METADATA_DIR = "metrics"
 REQUIREMENTS_METADATA_DIR = "requirements"
+CODE_METADATA_DIR = "code"
 EXPERIMENTS_METADATA_DIR = "experiments"

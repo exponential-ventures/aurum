@@ -28,7 +28,9 @@ __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
 import logging
+import sys
 
+from aurum.package_tracker import is_new_requirements
 from .au import main
 from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics, end_experiment
 from .dry_run import Dehydrator
@@ -36,12 +38,30 @@ from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
 from .theorem import Theorem
 from .time_tracker import time_tracker
+from .utils import check_inside_au
+from .dataset_tracker import use_datasets
 
-parser = ExperimentArgParser()
+command = sys.argv[0]
 
-if parser.known_params.verbose:
-    logging.getLogger().setLevel(logging.DEBUG)
+if 'au' not in command and 'unittest' not in command:
 
-LoggingTracker()
+    check_inside_au()
+    parser = ExperimentArgParser()
 
-__all__ = [execute_commands, save_parameters, parameters, register_metrics, end_experiment]
+    if parser.known_params.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    LoggingTracker()
+
+    requirements_changed, r_hash = is_new_requirements()
+    if requirements_changed:
+        Theorem().requirements_did_change(r_hash)
+
+__all__ = [
+    execute_commands,
+    save_parameters,
+    parameters,
+    register_metrics,
+    use_datasets,
+    end_experiment
+]

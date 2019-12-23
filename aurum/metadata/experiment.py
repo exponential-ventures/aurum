@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from aurum import constants as cons
 from aurum import git
@@ -43,3 +44,26 @@ class ExperimentMetaData(MetaData):
                     newest = emd
 
         return newest
+
+
+def get_latest_experiment_metadata_by_date() -> ExperimentMetaData:
+
+    newest = None
+    now = datetime.now()
+
+    experiment_metadata_dir = os.path.join(
+        git.get_git_repo_root(),
+        cons.REPOSITORY_DIR,
+        cons.EXPERIMENTS_METADATA_DIR,
+    )
+
+    for file in os.listdir(experiment_metadata_dir):
+
+        full_path = os.path.join(experiment_metadata_dir, file)
+
+        exm = ExperimentMetaData(full_path)
+        if now > exm.timestamp:
+            newest = exm
+            now = exm.timestamp
+
+    return newest
