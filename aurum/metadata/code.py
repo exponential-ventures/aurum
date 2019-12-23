@@ -21,11 +21,10 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-import hashlib
 import os
-import json
-from glob import glob
+import time
 from datetime import datetime
+from glob import glob
 
 from aurum import constants as cons
 from aurum import git
@@ -48,12 +47,7 @@ class CodeMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
         self.file_path_and_hash = None
-        self.parent_file_name = None
-        self.timestamp = datetime.now()
-
-        if file_name != '':
-            with open(file_name, 'r') as f:
-                self.deserialize(f.read())
+        super().__init__(file_name)
 
     def deserialize(self, raw_json: str):
         super().deserialize(raw_json)
@@ -61,6 +55,7 @@ class CodeMetaData(MetaData):
             self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     def save(self, destination: str = None) -> str:
+
         if destination is None:
             destination_path = os.path.join(git.get_git_repo_root(),
                                             cons.REPOSITORY_DIR,
@@ -73,24 +68,24 @@ class CodeMetaData(MetaData):
         return super().save(destination)
 
 
-def get_code_metadata() -> (str, CodeMetaData):
-    if os.path.exists(CODE_METADATA_PATH):
-        for mdf in os.listdir(CODE_METADATA_PATH):
-            mdf_path = os.path.join(CODE_METADATA_PATH, mdf)
+def get_code_metadata() -> CodeMetaData:
+    file_last_modified_list = []
+    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+    for f in os.listdir(meta_data_dir):
+        if cons.KEEP_FILE not in f:
+            file_path = os.path.join(meta_data_dir, f)
+            stats = os.stat(file_path)
+            lastmod_date = time.localtime(stats[8])
+            file_last_modified_list.append((lastmod_date, file_path))
 
-            mdo = CodeMetaData(mdf_path)
-            return mdf_path, mdo
+    file_last_modified_list.sort()
+    file_last_modified_list.reverse() # The first is the latest modified
 
-    return None, None
+    if len(file_last_modified_list) > 0:
+        return CodeMetaData(file_last_modified_list[0][1])
 
+    return CodeMetaData()
 
-def load_code() -> dict:
-    metadata = get_code_metadata()
-
-    if metadata[1]:
-        return metadata[1].file_path_and_hash
-    else:
-        return {}
 
 
 def list_src_files() -> list:

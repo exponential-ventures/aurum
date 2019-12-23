@@ -222,6 +222,7 @@ def end_experiment():
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
+        mdt.code_hash = code_metadata.file_hash
 
         if metrics_metadata.metrics:
             dict_aux = json.loads(metrics_metadata.metrics)
@@ -241,8 +242,7 @@ def end_experiment():
         else:
             logging.warning("No dataset detected. Please, run 'au data add' or 'au.use_dataset")
 
-        if code_metadata[1]:
-            mdt.code_hash = code_metadata.file_hash
+        if code_metadata.file_hash:
             commit_msg += f"\n Code hash: {code_metadata[1].file_hash}"
         else:
             logging.warning("Please, add the source-code under the 'src' folder")
