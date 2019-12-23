@@ -1,11 +1,15 @@
 FROM python:3.7-alpine
 
+RUN apk add --no-cache --update build-base gcc git bash python python-dev util-linux linux-headers
 
 RUN mkdir /usr/src/app
 
+ADD requirements.txt /usr/src/app
 
-ADD src/ /usr/src/app
+WORKDIR /usr/src/app
 
+RUN pip install -r requirements.txt
 
-CMD ["python", "/usr/src/app/au"]
+ADD . /usr/src/app
 
+RUN pip install .
