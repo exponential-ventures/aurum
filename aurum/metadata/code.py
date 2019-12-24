@@ -29,7 +29,7 @@ from glob import glob
 from aurum import constants as cons
 from aurum import git
 from aurum.metadata import MetaData, gen_meta_file_name_from_hash
-from aurum.utils import gen_file_hash
+from aurum.utils import gen_file_hash, dir_files_by_last_modification_date
 
 CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 
@@ -69,23 +69,12 @@ class CodeMetaData(MetaData):
 
 
 def get_code_metadata() -> CodeMetaData:
-    file_last_modified_list = []
-    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
-    for f in os.listdir(meta_data_dir):
-        if cons.KEEP_FILE not in f:
-            file_path = os.path.join(meta_data_dir, f)
-            stats = os.stat(file_path)
-            lastmod_date = time.localtime(stats[8])
-            file_last_modified_list.append((lastmod_date, file_path))
-
-    file_last_modified_list.sort()
-    file_last_modified_list.reverse() # The first is the latest modified
+    file_last_modified_list = dir_files_by_last_modification_date(CODE_METADATA_PATH)
 
     if len(file_last_modified_list) > 0:
         return CodeMetaData(file_last_modified_list[0][1])
 
     return CodeMetaData()
-
 
 
 def list_src_files() -> list:

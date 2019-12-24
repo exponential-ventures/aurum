@@ -247,7 +247,6 @@ def end_experiment():
         else:
             logging.warning("Please, add the source-code under the 'src' folder")
 
-
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
