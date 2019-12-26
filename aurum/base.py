@@ -34,6 +34,7 @@ from . import git
 from .commands import run_init, run_rm, run_add
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_dataset_metadata, get_code_metadata
+from .metadata.experiment import get_latest_experiment_metadata_by_date
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 from aurum.theorem import Theorem
@@ -112,16 +113,14 @@ def parameters(**kwargs):
     for key in new_dict.keys():
         setattr(sys.modules['aurum'], key, new_dict[key])
 
-    save_parameters(**new_dict)
+    pmd = ParameterMetaData()
+    pmd.parameters = json.dumps(kwargs)
 
+    latest_exp = get_latest_experiment_metadata_by_date()
 
-def save_parameters(**kwargs):
-    mdf = ParameterMetaData()
-    mdf.parameters = json.dumps(kwargs)
-    meta_data_file_name = mdf.save()
-
-    if meta_data_file_name:
-
+    if latest_exp and latest_exp.parameter_hash != pmd.parameter_hash:
+        Theorem().parameters_did_change(pmd.parameter_hash)
+        meta_data_file_name = pmd.save()
         git_proc = git.run_git("add", meta_data_file_name)
 
         result = git_proc.wait()
