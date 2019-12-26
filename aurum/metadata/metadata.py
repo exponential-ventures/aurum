@@ -86,7 +86,10 @@ class MetaData:
         for k, v in json_obj.items():
             setattr(self, k, v)
 
-        self.timestamp = datetime.fromtimestamp(self.timestamp)
+        if isinstance(self.timestamp, datetime):
+            self.timestamp = datetime.timestamp(self.timestamp)
+        else:
+          self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     @dehydratable
     def save(self, destination: str) -> str:

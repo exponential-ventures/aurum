@@ -22,9 +22,12 @@
 ##
 
 import hashlib
+import json
 import logging
 import os
 import sys
+import time
+from collections import OrderedDict
 
 from . import constants as cons
 from . import git
@@ -41,6 +44,16 @@ def gen_file_hash(file_name):
                 break
             sha1.update(data)
 
+    return sha1.hexdigest()
+
+
+def gen_dict_hash(dictionary: dict) -> str:
+    if not isinstance(dictionary, dict):
+        raise TypeError('Parameter provided is not a dictionary')
+
+    sha1 = hashlib.sha1()
+    ordered_dict = OrderedDict(dictionary.items())
+    sha1.update(json.dumps(ordered_dict).encode('utf-8'))
     return sha1.hexdigest()
 
 
@@ -98,3 +111,25 @@ def did_dict_change(d1, d2):
             return True
 
     return False
+
+
+def is_unnitest_running() -> bool:
+    return 'unittest' in sys.modules.keys()
+
+
+def dir_files_by_last_modification_date(directory_path: str, descending_order: bool = True) -> list:
+    file_last_modified_list = []
+
+    for f in os.listdir(directory_path):
+        if cons.KEEP_FILE not in f:
+            file_path = os.path.join(directory_path, f)
+            stats = os.stat(file_path)
+            lastmod_date = time.localtime(stats[8])
+            file_last_modified_list.append((lastmod_date, file_path))
+
+    file_last_modified_list.sort()
+
+    if descending_order:
+        file_last_modified_list.reverse() # The first is the latest modified
+
+    return file_last_modified_list

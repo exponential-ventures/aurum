@@ -3,6 +3,9 @@ import uuid
 
 from aurum import constants as cons, git
 from aurum.metadata import MetaData
+from aurum.utils import dir_files_by_last_modification_date
+
+REQUIREMENTS_METADATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
 
 class RequirementsMetaData(MetaData):
@@ -13,24 +16,15 @@ class RequirementsMetaData(MetaData):
 
     def save(self, destination: str = None) -> str:
         name = f"{uuid.uuid4()}.json"
-        root = git.get_git_repo_root()
-        destination = os.path.join(root, cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR, name)
+        destination = os.path.join(REQUIREMENTS_METADATA_DIR, name)
 
         return super().save(destination)
 
 
 def get_latest_rmd() -> RequirementsMetaData:
-    newest = RequirementsMetaData()
-    requirements_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
-                                             cons.REQUIREMENTS_METADATA_DIR)
-    for file in os.listdir(requirements_metadata_dir):
+    files = dir_files_by_last_modification_date(REQUIREMENTS_METADATA_DIR)
 
-        full_path = os.path.join(requirements_metadata_dir, file)
+    if len(files) > 0:
+        return RequirementsMetaData(files[0][1])
 
-        if cons.KEEP_FILE not in full_path:
-
-            rmd = RequirementsMetaData(full_path)
-            if rmd.timestamp < newest.timestamp:
-                newest = rmd
-
-    return newest
+    return RequirementsMetaData()

@@ -21,7 +21,6 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import json
 import logging
 import platform
 from pathlib import Path
@@ -33,7 +32,7 @@ from . import constants as cons
 from . import git
 from .commands import run_init, run_rm, run_add
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
-    get_latest_parameter, get_latest_rmd, get_dataset_metadata, get_code_metadata
+    get_latest_parameter, get_latest_rmd, get_latest_dataset_metadata, get_code_metadata
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 from aurum.theorem import Theorem
@@ -117,7 +116,7 @@ def parameters(**kwargs):
 
 def save_parameters(**kwargs):
     mdf = ParameterMetaData()
-    mdf.parameters = json.dumps(kwargs)
+    mdf.parameters = kwargs
     meta_data_file_name = mdf.save()
 
     if meta_data_file_name:
@@ -188,9 +187,9 @@ def gpu_info():
 
 
 def save_metrics(**kwargs):
-    mmd = MetricsMetaData()
-    mmd.metrics = json.dumps(kwargs)
-    meta_data_file_name = mmd.save()
+    mdf = MetricsMetaData()
+    mdf.metrics = kwargs
+    meta_data_file_name = mdf.save()
 
     if meta_data_file_name:
 
@@ -216,7 +215,7 @@ def end_experiment():
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
-        dataset_metadata = get_dataset_metadata()
+        dataset_metadata = get_latest_dataset_metadata()
         code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
                                    f"{theorem.experiment_id}.json")
@@ -224,33 +223,30 @@ def end_experiment():
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
+        mdt.code_hash = code_metadata.file_hash
+        mdt.dataset_hash = dataset_metadata.file_hash
 
         if metrics_metadata.metrics:
-            dict_aux = json.loads(metrics_metadata.metrics)
-            commit_msg += dic_to_str(dict_aux, 'Metrics')
+            commit_msg += dic_to_str(metrics_metadata.metrics, 'Metrics')
         #
         if parameters_metadata.parameters:
-            dict_aux = json.loads(parameters_metadata.parameters)
-            commit_msg += dic_to_str(dict_aux, 'Parameters')
+            commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
 
-        if requirements_metadata.contents:
-            dict_aux = json.loads(requirements_metadata.contents)
-            commit_msg += dic_to_str(dict_aux, 'Requirements')
+        if requirements_metadata.file_hash:
+            commit_msg += f"\n Requiments hash {requirements_metadata.file_hash}"
 
-        if dataset_metadata[1]:
-            mdt.dataset_hash = dataset_metadata.file_hash
-            commit_msg += f"\n Dataset hash: {dataset_metadata[1].file_hash}"
+        if dataset_metadata.file_hash:
+            commit_msg += f"\n Dataset hash: {dataset_metadata.file_hash}"
         else:
             logging.warning("No dataset detected. Please, run 'au data add' or 'au.use_dataset")
 
-        if code_metadata[1]:
-            mdt.code_hash = code_metadata.file_hash
-            commit_msg += f"\n Code hash: {code_metadata[1].file_hash}"
+        if code_metadata.file_hash:
+            commit_msg += f"\n Code hash: {code_metadata.file_hash}"
         else:
             logging.warning("Please, add the source-code under the 'src' folder")
 
-
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
+        git.add_dirs(DEFAULT_DIRS)
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
