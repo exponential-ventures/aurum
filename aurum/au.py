@@ -49,6 +49,12 @@ def config_parser() -> argparse.ArgumentParser:
     parser_init.set_defaults(subcommand="init")
 
     #######
+    # load
+    parser_load = subparsers.add_parser("load", help="load a specific experiment by tag")
+    parser_load.set_defaults(subcommand="load")
+    parser_load.add_argument("tag", type=str, action="store")
+
+    #######
     # data
     parser_data = subparsers.add_parser("data", help="operations on data files")
     parser_data.set_defaults(subcommand="data")

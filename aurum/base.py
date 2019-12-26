@@ -28,14 +28,14 @@ from pathlib import Path
 import psutil
 from pynvml import *
 
+from .theorem import Theorem
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add
+from .commands import run_init, run_rm, run_add, run_load
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_latest_dataset_metadata, get_code_metadata
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
-from aurum.theorem import Theorem
 
 cwd = Path(os.getcwd())
 
@@ -70,6 +70,9 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
     if parsed.subcommand == "init":
         run_init()
+    elif parsed.subcommand == "load":
+        data_command_checker(parser)
+        run_load(parsed)
     elif parsed.subcommand == "data":
 
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":

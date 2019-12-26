@@ -69,7 +69,7 @@ def run_add(parsed_result: argparse.Namespace) -> None:
     sys.stdout.write(f"Added: {parsed_result.files}\n")
 
 
-def run_rm(parsed_result) -> None:
+def run_rm(parsed_result: argparse.Namespace) -> None:
     for filepath in parsed_result.files:
 
         filepath = check_file(filepath)
@@ -101,6 +101,10 @@ def run_rm(parsed_result) -> None:
             logging.warning(f"Unable to find metadata for file: '{filepath}' ")
 
 
+def run_load(parsed_result: argparse.Namespace) -> None:
+    logging.info(f"Loading experiment with tag: {parsed_result.tag}")
+
+
 def create_default_dirs() -> None:
     for path in base.DEFAULT_DIRS:
         if path.exists():
@@ -117,6 +121,8 @@ def au_init() -> None:
     git.add_dirs(base.DEFAULT_DIRS)
     logging.info("Adding directories to git...")
 
+    # TODO: Move this code to the test case.
+    # This is not a good idea.
     if not is_unnitest_running():
         git.commit('Initial Commit')
         logging.info("Initial commit")
