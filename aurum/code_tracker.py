@@ -21,24 +21,31 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-import ntpath
-
-from aurum.metadata import CodeMetaData, load_code, generate_src_files_hash, get_code_metadata
-from aurum.utils import did_dict_change
+from .metadata import CodeMetaData
+from .metadata.code import get_latest_code_metadata_by_date, generate_src_files_hash
 
 
-def is_new_code() -> bool:
-    mdt = CodeMetaData()
-    old_code_references = load_code()
-    new_code_references = generate_src_files_hash()
+def is_new_code() -> (bool, str):
 
-    is_new = did_dict_change(new_code_references, old_code_references)
+    # Generate the current code hash string
+    current_code_hash = generate_src_files_hash()
 
-    if is_new:
-        metadata = get_code_metadata()
-        mdt.file_path_and_hash = new_code_references
-        if metadata[0]:
-            mdt.parent_file_name = ntpath.basename(metadata[0])
-        mdt.save()
+    # Get the latest saved version of the code
+    latest = get_latest_code_metadata_by_date()
 
-    return is_new
+    cmd = CodeMetaData()
+
+    # If not latest, then this is the first run so the current code is new or the hash is different.
+    if not latest or latest.file_path_and_hash != current_code_hash:
+
+        cmd.file_path_and_hash = current_code_hash
+
+        if latest:
+            cmd.parent_hash = latest.file_path_and_hash
+
+        cmd.save()
+
+        return True, current_code_hash
+
+    # Code has not changed and is the same as it was in latest
+    return False, latest.file_path_and_hash
