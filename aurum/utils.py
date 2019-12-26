@@ -65,6 +65,16 @@ def check_inside_au():
         sys.exit(1)
 
 
+def dic_to_str(dictionary: dict, title: str = None) -> str:
+    aux_str = ""
+    if title:
+        aux_str += f"\n {title}:"
+    for k, v in sorted(dictionary.items()):
+        aux_str += f"\n\t {k}={v}"
+    aux_str += "\n"
+    return aux_str
+
+
 def did_dict_change(d1, d2):
     """
     Compares two dict to detect if the first has any changes against the second.

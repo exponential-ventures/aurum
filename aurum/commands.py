@@ -26,6 +26,7 @@ import logging
 import os
 import shutil
 import sys
+from pathlib import Path
 
 from . import constants as cons, base, git
 from .metadata import get_dataset_metadata, DatasetMetaData
@@ -106,11 +107,16 @@ def create_default_dirs() -> None:
             logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
-        os.makedirs(path)
 
+        os.makedirs(path)
+        Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
 def au_init() -> None:
     create_default_dirs()
+    git.add_dirs(base.DEFAULT_DIRS)
+    logging.info("Adding directories to git...")
+    git.commit('Initial Commit')
+    logging.info("Initial commit")
 
 
 def check_file(file_path: str) -> str:

@@ -64,9 +64,12 @@ def get_latest_metrics_metadata() -> MetricsMetaData:
     for file in os.listdir(meta_data_dir):
 
         full_path = os.path.join(meta_data_dir, file)
-        logging.debug(f"Loading metric file: {full_path}")
-        mmd = MetricsMetaData(full_path)
-        if mmd.timestamp < newest.timestamp:
-            newest = mmd
+
+        if cons.KEEP_FILE not in full_path:
+
+            mmd = MetricsMetaData(full_path)
+
+            if mmd.timestamp < newest.timestamp:
+                newest = mmd
 
     return newest
