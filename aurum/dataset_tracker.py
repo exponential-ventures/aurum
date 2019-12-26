@@ -1,7 +1,7 @@
 import hashlib
 
 from . import Theorem
-from .metadata.dataset import get_dataset_metadata, get_latest_dataset_metadata
+from .metadata.dataset import get_dataset_metadata
 from .metadata.experiment import get_latest_experiment_metadata_by_date
 from .singleton import SingletonDecorator
 
