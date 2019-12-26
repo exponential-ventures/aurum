@@ -25,7 +25,6 @@ import logging
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 
 def check_git():
@@ -71,7 +70,6 @@ def init():
     _, err = p.communicate()
     if p.returncode != 0:
         raise Exception(f"Failed to run 'git init': {err}")
-
 
 
 def rm(filepath, soft_delete: bool = True):
