@@ -50,13 +50,8 @@ def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
 
 
 def get_latest_dataset_metadata() -> DatasetMetaData:
-    dataset_metadata_dir = os.path.join(
-        git.get_git_repo_root(),
-        cons.REPOSITORY_DIR,
-        cons.DATASET_METADATA_DIR,
-    )
 
-    files = dir_files_by_last_modification_date(dataset_metadata_dir)
+    files = dir_files_by_last_modification_date(META_DATA_PATH)
 
     if len(files) > 0:
         return DatasetMetaData(files[0][1])

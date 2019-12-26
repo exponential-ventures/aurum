@@ -22,12 +22,15 @@
 ##
 
 import os
+import logging
 
 from aurum import constants as cons
 from aurum import git
 from aurum.metadata import MetaData
 from aurum.metadata.metadata import gen_meta_file_name_from_hash
-from aurum.utils import gen_dict_hash
+from aurum.utils import gen_dict_hash, dir_files_by_last_modification_date
+
+PARAMETER_METADATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
 
 
 class ParameterMetaData(MetaData):
@@ -40,36 +43,21 @@ class ParameterMetaData(MetaData):
         parent_parameter_metadata = get_latest_parameter()
         self.file_hash = gen_dict_hash(self.parameters)
 
-        if parent_parameter_metadata.timestamp < self.timestamp:
-            self.parent_hash = parent_parameter_metadata.file_hash
-
         if self.file_hash != self.parent_hash:
-
-            destination_path = os.path.join(git.get_git_repo_root(),
-                                            cons.REPOSITORY_DIR,
-                                            cons.PARAMETER_METADATA_DIR)
+            self.parent_hash = parent_parameter_metadata.file_hash
             destination = gen_meta_file_name_from_hash(
                 meta_data_str=str(self.timestamp),
                 file_name='',
-                path=destination_path
+                path=PARAMETER_METADATA_DIR
             )
+            logging.debug(f"Saving parameters file to: {destination}")
             return super().save(destination)
 
 
 def get_latest_parameter() -> ParameterMetaData:
-    newest = ParameterMetaData()
+    files = dir_files_by_last_modification_date(PARAMETER_METADATA_DIR)
 
-    parameter_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
+    if len(files) > 0:
+        return ParameterMetaData(files[0][1])
 
-    for file in os.listdir(parameter_metadata_dir):
-
-        full_path = os.path.join(parameter_metadata_dir, file)
-
-        if cons.KEEP_FILE not in full_path:
-
-            pmd = ParameterMetaData(full_path)
-
-            if pmd.timestamp < newest.timestamp:
-                newest = pmd
-
-    return newest
+    return ParameterMetaData()

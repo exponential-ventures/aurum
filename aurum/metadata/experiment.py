@@ -15,12 +15,13 @@ class ExperimentMetaData(MetaData):
         self.dataset_hash = None
         self.code_hash = None
         self.parameter_hash = None
+        self.requirements_hash = None
         self.logging_hash = None
         super().__init__(file_name)
 
     def save(self, destination: str) -> str:
 
-        self.file_hash = self.__hash__()
+        self.file_hash = self.obj_hash()
 
         parent = self.get_parent()
 
@@ -36,16 +37,12 @@ class ExperimentMetaData(MetaData):
 
         return ExperimentMetaData()
 
-    def __hash__(self):
-        dict_aux = self.__dict__
-        del (dict_aux['experiment_id'])
-        del (dict_aux['timestamp'])
-        del (dict_aux['metrics_hash'])
-        del (dict_aux['file_name'])
-        del (dict_aux['commit_hash'])
-        del (dict_aux['logging_hash'])
+    def obj_hash(self):
+        return gen_dict_hash(
+            {'code_hash': self.code_hash, 'dataset_hash': self.dataset_hash, 'parameter_hash': self.parameter_hash,
+             'parent_hash': self.parent_hash, 'requirements_hash': self.requirements_hash})
 
-        return gen_dict_hash(dict_aux)
+
 
 
 def get_latest_experiment_metadata_by_date() -> ExperimentMetaData:
