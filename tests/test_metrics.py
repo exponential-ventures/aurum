@@ -21,11 +21,11 @@ class TestMetrics(unittest.TestCase):
 
     def test_register_metrics(self):
         au.register_metrics(resga=800, foo=2_000)
-        metrics = get_latest_metrics_metadata()
-        self.assertEqual(metrics.metrics['resga'], 800)
-        self.assertEqual(metrics.metrics['foo'], 2_000)
-        self.assertTrue('environment' in metrics.metrics.keys())
-        self.assertTrue('hardware' in metrics.metrics.keys())
+        metrics_metadata = get_latest_metrics_metadata()
+        self.assertEqual(metrics_metadata.metrics['resga'], 800)
+        self.assertEqual(metrics_metadata.metrics['foo'], 2_000)
+        self.assertTrue('environment' in metrics_metadata.metrics)
+        self.assertTrue('hardware' in metrics_metadata.metrics)
 
 
 if __name__ == '__main__':

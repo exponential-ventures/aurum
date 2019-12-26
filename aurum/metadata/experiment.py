@@ -1,10 +1,11 @@
 import os
-from datetime import datetime
 
 from aurum import constants as cons
 from aurum import git
 from aurum.metadata import MetaData
-from aurum.utils import gen_file_hash
+from aurum.utils import gen_dict_hash, dir_files_by_last_modification_date
+
+EXPERIMENT_METADATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR)
 
 
 class ExperimentMetaData(MetaData):
@@ -14,56 +15,39 @@ class ExperimentMetaData(MetaData):
         self.dataset_hash = None
         self.code_hash = None
         self.parameter_hash = None
+        self.requirements_hash = None
         self.logging_hash = None
         super().__init__(file_name)
 
     def save(self, destination: str) -> str:
 
-        self.file_hash = gen_file_hash(
-            os.path.join(git.get_git_repo_root(), self.file_name)
-        )
+        self.file_hash = self.obj_hash()
 
         parent = self.get_parent()
 
-        if parent:
+        if parent.file_hash != self.file_hash:
             self.parent_hash = parent.file_hash
-
-        return super().save(destination)
+            return super().save(destination)
 
     def get_parent(self):
-        newest = None
-        meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR)
 
-        for file in os.listdir(meta_data_dir):
+        files = dir_files_by_last_modification_date(EXPERIMENT_METADATA_DIR)
+        if len(files) > 0:
+            return ExperimentMetaData(files[0][1])
 
-            full_path = os.path.join(meta_data_dir, file)
-            if cons.KEEP_FILE not in full_path:
+        return ExperimentMetaData()
 
-                emd = ExperimentMetaData(full_path)
-                if emd.name == self.name and emd.timestamp > self.timestamp:
-                    newest = emd
+    def obj_hash(self):
+        return gen_dict_hash(
+            {'code_hash': self.code_hash, 'dataset_hash': self.dataset_hash, 'parameter_hash': self.parameter_hash,
+             'parent_hash': self.parent_hash, 'requirements_hash': self.requirements_hash})
 
-        return newest
+
 
 
 def get_latest_experiment_metadata_by_date() -> ExperimentMetaData:
+    files = dir_files_by_last_modification_date(EXPERIMENT_METADATA_DIR)
+    if len(files) > 0:
+        return ExperimentMetaData(files[0][1])
 
-    newest = None
-    now = datetime.now()
-
-    experiment_metadata_dir = os.path.join(
-        git.get_git_repo_root(),
-        cons.REPOSITORY_DIR,
-        cons.EXPERIMENTS_METADATA_DIR,
-    )
-
-    for file in os.listdir(experiment_metadata_dir):
-
-        full_path = os.path.join(experiment_metadata_dir, file)
-
-        exm = ExperimentMetaData(full_path)
-        if now > exm.timestamp:
-            newest = exm
-            now = exm.timestamp
-
-    return newest
+    return None

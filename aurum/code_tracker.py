@@ -21,24 +21,25 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
-import ntpath
-
-from aurum.metadata import CodeMetaData, load_code, generate_src_files_hash, get_code_metadata
-from aurum.utils import did_dict_change
+from aurum.metadata import CodeMetaData, generate_src_files_hash, get_code_metadata
+from aurum.utils import gen_dict_hash
 
 
 def is_new_code() -> bool:
     mdt = CodeMetaData()
-    old_code_references = load_code()
+    old_code_references = get_code_metadata()
     new_code_references = generate_src_files_hash()
 
-    is_new = did_dict_change(new_code_references, old_code_references)
+    if len(new_code_references) == 0:
+        return False
+
+    mdt.file_hash = gen_dict_hash(new_code_references)
+
+    is_new = mdt.file_hash != old_code_references.file_hash
 
     if is_new:
-        metadata = get_code_metadata()
         mdt.file_path_and_hash = new_code_references
-        if metadata[0]:
-            mdt.parent_file_name = ntpath.basename(metadata[0])
+        mdt.parent_hash = old_code_references.file_hash
         mdt.save()
 
     return is_new
