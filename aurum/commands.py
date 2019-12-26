@@ -29,14 +29,8 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
-from .experiment_parser import ExperimentArgParser
 from .metadata import get_dataset_metadata, DatasetMetaData
-from .theorem import Theorem
 from .utils import make_safe_filename, is_unnitest_running
-
-parser = ExperimentArgParser()
-
-theorem = Theorem()
 
 
 def run_init() -> None:

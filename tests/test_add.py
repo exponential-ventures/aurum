@@ -5,13 +5,14 @@ import unittest
 
 from aurum import base, git, commands
 from aurum.constants import REPOSITORY_DIR
+from tests.utils import run_test_init
 
 
 class AddTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        commands.run_init()
+        run_test_init()
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")
 

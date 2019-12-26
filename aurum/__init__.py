@@ -28,28 +28,37 @@ __url__ = "https://github.com/exponential-ventures/aurum"
 __version__ = "0.1"
 
 import logging
+import os
 import sys
+from pathlib import PurePosixPath, PureWindowsPath
 
-from aurum.package_tracker import is_new_requirements
 from .au import main
 from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics, end_experiment
+from .dataset_tracker import use_datasets
 from .dry_run import Dehydrator
 from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
+from .package_tracker import is_new_requirements
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import check_inside_au
-from .dataset_tracker import use_datasets
 
-command = sys.argv[0]
+# TODO: Check if this works on windows.
+if os.name == 'nt':
+    command = PureWindowsPath(sys.argv[0]).name
+else:
+    command = PurePosixPath(sys.argv[0]).name
 
-if 'au' not in command and 'unittest' not in command:
+if command is not 'au' and 'unittest' not in command:
 
     check_inside_au()
     parser = ExperimentArgParser()
 
     if parser.known_params.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    if parser.known_params.no_tracking is True:
+        Dehydrator().on()
 
     LoggingTracker()
 

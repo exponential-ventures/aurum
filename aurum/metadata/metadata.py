@@ -15,6 +15,7 @@ from enum import Enum
 from typing import Collection, Mapping, Union
 from uuid import UUID
 
+from aurum.dry_run import dehydratable
 from aurum.utils import make_safe_filename
 from aurum.theorem import Theorem
 
@@ -90,11 +91,12 @@ class MetaData:
         else:
           self.timestamp = datetime.fromtimestamp(self.timestamp)
 
+    @dehydratable
     def save(self, destination: str) -> str:
         """perform a serialization and save to file"""
 
         with open(destination, "w+") as f:
-            logging.info(f"saving file: {destination}")
+            logging.debug(f"Saving: {destination}")
             f.write(self.serialize())
 
         return destination

@@ -3,7 +3,8 @@ import tracemalloc
 import unittest
 
 import aurum as au
-from aurum.metadata import get_latest_metrics_metadata
+from aurum.metadata.metrics import get_latest_metrics_metadata
+
 
 class TestMetrics(unittest.TestCase):
     def setUp(self):

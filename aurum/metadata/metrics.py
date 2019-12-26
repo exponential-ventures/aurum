@@ -22,6 +22,7 @@
 ##
 
 import os
+import logging
 
 from aurum import constants as cons
 from aurum import git
@@ -52,6 +53,7 @@ class MetricsMetaData(MetaData):
             )
 
             destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
+            logging.debug(f"Saving metric file to: {destination}")
 
             return super().save(destination)
 
