@@ -1,6 +1,5 @@
 import hashlib
 
-from . import Theorem
 from .metadata.dataset import get_dataset_metadata
 from .metadata.experiment import get_latest_experiment_metadata_by_date
 from .singleton import SingletonDecorator
@@ -35,11 +34,6 @@ def use_datasets(*args):
             )
     for ds in args:
         dt.datasets.append(ds)
-
-    last_exp = get_latest_experiment_metadata_by_date()
-
-    if last_exp and last_exp.dataset_hash != dt.dataset_hash():
-        Theorem().dataset_did_change(dt.dataset_hash())
 
 
 def check_ds_exists(file_name: str) -> bool:
