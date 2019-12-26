@@ -20,7 +20,7 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-import hashlib
+
 import os
 
 from aurum import constants as cons
@@ -50,12 +50,6 @@ class ParameterMetaData(MetaData):
             path=destination_path
         )
         return super().save(destination)
-
-    @property
-    def parameter_hash(self) -> str:
-        p_hash = hashlib.sha1()
-        p_hash.update(self.parameters.encode())
-        return p_hash.hexdigest()
 
 
 def get_latest_parameter() -> ParameterMetaData:
