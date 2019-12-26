@@ -26,10 +26,10 @@ import os
 from datetime import datetime
 from glob import glob
 
-import .constants as cons
-from . import git
 from .metadata import MetaData, gen_meta_file_name_from_hash
-from .utils import gen_file_hash, dir_files_by_last_modification_date
+from .. import constants as cons
+from .. import git
+from ..utils import gen_file_hash, dir_files_by_last_modification_date
 
 CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 
