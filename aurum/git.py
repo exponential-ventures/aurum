@@ -67,7 +67,11 @@ def get_git_repo_root() -> str:
 
 
 def init():
-    run_git("init").wait()
+    p = run_git("init")
+    _, err = p.communicate()
+    if p.returncode != 0:
+        raise Exception(f"Failed to run 'git init': {err}")
+
 
 
 def rm(filepath, soft_delete: bool = True):
@@ -115,4 +119,4 @@ def last_commit_hash() -> str:
 
 
 def run_git(*args):
-    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE)
+    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
