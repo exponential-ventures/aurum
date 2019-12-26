@@ -36,10 +36,10 @@ def use_datasets(*args):
     for ds in args:
         dt.datasets.append(ds)
 
-    last_exp = get_latest_experiment_metadata_by_date()
+    is_new, str_hash = is_new_dataset()
 
-    if last_exp and last_exp.dataset_hash != dt.dataset_hash():
-        Theorem().dataset_did_change(dt.dataset_hash())
+    if is_new():
+        Theorem().dataset_did_change(str_hash)
 
 
 def check_ds_exists(file_name: str) -> bool:
