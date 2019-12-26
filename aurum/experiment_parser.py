@@ -11,7 +11,6 @@ from .singleton import SingletonDecorator
 @SingletonDecorator
 class ExperimentArgParser:
     def __init__(self):
-        # check_inside_au()
 
         # TODO: Change this description so that it reflects what the ExperimentArgParser really is.
         description = """Aurum is a new and simplified approach for data scientists to
@@ -26,8 +25,9 @@ class ExperimentArgParser:
 
         self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
 
-        self.parser.add_argument('-v', '--verbose', required=False, default=False)
-        self.parser.add_argument('-d', '--dry-run', required=False, default=False)
+        self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+        self.parser.add_argument("-n", "--no-tracking", help="Don't store any metadata about this experiment",
+                                 action="store_true")
 
         try:
             known_params = load_parameters()

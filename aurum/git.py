@@ -54,7 +54,7 @@ def running_from_git_repo() -> bool:
 
 def get_git_repo_root() -> str:
     if not running_from_git_repo():
-        logging.warning("Not running from a git repo")
+        logging.debug("Not running from a git repo")
         return ""
 
     process = run_git(

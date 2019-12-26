@@ -24,4 +24,4 @@ au:
 
 .PHONY: example
 example:
-	docker run -it --rm --name aurum aurum:latest python examples/src/experiment.py
+	docker run -it --rm --name aurum aurum:latest /bin/bash -c "au init && examples/src/experiment.py -v -n"

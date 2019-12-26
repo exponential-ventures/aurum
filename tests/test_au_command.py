@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 import shutil
@@ -7,8 +6,6 @@ import unittest
 import uuid
 
 from aurum import constants as cons
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 class AuCommandTestCase(unittest.TestCase):

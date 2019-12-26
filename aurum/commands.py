@@ -30,13 +30,7 @@ from pathlib import Path
 
 from . import constants as cons, base, git
 from .metadata import get_dataset_metadata, DatasetMetaData
-from .experiment_parser import ExperimentArgParser
-from .theorem import Theorem
 from .utils import make_safe_filename
-
-parser = ExperimentArgParser()
-
-theorem = Theorem()
 
 
 def run_init() -> None:

@@ -20,7 +20,8 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-
+import json
+import logging
 import os
 
 from aurum import constants as cons
@@ -48,8 +49,12 @@ class MetricsMetaData(MetaData):
         )
 
         destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
-
+        logging.debug(f"Saving metric file to: {destination}")
         return super().save(destination)
+
+    def deserialize(self, raw_json: str):
+        super().deserialize(raw_json)
+        self.metrics = json.loads(self.metrics)
 
 
 def get_latest_metrics_metadata() -> MetricsMetaData:
