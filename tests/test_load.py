@@ -14,6 +14,9 @@ class LoadTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
+
+        Theorem.instance = None
+
         for path in base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
