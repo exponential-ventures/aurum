@@ -44,6 +44,7 @@ class LoadTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         super().tearDown()
         for path in base.DEFAULT_DIRS:
+            logging.debug(f"Removing dir: {path}")
             shutil.rmtree(path, ignore_errors=True)
 
     def test_load_unknown_experiment(self):
