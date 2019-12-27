@@ -111,8 +111,8 @@ def run_load(parsed_result: argparse.Namespace) -> None:
     )
 
     experiments = os.listdir(experiment_dir)
-
-    breakpoint()
+    if f"{parsed_result.tag}.json" not in experiments:
+        raise Exception("Unknown experiment tag")
 
 
 def create_default_dirs() -> None:
