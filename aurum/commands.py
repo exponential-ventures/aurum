@@ -102,7 +102,17 @@ def run_rm(parsed_result: argparse.Namespace) -> None:
 
 
 def run_load(parsed_result: argparse.Namespace) -> None:
-    logging.info(f"Loading experiment with tag: {parsed_result.tag}")
+    logging.info(f"Attempting to load experiment with tag: {parsed_result.tag}")
+
+    experiment_dir = os.path.join(
+        git.get_git_repo_root(),
+        cons.REPOSITORY_DIR,
+        cons.EXPERIMENTS_METADATA_DIR,
+    )
+
+    experiments = os.listdir(experiment_dir)
+
+    breakpoint()
 
 
 def create_default_dirs() -> None:

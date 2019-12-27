@@ -3,6 +3,7 @@ import logging
 import shutil
 import subprocess
 import unittest
+import uuid
 
 from aurum import commands, base, end_experiment, Theorem, is_new_requirements
 
@@ -18,7 +19,7 @@ class LoadTestCase(unittest.TestCase):
 
         commands.run_init()
 
-        # New experiment here
+        # Creating a new experiment by simply changing the requirements.
         proc = subprocess.Popen(
             ["pip install minimal", ],
             stdout=subprocess.PIPE,
@@ -36,6 +37,8 @@ class LoadTestCase(unittest.TestCase):
 
         Theorem().requirements_did_change(b_hash)
 
+        self.experiment_id = Theorem().experiment_id
+
         self.assertTrue(end_experiment())
 
     def tearDown(self) -> None:
@@ -43,10 +46,18 @@ class LoadTestCase(unittest.TestCase):
         for path in base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
-    def test_load(self):
+    def test_load_unknown_experiment(self):
 
         cli_result = argparse.Namespace(
-            tag=Theorem().experiment_id,
+            tag=str(uuid.uuid4()),
+        )
+        with self.assertRaises(Exception):
+            commands.run_load(cli_result)
+
+    def test_load_known_experiment(self):
+
+        cli_result = argparse.Namespace(
+            tag=self.experiment_id,
         )
 
         commands.run_load(cli_result)
