@@ -206,7 +206,7 @@ def save_metrics(**kwargs):
             logging.error(message)
 
 
-def end_experiment():
+def end_experiment() -> bool:
     commit_msg = ""
 
     theorem = Theorem()
@@ -253,3 +253,7 @@ def end_experiment():
         git.add_dirs(DEFAULT_DIRS)
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
+
+        return True
+
+    return False
