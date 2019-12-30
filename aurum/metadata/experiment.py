@@ -1,11 +1,9 @@
 import os
 
-from aurum import constants as cons
-from aurum import git
-from aurum.metadata import MetaData
-from aurum.utils import gen_dict_hash, dir_files_by_last_modification_date
-
-EXPERIMENT_METADATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR)
+from .metadata import MetaData
+from .. import constants as cons
+from .. import git
+from ..utils import gen_dict_hash, dir_files_by_last_modification_date
 
 
 class ExperimentMetaData(MetaData):
@@ -29,9 +27,12 @@ class ExperimentMetaData(MetaData):
             self.parent_hash = parent.file_hash
             return super().save(destination)
 
-    def get_parent(self):
+    @staticmethod
+    def get_parent():
+        experiment_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
+                                               cons.EXPERIMENTS_METADATA_DIR)
 
-        files = dir_files_by_last_modification_date(EXPERIMENT_METADATA_DIR)
+        files = dir_files_by_last_modification_date(experiment_metadata_dir)
         if len(files) > 0:
             return ExperimentMetaData(files[0][1])
 
@@ -43,10 +44,10 @@ class ExperimentMetaData(MetaData):
              'parent_hash': self.parent_hash, 'requirements_hash': self.requirements_hash})
 
 
-
-
 def get_latest_experiment_metadata_by_date() -> ExperimentMetaData:
-    files = dir_files_by_last_modification_date(EXPERIMENT_METADATA_DIR)
+    experiment_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
+                                           cons.EXPERIMENTS_METADATA_DIR)
+    files = dir_files_by_last_modification_date(experiment_metadata_dir)
     if len(files) > 0:
         return ExperimentMetaData(files[0][1])
 

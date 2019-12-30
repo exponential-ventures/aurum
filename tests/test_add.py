@@ -1,17 +1,21 @@
 import argparse
+import logging
 import os
 import shutil
 import unittest
 
 from aurum import base, git, commands
 from aurum.constants import REPOSITORY_DIR
-from tests.utils import run_test_init
+from tests.utils import run_test_init, set_git_for_test
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 class AddTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        set_git_for_test()
         run_test_init()
         self.relative_path = "README.md"
         self.absolute_path = os.path.abspath("README.md")
@@ -41,9 +45,6 @@ class AddTestCase(unittest.TestCase):
 
         self.assertIn(b"new file:   README.md", prod_res)
 
-        meta_data_file_path = os.path.join(REPOSITORY_DIR, os.listdir(REPOSITORY_DIR)[0])
-        meta_data_assert = f'new file:   {meta_data_file_path}'
-        self.assertIn(str.encode(meta_data_assert), prod_res)
 
     def test_is_relevant_file(self):
         parser = argparse.Namespace(files=[

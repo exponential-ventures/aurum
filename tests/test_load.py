@@ -1,13 +1,16 @@
 import argparse
-import logging
+import os
 import shutil
 import subprocess
 import unittest
 import uuid
 
-from aurum import commands, base, end_experiment, Theorem, is_new_requirements
+from aurum import Theorem, is_new_requirements, end_experiment, commands
+from aurum.code_tracker import is_new_code
+from tests.utils import set_git_for_test
 
-logging.getLogger().setLevel(logging.DEBUG)
+
+# logging.getLogger().setLevel(logging.DEBUG)
 
 
 class LoadTestCase(unittest.TestCase):
@@ -15,19 +18,42 @@ class LoadTestCase(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
 
+        set_git_for_test()
+
+        self.repository_path = "/tmp/repository/"
+
+        # Remove if it exists
+        shutil.rmtree(self.repository_path, ignore_errors=True)
+
+        # Create the root repository
+        os.mkdir(self.repository_path)
+
         Theorem.instance = None
 
-        for path in base.DEFAULT_DIRS:
-            shutil.rmtree(path, ignore_errors=True)
+        # Needed so that we fake as if running from the au repo
+        os.chdir(self.repository_path)
 
-        commands.run_init()
+        proc = subprocess.Popen(
+            ["au -v init"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=self.repository_path,
+        )
 
-        # Creating a new experiment by simply changing the requirements.
+        proc.communicate()
+
+        self.assertEqual(proc.returncode, 0)
+
+        # Creating a new experiment
+
+        # Changing the requirements.
         proc = subprocess.Popen(
             ["pip install minimal", ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
+            cwd=self.repository_path,
         )
 
         o, _ = proc.communicate()
@@ -38,20 +64,35 @@ class LoadTestCase(unittest.TestCase):
 
         self.assertTrue(b)
 
+        # Add code
+        with open(os.path.join(self.repository_path, "src/experiment.py"), "w+") as f:
+            f.write("print('Hello world')")
+
+        self.assertTrue(is_new_code())
+
+        # Add dataset
+        with open(os.path.join(self.repository_path, "dataset.txt"), "w+") as tmp_file:
+            tmp_file.write("Your dataset text goes here")
+
+        proc = subprocess.Popen(
+            [f"au -v data add dataset.txt", ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=self.repository_path,
+        )
+
+        out, err = proc.communicate()
+        if proc.returncode != 0:
+            raise Exception(f"Failed: {err}")
+
         Theorem().requirements_did_change(b_hash)
 
         self.experiment_id = Theorem().experiment_id
 
         self.assertTrue(end_experiment())
 
-    def tearDown(self) -> None:
-        super().tearDown()
-        for path in base.DEFAULT_DIRS:
-            logging.debug(f"Removing dir: {path}")
-            shutil.rmtree(path, ignore_errors=True)
-
     def test_load_unknown_experiment(self):
-
         cli_result = argparse.Namespace(
             tag=str(uuid.uuid4()),
         )
@@ -59,7 +100,6 @@ class LoadTestCase(unittest.TestCase):
             commands.run_load(cli_result)
 
     def test_load_known_experiment(self):
-
         cli_result = argparse.Namespace(
             tag=self.experiment_id,
         )
