@@ -40,7 +40,7 @@ def run_init() -> None:
     logging.info("Initializing aurum...")
     au_init()
 
-    logging.debug(f"Repository {base.cwd} initialized.")
+    logging.debug(f"Repository {base.get_cwd()} initialized.")
 
 
 def run_add(parsed_result: argparse.Namespace) -> None:
@@ -56,12 +56,12 @@ def run_add(parsed_result: argparse.Namespace) -> None:
 
         git_proc = git.run_git("add", full_f, meta_data_file_name, )
 
-        result = git_proc.wait()
+        _, err = git_proc.communicate()
 
-        if result != 0:
-            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {result}\n"
-            if git_proc.stderr:
-                message += f"{git_proc.stderr.read()}\n"
+        if git_proc.returncode != 0:
+            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {git_proc.returncode}\n"
+            if err:
+                message += f"{err}\n"
 
             logging.error(message)
             sys.exit(1)
@@ -112,7 +112,9 @@ def run_load(parsed_result: argparse.Namespace) -> None:
 
     experiments = os.listdir(experiment_dir)
     if f"{parsed_result.tag}.json" not in experiments:
-        raise Exception("Unknown experiment tag")
+        msg = f"Unknown experiment tag: {parsed_result.tag} "
+        logging.debug(msg)
+        raise Exception(msg)
 
 
 def create_default_dirs() -> None:
@@ -160,8 +162,8 @@ def check_file(file_path: str) -> str:
 
     if os.path.isabs(file_path):
 
-        if str(base.cwd) in file_path:
-            file_path = file_path.split(str(base.cwd), 1)[1][1:]
+        if str(base.get_cwd()) in file_path:
+            file_path = file_path.split(str(base.get_cwd()), 1)[1][1:]
         else:
             logging.error(f"File '{file_path}' is not relative to au repository")
             sys.exit(1)
