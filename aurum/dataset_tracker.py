@@ -38,7 +38,7 @@ def use_datasets(*args):
 
     is_new, str_hash = is_new_dataset()
 
-    if is_new():
+    if is_new:
         Theorem().dataset_did_change(str_hash)
 
 
