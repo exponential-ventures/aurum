@@ -82,17 +82,18 @@ def rm(filepath, soft_delete: bool = True):
 def add_dirs(dirs: list) -> None:
     for path in dirs:
         process = run_git('add', path)
-        output, error = process.communicate()
+        _, error = process.communicate()
 
-        if error:
-            logging.error(str(error))
+        if process.returncode != 0:
+            raise Exception(f"Failed to run 'git add {path}': {error}")
 
 
 def tag(experiment_id: str, message: str) -> None:
     process = run_git('tag', '-a', experiment_id, '-m', message)
-    output, error = process.communicate()
-    if error:
-        logging.error(str(error))
+    _, error = process.communicate()
+
+    if process.returncode != 0:
+        raise Exception(f"Failed to run 'git tag -a {experiment_id} -m {message}': {error}")
 
 
 def commit(commit_message: str, secondary_msg: str = '') -> None:
@@ -101,17 +102,19 @@ def commit(commit_message: str, secondary_msg: str = '') -> None:
     else:
         process = run_git('commit', '-am', commit_message)
 
-    output, error = process.communicate()
-    if error:
-        logging.error(str(error))
+    _, error = process.communicate()
+
+    if process.returncode != 0:
+        raise Exception(f"Failed to run 'git commit -am {commit_message} -m {secondary_msg}': {error}")
 
 
 def last_commit_hash() -> str:
     process = run_git('rev-parse', 'HEAD')
 
     output, error = process.communicate()
-    if error:
-        logging.error(str(error))
+
+    if process.returncode != 0:
+        raise Exception(f"Failed to run 'git rev-parse': {error}")
 
     return output.decode('utf-8').replace('\n', '')
 
