@@ -30,7 +30,7 @@ from pynvml import *
 
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add
+from .commands import run_init, run_rm, run_add, display_metrics
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_latest_dataset_metadata, get_code_metadata
 from .time_tracker import time_tracker
@@ -68,18 +68,23 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
     if not hasattr(parsed, "subcommand"):
         parser.error(f"No command was passed in")
 
-    if parsed.subcommand == "init":
+    if parsed.subcommand == cons.INIT:
         run_init()
-    elif parsed.subcommand == "data":
+    elif parsed.subcommand == cons.DATA:
 
-        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_RM:
             data_command_checker(parser)
             run_rm(parsed)
-        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "add":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_ADD:
             data_command_checker(parser)
             run_add(parsed)
         else:
             parser.error("Unknown command for data")
+    elif parsed.subcommand == cons.METRICS:
+        experiment_ids = []
+        if parsed.experiment_ids:
+            experiment_ids = parsed.experiment_ids.split(',')
+        display_metrics(experiment_ids)
 
 
 def data_command_checker(parser: argparse.ArgumentParser):
