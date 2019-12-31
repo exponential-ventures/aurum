@@ -29,6 +29,7 @@ from aurum import git
 from aurum.metadata import MetaData
 from aurum.metadata.metadata import gen_meta_file_name_from_hash
 from aurum.utils import gen_dict_hash, dir_files_by_last_modification_date
+from aurum.theorem import Theorem
 
 META_DATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
 
@@ -43,7 +44,7 @@ class MetricsMetaData(MetaData):
         parent_metrics_metadata = get_latest_metrics_metadata()
         self.file_hash = gen_dict_hash(self.metrics)
 
-        if self.file_hash != parent_metrics_metadata.file_hash:
+        if self.file_hash != parent_metrics_metadata.file_hash and Theorem().has_any_change():
             self.parent_hash = parent_metrics_metadata.file_hash
             destination = gen_meta_file_name_from_hash(str(self.timestamp), '', META_DATA_DIR)
             logging.debug(f"Saving metric file to: {destination}")
