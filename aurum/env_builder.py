@@ -1,5 +1,7 @@
+import logging
 import os
 import os.path
+import subprocess
 import sys
 import tempfile
 import venv
@@ -137,7 +139,63 @@ def create_temporary_env(name: str):
     else:
         os.mkdir(dir_name)
 
-    builder = ExtendedEnvBuilder(symlinks=use_symlinks, clear=clear)
+    builder = venv.EnvBuilder(symlinks=use_symlinks, clear=clear, with_pip=True)
     builder.create(dir_name)
 
     return dir_name
+
+
+def install_packages(env_dir, pip_file_contents: list):
+    python_location = get_py_exe(env_dir)
+
+    logging.debug(f"Running install_packages with python_location: {python_location}")
+
+    update_pip(env_dir)
+
+    logging.debug(f"Installing: {pip_file_contents}")
+
+    proc = subprocess.Popen(
+        [python_location, "-m", "pip", "install", *pip_file_contents],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    result, err = proc.communicate()
+
+    if proc.returncode != 0:
+        raise Exception(f"Failed to run pip install({proc.returncode}): {err}")
+
+    return result.decode()
+
+
+def get_py_exe(env_dir):
+    executable = getattr(sys, '_base_executable', sys.executable)
+    dirname, exe_name = os.path.split(os.path.abspath(executable))
+
+    if sys.platform == 'win32':
+        bin_name = 'Scripts'
+    else:
+        bin_name = 'bin'
+
+    bin_path = os.path.join(env_dir, bin_name)
+
+    return os.path.join(bin_path, exe_name)
+
+
+def update_pip(env_dir):
+    python_location = get_py_exe(env_dir)
+
+    logging.debug(f"Running update_pip with python_location: {python_location}")
+
+    proc = subprocess.Popen(
+        [python_location, "-m", "pip", "install", "--upgrade", "pio"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    result, err = proc.communicate()
+
+    if proc.returncode != 0:
+        raise Exception(f"Failed to run pip upgrade: {err}")
+
+    return result.decode()

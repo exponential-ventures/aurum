@@ -29,8 +29,8 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
-from .env_builder import create_temporary_env
-from .metadata import get_dataset_metadata, DatasetMetaData, ExperimentMetaData
+from .env_builder import create_temporary_env, install_packages
+from .metadata import get_dataset_metadata, DatasetMetaData, ExperimentMetaData, RequirementsMetaData
 from .utils import make_safe_filename, is_unnitest_running
 
 
@@ -117,12 +117,33 @@ def run_load(parsed_result: argparse.Namespace) -> None:
         logging.debug(msg)
         raise Exception(msg)
 
-    emd = ExperimentMetaData(f"{parsed_result.tag}.json")
+    emd = ExperimentMetaData(os.path.join(experiment_dir, f"{parsed_result.tag}.json"))
 
-    git.run_git("checkout", "-B", f"{parsed_result.tag}")
+    requirements_metadata_dir = \
+        os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
-    create_temporary_env(parsed_result.tag)
+    for r in os.listdir(requirements_metadata_dir):
+        if r == ".keep":
+            continue
 
+        rmd = RequirementsMetaData(os.path.join(requirements_metadata_dir, r))
+        if rmd.experiment_id == emd.experiment_id:
+            git.run_git("checkout", "-B", f"{parsed_result.tag}")
+
+            loc = create_temporary_env(parsed_result.tag)
+
+            contents = list()
+
+            for line in rmd.contents.splitlines():
+                # Skip ourselves
+                if "aurum" in line:
+                    continue
+
+                contents.append(line)
+
+            install_packages(loc, contents)
+
+            break
 
 
 def create_default_dirs() -> None:

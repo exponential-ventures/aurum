@@ -1,5 +1,4 @@
 import os
-import uuid
 
 from .metadata import MetaData
 from .. import constants as cons, git
@@ -13,7 +12,7 @@ class RequirementsMetaData(MetaData):
         super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        name = f"{uuid.uuid4()}.json"
+        name = f"{self.file_hash}.json"
 
         requirements_metadata_dir = \
             os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)

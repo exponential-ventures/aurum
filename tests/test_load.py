@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import shutil
 import subprocess
@@ -8,9 +9,6 @@ import uuid
 from aurum import Theorem, is_new_requirements, end_experiment, commands
 from aurum.code_tracker import is_new_code
 from tests.utils import set_git_for_test
-
-
-# logging.getLogger().setLevel(logging.DEBUG)
 
 
 class LoadTestCase(unittest.TestCase):
