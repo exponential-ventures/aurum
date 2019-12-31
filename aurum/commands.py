@@ -130,7 +130,7 @@ def run_load(parsed_result: argparse.Namespace) -> None:
         if rmd.experiment_id == emd.experiment_id:
             git.run_git("checkout", "-B", f"{parsed_result.tag}")
 
-            loc = create_temporary_env(parsed_result.tag)
+            virtual_env_dir = create_temporary_env(parsed_result.tag)
 
             contents = list()
 
@@ -141,7 +141,18 @@ def run_load(parsed_result: argparse.Namespace) -> None:
 
                 contents.append(line)
 
-            install_packages(loc, contents)
+            install_packages(virtual_env_dir, contents)
+
+            print(f"Please activate your new virtual environment at: {virtual_env_dir}")
+
+            if sys.platform == 'win32':
+                bin_name = 'Scripts'
+            else:
+                bin_name = 'bin'
+
+            full_virtual_env = os.path.join(virtual_env_dir, bin_name, "activate")
+
+            print(f"Run 'source {full_virtual_env}'")
 
             break
 
