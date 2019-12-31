@@ -30,8 +30,8 @@ from pathlib import Path
 
 from . import constants as cons, base, git
 from .env_builder import create_temporary_env, install_packages
-from .metadata import get_dataset_metadata, DatasetMetaData, ExperimentMetaData, RequirementsMetaData
-from .utils import make_safe_filename, is_unnitest_running
+from .metadata import get_dataset_metadata, DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
+from .utils import make_safe_filename, is_unnitest_running, dic_to_str
 
 
 def run_init() -> None:
@@ -209,3 +209,15 @@ def check_file(file_path: str) -> str:
             sys.exit(1)
 
     return file_path
+
+
+def display_metrics(experiment_ids: list) -> None:
+    metrics_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
+    for path in os.listdir(metrics_path):
+        if cons.KEEP_FILE not in path:
+            metrics_metadata = MetricsMetaData(os.path.join(metrics_path, path))
+            if len(experiment_ids) > 0:
+                if metrics_metadata.experiment_id in experiment_ids:
+                    print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))
+            else:
+                print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))

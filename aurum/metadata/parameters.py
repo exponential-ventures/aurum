@@ -40,7 +40,7 @@ class ParameterMetaData(MetaData):
         parent_parameter_metadata = get_latest_parameter()
         self.file_hash = gen_dict_hash(self.parameters)
 
-        if self.file_hash != self.parent_hash:
+        if self.file_hash != parent_parameter_metadata.file_hash:
             self.parent_hash = parent_parameter_metadata.file_hash
 
             parameter_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
