@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
-from .metadata import get_dataset_metadata, DatasetMetaData
+from .metadata import get_dataset_metadata, DatasetMetaData, ExperimentMetaData
 from .utils import make_safe_filename, is_unnitest_running
 
 
@@ -115,6 +115,12 @@ def run_load(parsed_result: argparse.Namespace) -> None:
         msg = f"Unknown experiment tag: {parsed_result.tag} "
         logging.debug(msg)
         raise Exception(msg)
+
+    emd = ExperimentMetaData(f"{parsed_result.tag}.json")
+
+    git.run_git("checkout", "-B", f"{parsed_result.tag}")
+    
+
 
 
 def create_default_dirs() -> None:
