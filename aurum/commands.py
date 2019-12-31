@@ -29,8 +29,8 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
-from .metadata import get_dataset_metadata, DatasetMetaData
-from .utils import make_safe_filename
+from .metadata import get_dataset_metadata, DatasetMetaData, MetricsMetaData
+from .utils import make_safe_filename, is_unnitest_running, dic_to_str
 
 
 def run_init() -> None:
@@ -111,12 +111,15 @@ def create_default_dirs() -> None:
         os.makedirs(path)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
+
 def au_init() -> None:
     create_default_dirs()
     git.add_dirs(base.DEFAULT_DIRS)
     logging.info("Adding directories to git...")
-    git.commit('Initial Commit')
-    logging.info("Initial commit")
+
+    if not is_unnitest_running():
+        git.commit('Initial Commit')
+        logging.info("Initial commit")
 
 
 def check_file(file_path: str) -> str:
@@ -148,3 +151,15 @@ def check_file(file_path: str) -> str:
             sys.exit(1)
 
     return file_path
+
+
+def display_metrics(experiment_ids: list) -> None:
+    metrics_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
+    for path in os.listdir(metrics_path):
+        if cons.KEEP_FILE not in path:
+            metrics_metadata = MetricsMetaData(os.path.join(metrics_path, path))
+            if len(experiment_ids) > 0:
+                if metrics_metadata.experiment_id in experiment_ids:
+                    print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))
+            else:
+                print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))

@@ -29,15 +29,15 @@ from pathlib import Path
 import psutil
 from pynvml import *
 
+from aurum.theorem import Theorem
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add
+from .commands import run_init, run_rm, run_add, display_metrics
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
-    get_latest_parameter, get_latest_rmd, get_dataset_metadata, get_code_metadata
+    get_latest_parameter, get_latest_rmd, get_latest_dataset_metadata, get_code_metadata
 from .metadata.experiment import get_latest_experiment_metadata_by_date
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
-from aurum.theorem import Theorem
 
 cwd = Path(os.getcwd())
 
@@ -70,18 +70,23 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
     if not hasattr(parsed, "subcommand"):
         parser.error(f"No command was passed in")
 
-    if parsed.subcommand == "init":
+    if parsed.subcommand == cons.INIT:
         run_init()
-    elif parsed.subcommand == "data":
+    elif parsed.subcommand == cons.DATA:
 
-        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "rm":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_RM:
             data_command_checker(parser)
             run_rm(parsed)
-        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == "add":
+        if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_ADD:
             data_command_checker(parser)
             run_add(parsed)
         else:
             parser.error("Unknown command for data")
+    elif parsed.subcommand == cons.METRICS:
+        experiment_ids = []
+        if parsed.experiment_ids:
+            experiment_ids = parsed.experiment_ids.split(',')
+        display_metrics(experiment_ids)
 
 
 def data_command_checker(parser: argparse.ArgumentParser):
@@ -215,7 +220,7 @@ def end_experiment():
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
-        dataset_metadata = get_dataset_metadata()
+        dataset_metadata = get_latest_dataset_metadata()
         code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
                                    f"{theorem.experiment_id}.json")
@@ -223,33 +228,30 @@ def end_experiment():
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
+        mdt.code_hash = code_metadata.file_hash
+        mdt.dataset_hash = dataset_metadata.file_hash
 
         if metrics_metadata.metrics:
-            dict_aux = json.loads(metrics_metadata.metrics)
-            commit_msg += dic_to_str(dict_aux, 'Metrics')
+            commit_msg += dic_to_str(metrics_metadata.metrics, 'Metrics')
         #
         if parameters_metadata.parameters:
-            dict_aux = json.loads(parameters_metadata.parameters)
-            commit_msg += dic_to_str(dict_aux, 'Parameters')
+            commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
 
-        if requirements_metadata.contents:
-            dict_aux = json.loads(requirements_metadata.contents)
-            commit_msg += dic_to_str(dict_aux, 'Requirements')
+        if requirements_metadata.file_hash:
+            commit_msg += f"\n Requiments hash {requirements_metadata.file_hash}"
 
-        if dataset_metadata[1]:
-            mdt.dataset_hash = dataset_metadata.file_hash
-            commit_msg += f"\n Dataset hash: {dataset_metadata[1].file_hash}"
+        if dataset_metadata.file_hash:
+            commit_msg += f"\n Dataset hash: {dataset_metadata.file_hash}"
         else:
             logging.warning("No dataset detected. Please, run 'au data add' or 'au.use_dataset")
 
-        if code_metadata[1]:
-            mdt.code_hash = code_metadata.file_hash
-            commit_msg += f"\n Code hash: {code_metadata[1].file_hash}"
+        if code_metadata.file_hash:
+            commit_msg += f"\n Code hash: {code_metadata.file_hash}"
         else:
             logging.warning("Please, add the source-code under the 'src' folder")
 
-
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
+        git.add_dirs(DEFAULT_DIRS)
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
