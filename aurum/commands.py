@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 from . import constants as cons, base, git
+from .env_builder import create_temporary_env
 from .metadata import get_dataset_metadata, DatasetMetaData, ExperimentMetaData
 from .utils import make_safe_filename, is_unnitest_running
 
@@ -119,7 +120,8 @@ def run_load(parsed_result: argparse.Namespace) -> None:
     emd = ExperimentMetaData(f"{parsed_result.tag}.json")
 
     git.run_git("checkout", "-B", f"{parsed_result.tag}")
-    
+
+    create_temporary_env(parsed_result.tag)
 
 
 
