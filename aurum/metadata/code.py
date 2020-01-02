@@ -103,6 +103,8 @@ def get_latest_code_metadata_by_date() -> CodeMetaData:
     )
 
     for file in os.listdir(code_metadata_dir):
+        if file == cons.KEEP_FILE:
+            continue
 
         full_path = os.path.join(code_metadata_dir, file)
 

@@ -30,23 +30,28 @@ class TestCodeTracker(unittest.TestCase):
 
     def test_is_new_code_brand_new(self):
         # since the contents haven't changed it should return false.
-        self.assertFalse(is_new_code())
+        is_new, _ = is_new_code()
+        self.assertFalse(is_new)
 
     def test_is_new_requirements_adding_requirement(self):
-        self.assertFalse(is_new_code())
+        is_new, _ = is_new_code()
+        self.assertFalse(is_new)
         path = Path("src", "test.py")
         path.touch()
 
         # added a new package so this is new.
-        self.assertTrue(is_new_code())
+        is_new, _ = is_new_code()
+        self.assertTrue(is_new)
 
         # should be false because there isn't any change
-        self.assertFalse(is_new_code())
+        is_new, _ = is_new_code()
+        self.assertFalse(is_new)
 
         with open(path, 'w+') as f:
             f.write('print(foo)')
 
-        self.assertTrue(is_new_code())
+        is_new, _ = is_new_code()
+        self.assertFalse(is_new)
 
 
 if __name__ == '__main__':
