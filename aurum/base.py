@@ -86,7 +86,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
     if parsed.subcommand == cons.INIT:
         run_init()
-    elif parsed.subcommand == "load":
+    elif parsed.subcommand == cons.LOAD:
         data_command_checker(parser)
         run_load(parsed)
     elif parsed.subcommand == cons.DATA:
