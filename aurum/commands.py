@@ -23,15 +23,17 @@
 
 import argparse
 import logging
+import ntpath
 import os
 import shutil
 import sys
+import zipfile
 from pathlib import Path
 
 from . import constants as cons, base, git
 from .env_builder import create_temporary_env, install_packages
 from .metadata import get_dataset_metadata, DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
-from .utils import make_safe_filename, is_unnitest_running, dic_to_str
+from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files
 
 
 def run_init() -> None:
@@ -221,3 +223,45 @@ def display_metrics(experiment_ids: list) -> None:
                     print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))
             else:
                 print(dic_to_str(metrics_metadata.metrics, f'Experiment id: {metrics_metadata.experiment_id}'))
+
+
+def export_experiment(parsed_args: argparse.Namespace) -> None:
+    remove_dirs = []
+    dataset_path = None
+    repo_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
+    # dataset_metadata = get_dataset_metadata_by_experiment_id(parsed_args.tag)
+    dataset_metadata = DatasetMetaData().get_latest()
+    root_path = git.get_git_repo_root()
+
+    if dataset_metadata:
+
+        if parsed_args.no_data:
+            remove_dirs.append(os.path.join(repo_dir, dataset_metadata.file_name))
+        else:
+            dataset_path = dataset_metadata.file_name
+    else:
+        remove_dirs.append(os.path.join(repo_dir, dataset_metadata.file_name))
+
+    if parsed_args.no_logs:
+        remove_dirs.append(os.path.join(root_path, cons.LOGS_DIR))
+    if parsed_args.no_metrics:
+        remove_dirs.append(os.path.join(repo_dir, cons.METRICS_METADATA_DIR))
+
+    destiny_path = os.path.join(parsed_args.tag)
+    if not Path(destiny_path).exists():
+        os.mkdir(destiny_path)
+
+    for path in base.DEFAULT_DIRS:
+        if path.as_posix() in remove_dirs:
+            continue
+        copy_dir_and_files(path, os.path.join(destiny_path, ntpath.basename(path)))
+
+    filename = os.path.join(root_path, parsed_args.tag + '.zip')
+    with zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+        if dataset_path:
+            zip_ref.write(dataset_path)
+        for root, dirs, files in os.walk(destiny_path):
+            for file in files:
+                zip_ref.write(os.path.join(root, file))
+
+    shutil.rmtree(destiny_path, ignore_errors=True)

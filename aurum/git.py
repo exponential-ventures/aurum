@@ -119,5 +119,15 @@ def last_commit_hash() -> str:
     return output.decode('utf-8').replace('\n', '')
 
 
+def current_branch_name() -> str:
+    process = run_git('rev-parse', '--abbrev-ref', 'HEAD')
+    output, error = process.communicate()
+
+    if process.returncode != 0:
+        raise Exception(f"Failed to run 'git rev-parse --abbrev-ref HEAD': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
 def run_git(*args):
     return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

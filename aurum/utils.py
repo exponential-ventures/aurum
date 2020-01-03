@@ -27,6 +27,8 @@ import logging
 import os
 import sys
 import time
+import shutil
+import errno
 from collections import OrderedDict
 
 from . import constants as cons
@@ -136,3 +138,13 @@ def dir_files_by_last_modification_date(directory_path: str, descending_order: b
         file_last_modified_list.reverse()  # The first is the latest modified
 
     return file_last_modified_list
+
+
+def copy_dir_and_files(source, destiny):
+    try:
+        shutil.copytree(source, destiny)
+    except OSError as e:
+        if e.errno == errno.ENOTDIR:
+            shutil.copy(source, destiny)
+        else:
+            logging.error(f'Directory not copied, error: {e}')
