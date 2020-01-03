@@ -22,16 +22,13 @@
 ##
 
 import os
-import time
 from datetime import datetime
 from glob import glob
 
-from aurum import constants as cons
-from aurum import git
-from aurum.metadata import MetaData, gen_meta_file_name_from_hash
-from aurum.utils import gen_file_hash, dir_files_by_last_modification_date
-
-CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import constants as cons
+from .. import git
+from ..utils import gen_file_hash, dir_files_by_last_modification_date
 
 
 class CodeMetaData(MetaData):
@@ -69,7 +66,9 @@ class CodeMetaData(MetaData):
 
 
 def get_code_metadata() -> CodeMetaData:
-    file_last_modified_list = dir_files_by_last_modification_date(CODE_METADATA_PATH)
+    code_metadata_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+
+    file_last_modified_list = dir_files_by_last_modification_date(code_metadata_path)
 
     if len(file_last_modified_list) > 0:
         return CodeMetaData(file_last_modified_list[0][1])

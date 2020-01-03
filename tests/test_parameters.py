@@ -1,24 +1,14 @@
-import unittest
-import shutil
 import os
-import tracemalloc
+import shutil
 import subprocess
+import unittest
 
-try:
-    import aurum as au
-    from aurum.constants import REPOSITORY_DIR
-except ImportError:
-    import sys
-
-    sys.path.append("../aurum")
-    import aurum as au
-    from aurum.constants import REPOSITORY_DIR
+import aurum as au
 
 
 class TestParameters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        tracemalloc.start()
         cls.current_dir = os.getcwd()
 
         au.base.run_init()
@@ -27,8 +17,6 @@ class TestParameters(unittest.TestCase):
     def tearDownClass(cls):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
-
-        tracemalloc.stop()
 
     def test_parameters(self):
         au.parameters(a=1.01, b=333, c=46, epochs=100, batch_size=200)

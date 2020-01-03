@@ -1,5 +1,4 @@
 import shutil
-import tracemalloc
 import unittest
 
 import aurum as au
@@ -10,14 +9,11 @@ class TestMetrics(unittest.TestCase):
     def setUp(self):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
-        tracemalloc.start()
         au.base.run_init()
 
     def tearDown(self):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
-
-        tracemalloc.stop()
 
     def test_register_metrics(self):
         au.register_metrics(resga=800, foo=2_000)

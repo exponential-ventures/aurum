@@ -29,36 +29,52 @@ from pathlib import Path
 import psutil
 from pynvml import *
 
-from aurum.theorem import Theorem
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add, display_metrics
+from .commands import run_init, run_rm, run_add, display_metrics, run_load
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
-    get_latest_parameter, get_latest_rmd, get_latest_dataset_metadata, get_code_metadata
+    get_latest_parameter, get_latest_rmd, get_code_metadata, DatasetMetaData
 from .metadata.experiment import get_latest_experiment_metadata_by_date
+from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 
-cwd = Path(os.getcwd())
+
+def get_cwd():
+    return Path(os.getcwd())
+
 
 DEFAULT_DIRS = [
-    cwd / cons.REPOSITORY_DIR,
-    cwd / "src",
-    cwd / "logs",
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
-    cwd / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+    get_cwd() / cons.REPOSITORY_DIR,
+    get_cwd() / "src",
+    get_cwd() / "logs",
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
+
+
+def get_default_dirs():
+    return [
+        get_cwd() / cons.REPOSITORY_DIR,
+        get_cwd() / "src",
+        get_cwd() / "logs",
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+    ]
 
 
 def execute_commands(parser: argparse.ArgumentParser) -> None:
     parsed = parser.parse_args()
 
-    logging.basicConfig(format="%(levelname)s: %(message)s",
-                        level=logging.DEBUG if parsed.verbose else logging.WARNING)
+    logging.getLogger().setLevel(logging.DEBUG if parsed.verbose else logging.WARNING)
 
     logging.debug(f"Parser arguments: {parsed}")
 
@@ -72,6 +88,9 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
     if parsed.subcommand == cons.INIT:
         run_init()
+    elif parsed.subcommand == cons.LOAD:
+        data_command_checker(parser)
+        run_load(parsed)
     elif parsed.subcommand == cons.DATA:
 
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_RM:
@@ -208,7 +227,7 @@ def save_metrics(**kwargs):
             logging.error(message)
 
 
-def end_experiment():
+def end_experiment() -> bool:
     commit_msg = ""
 
     theorem = Theorem()
@@ -220,7 +239,7 @@ def end_experiment():
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
-        dataset_metadata = get_latest_dataset_metadata()
+        dataset_metadata = DatasetMetaData().get_latest()
         code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
                                    f"{theorem.experiment_id}.json")
@@ -252,6 +271,10 @@ def end_experiment():
 
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
-        git.add_dirs(DEFAULT_DIRS)
+        git.add_dirs(get_default_dirs())
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
+
+        return True
+
+    return False

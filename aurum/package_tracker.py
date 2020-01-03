@@ -32,7 +32,7 @@ def is_new_requirements() -> (bool, str):
         rmd = RequirementsMetaData()
         rmd.file_hash = packages_hash
         rmd.parent_hash = latest_mdf.file_hash
-        rmd.contents = output
+        rmd.contents = output.decode()
         rmd.save()
         return True, rmd.file_hash
 

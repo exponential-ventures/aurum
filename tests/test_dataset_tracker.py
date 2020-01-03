@@ -7,8 +7,6 @@ import unittest
 from aurum import use_datasets
 from aurum.dataset_tracker import DatasetTracker, is_new_dataset
 
-logging.getLogger().setLevel(logging.DEBUG)
-
 
 class DatasetTrackerCase(unittest.TestCase):
 
