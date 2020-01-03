@@ -81,9 +81,12 @@ def check_inside_au():
 def dic_to_str(dictionary: dict, title: str = None) -> str:
     aux_str = ""
     if title:
-        aux_str += f"\n {title}:"
+        aux_str += f"\n {title}"
     for k, v in sorted(dictionary.items()):
-        aux_str += f"\n\t {k}={v}"
+        if isinstance(v, dict):
+            aux_str += dic_to_str(v, k)
+        else:
+            aux_str += f"\n\t {k}={v}"
     aux_str += "\n"
     return aux_str
 
@@ -130,6 +133,6 @@ def dir_files_by_last_modification_date(directory_path: str, descending_order: b
     file_last_modified_list.sort()
 
     if descending_order:
-        file_last_modified_list.reverse() # The first is the latest modified
+        file_last_modified_list.reverse()  # The first is the latest modified
 
     return file_last_modified_list

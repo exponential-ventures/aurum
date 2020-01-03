@@ -33,7 +33,7 @@ import sys
 from pathlib import PurePosixPath, PureWindowsPath
 
 from .au import main
-from .base import execute_commands, save_parameters, parameters, register_metrics, save_metrics, end_experiment
+from .base import execute_commands, parameters, register_metrics, save_metrics, end_experiment
 from .code_tracker import is_new_code
 from .dataset_tracker import use_datasets
 from .dry_run import Dehydrator
@@ -73,7 +73,6 @@ if command is not 'au' and 'unittest' not in command:
 
 __all__ = [
     execute_commands,
-    save_parameters,
     parameters,
     register_metrics,
     use_datasets,

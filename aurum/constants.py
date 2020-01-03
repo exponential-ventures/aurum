@@ -8,3 +8,13 @@ METRICS_METADATA_DIR = "metrics"
 REQUIREMENTS_METADATA_DIR = "requirements"
 CODE_METADATA_DIR = "code"
 EXPERIMENTS_METADATA_DIR = "experiments"
+
+#### COMMANDS
+
+METRICS = 'metrics'
+INIT = 'init'
+LOAD = 'load'
+DATA = 'data'
+DATA_ADD = 'add'
+DATA_RM = 'rm'
+EXPERIMENT_IDS = 'experiment_ids'

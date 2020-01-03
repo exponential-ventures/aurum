@@ -20,17 +20,14 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-
-import os
+import hashlib
 import logging
+import os
 
-from aurum import constants as cons
 from aurum import git
-from aurum.metadata import MetaData
-from aurum.metadata.metadata import gen_meta_file_name_from_hash
-from aurum.utils import gen_dict_hash, dir_files_by_last_modification_date
-
-PARAMETER_METADATA_DIR = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
+from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import constants as cons
+from ..utils import gen_dict_hash, dir_files_by_last_modification_date
 
 
 class ParameterMetaData(MetaData):
@@ -43,19 +40,32 @@ class ParameterMetaData(MetaData):
         parent_parameter_metadata = get_latest_parameter()
         self.file_hash = gen_dict_hash(self.parameters)
 
-        if self.file_hash != self.parent_hash:
+        if self.file_hash != parent_parameter_metadata.file_hash:
             self.parent_hash = parent_parameter_metadata.file_hash
+
+            parameter_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
+                                                  cons.PARAMETER_METADATA_DIR)
+
             destination = gen_meta_file_name_from_hash(
                 meta_data_str=str(self.timestamp),
                 file_name='',
-                path=PARAMETER_METADATA_DIR
+                path=parameter_metadata_dir
             )
             logging.debug(f"Saving parameters file to: {destination}")
             return super().save(destination)
 
+    @property
+    def parameter_hash(self) -> str:
+        p_hash = hashlib.sha1()
+        p_hash.update(self.parameters.encode())
+        return p_hash.hexdigest()
+
 
 def get_latest_parameter() -> ParameterMetaData:
-    files = dir_files_by_last_modification_date(PARAMETER_METADATA_DIR)
+    parameter_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
+                                          cons.PARAMETER_METADATA_DIR)
+
+    files = dir_files_by_last_modification_date(parameter_metadata_dir)
 
     if len(files) > 0:
         return ParameterMetaData(files[0][1])

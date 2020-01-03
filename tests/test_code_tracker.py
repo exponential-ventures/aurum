@@ -1,25 +1,13 @@
-import logging
 import shutil
-import tracemalloc
 import unittest
 from pathlib import Path
 
 from aurum import base
-from aurum.commands import run_init
 from aurum.code_tracker import is_new_code
-
-logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+from aurum.commands import run_init
 
 
 class TestCodeTracker(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        tracemalloc.start()
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        tracemalloc.stop()
 
     def setUp(self) -> None:
         run_init()

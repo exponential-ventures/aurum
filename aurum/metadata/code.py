@@ -31,8 +31,6 @@ from .. import constants as cons
 from .. import git
 from ..utils import gen_file_hash, dir_files_by_last_modification_date
 
-CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
-
 
 class CodeMetaData(MetaData):
     """
@@ -62,7 +60,9 @@ class CodeMetaData(MetaData):
 
 
 def get_code_metadata() -> CodeMetaData:
-    file_last_modified_list = dir_files_by_last_modification_date(CODE_METADATA_PATH)
+    code_metadata_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+
+    file_last_modified_list = dir_files_by_last_modification_date(code_metadata_path)
 
     if len(file_last_modified_list) > 0:
         return CodeMetaData(file_last_modified_list[0][1])
