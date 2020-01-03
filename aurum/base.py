@@ -31,7 +31,7 @@ from pynvml import *
 
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add, display_metrics
+from .commands import run_init, run_rm, run_add, display_metrics, run_load
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_code_metadata, DatasetMetaData
 from .metadata.experiment import get_latest_experiment_metadata_by_date
