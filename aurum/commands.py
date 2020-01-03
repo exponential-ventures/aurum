@@ -256,10 +256,11 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
             continue
         copy_dir_and_files(path, os.path.join(destiny_path, ntpath.basename(path)))
 
+    if dataset_path:
+        copy_dir_and_files(dataset_path, os.path.join(destiny_path, ntpath.basename(dataset_path)))
+
     filename = os.path.join(root_path, parsed_args.tag + '.zip')
     with zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
-        if dataset_path:
-            zip_ref.write(dataset_path)
         for root, dirs, files in os.walk(destiny_path):
             for file in files:
                 zip_ref.write(os.path.join(root, file))
