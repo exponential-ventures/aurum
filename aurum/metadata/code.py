@@ -44,8 +44,8 @@ class CodeMetaData(MetaData):
     """
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.file_path_and_hash = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         destination_path = os.path.join(git.get_git_repo_root(),
@@ -87,7 +87,7 @@ def generate_src_files_hash() -> str:
     main_hash = hashlib.sha1()
 
     for p in list_src_files():
-        main_hash.update(gen_file_hash(p))
+        main_hash.update(gen_file_hash(p).encode())
 
     return main_hash.hexdigest()
 

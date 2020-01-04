@@ -10,6 +10,8 @@ from aurum.commands import run_init
 class TestCodeTracker(unittest.TestCase):
 
     def setUp(self) -> None:
+        for path in base.DEFAULT_DIRS:
+            shutil.rmtree(path, ignore_errors=True)
         run_init()
 
     def tearDown(self) -> None:
@@ -17,13 +19,11 @@ class TestCodeTracker(unittest.TestCase):
             shutil.rmtree(path, ignore_errors=True)
 
     def test_is_new_code_brand_new(self):
-        # since the contents haven't changed it should return false.
         is_new, _ = is_new_code()
-        self.assertFalse(is_new)
+        self.assertTrue(is_new)
 
     def test_is_new_requirements_adding_requirement(self):
-        is_new, _ = is_new_code()
-        self.assertFalse(is_new)
+
         path = Path("src", "test.py")
         path.touch()
 
@@ -39,7 +39,7 @@ class TestCodeTracker(unittest.TestCase):
             f.write('print(foo)')
 
         is_new, _ = is_new_code()
-        self.assertFalse(is_new)
+        self.assertTrue(is_new)
 
 
 if __name__ == '__main__':

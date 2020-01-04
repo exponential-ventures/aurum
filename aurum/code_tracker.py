@@ -20,31 +20,35 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
+import logging
 
 from .metadata import CodeMetaData
 from .metadata.code import get_latest_code_metadata_by_date, generate_src_files_hash
 
 
 def is_new_code() -> (bool, str):
-
     # Generate the current code hash string
     current_code_hash = generate_src_files_hash()
 
     # Get the latest saved version of the code
     latest = get_latest_code_metadata_by_date()
 
-    cmd = CodeMetaData()
-
-    # If not latest, then this is the first run so the current code is new or the hash is different.
-    if not latest or latest.file_path_and_hash != current_code_hash:
-
+    # If we don't have a latest. then this is the first run.
+    if not latest:
+        cmd = CodeMetaData()
         cmd.file_path_and_hash = current_code_hash
-
-        if latest:
-            cmd.parent_hash = latest.file_path_and_hash
-
+        logging.debug(f"Saving CodeMetaData without latest and with file_path_and_hash: {current_code_hash} ")
         cmd.save()
+        return True, current_code_hash
 
+    # If we do have a latest and the file hash has changed.
+    if latest.file_path_and_hash != current_code_hash:
+        cmd = CodeMetaData()
+        cmd.file_path_and_hash = current_code_hash
+        cmd.parent_hash = latest.file_path_and_hash
+        logging.debug(f"Saving CodeMetaData latest file_path_and_hash: {latest.file_path_and_hash} "
+                      f"and with file_path_and_hash: {current_code_hash} ")
+        cmd.save()
         return True, current_code_hash
 
     # Code has not changed and is the same as it was in latest
