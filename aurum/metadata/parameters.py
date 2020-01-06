@@ -20,7 +20,6 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-import hashlib
 import logging
 import os
 
@@ -56,9 +55,7 @@ class ParameterMetaData(MetaData):
 
     @property
     def parameter_hash(self) -> str:
-        p_hash = hashlib.sha1()
-        p_hash.update(self.parameters.encode())
-        return p_hash.hexdigest()
+        return gen_dict_hash(self.parameters)
 
 
 def get_latest_parameter() -> ParameterMetaData:

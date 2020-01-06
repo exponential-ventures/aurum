@@ -87,6 +87,8 @@ def generate_src_files_hash() -> str:
     main_hash = hashlib.sha1()
 
     for p in list_src_files():
+        if os.path.isdir(p):
+            continue
         main_hash.update(gen_file_hash(p).encode())
 
     return main_hash.hexdigest()

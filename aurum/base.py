@@ -158,6 +158,18 @@ def parameters(**kwargs):
             if git_proc.stderr:
                 message += f"{git_proc.stderr.read()}\n"
             logging.error(message)
+    elif latest_exp is None:
+        Theorem().parameters_did_change(pmd.parameter_hash)
+        meta_data_file_name = pmd.save()
+        git_proc = git.run_git("add", meta_data_file_name)
+
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
+
 
 
 def register_metrics(**kwargs):
@@ -262,7 +274,7 @@ def end_experiment() -> bool:
             commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
 
         if requirements_metadata.file_hash:
-            commit_msg += f"\n Requiments hash {requirements_metadata.file_hash}"
+            commit_msg += f"\n Requirements hash {requirements_metadata.file_hash}"
 
         if dataset_metadata.file_hash:
             commit_msg += f"\n Dataset hash: {dataset_metadata.file_hash}"
