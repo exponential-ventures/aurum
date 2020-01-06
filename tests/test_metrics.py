@@ -2,7 +2,7 @@ import shutil
 import unittest
 
 import aurum as au
-from aurum.metadata.metrics import get_latest_metrics_metadata
+from aurum.metadata.metrics import MetricsMetaData
 
 
 class TestMetrics(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestMetrics(unittest.TestCase):
 
     def test_register_metrics(self):
         au.register_metrics(resga=800, foo=2_000)
-        metrics_metadata = get_latest_metrics_metadata()
+        metrics_metadata = MetricsMetaData().get_latest()
         self.assertEqual(metrics_metadata.metrics['resga'], 800)
         self.assertEqual(metrics_metadata.metrics['foo'], 2_000)
         self.assertTrue('environment' in metrics_metadata.metrics)

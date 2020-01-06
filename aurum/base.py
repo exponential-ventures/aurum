@@ -31,7 +31,7 @@ from pynvml import *
 
 from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
-from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
+from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, \
     get_latest_parameter, get_latest_rmd, DatasetMetaData, CodeMetaData
 from .theorem import Theorem
 from .time_tracker import time_tracker
@@ -215,7 +215,7 @@ def gpu_info():
 
 def save_metrics(**kwargs):
     mmd = MetricsMetaData()
-    mmd.metrics = json.dumps(kwargs)
+    mmd.metrics = kwargs
     meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
@@ -239,7 +239,7 @@ def end_experiment() -> bool:
         mdt = ExperimentMetaData()
 
         mdt.file_name = theorem.experiment_id
-        metrics_metadata = get_latest_metrics_metadata()
+        metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()

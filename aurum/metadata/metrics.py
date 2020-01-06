@@ -25,10 +25,9 @@ import logging
 import os
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
-from .. import constants as cons
+from .. import constants as cons, git
 from ..theorem import Theorem
-from .. import git
-from ..utils import gen_dict_hash, dir_files_by_last_modification_date
+from ..utils import gen_dict_hash
 
 
 class MetricsMetaData(MetaData):
@@ -38,23 +37,21 @@ class MetricsMetaData(MetaData):
         super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        parent_metrics_metadata = get_latest_metrics_metadata()
+        mmd = MetricsMetaData()
+
+        parent = mmd.get_latest()
         self.file_hash = gen_dict_hash(self.metrics)
 
-        if self.file_hash != parent_metrics_metadata.file_hash and Theorem().has_any_change():
-            self.parent_hash = parent_metrics_metadata.file_hash
-            meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
-            destination = gen_meta_file_name_from_hash(str(self.timestamp), '', meta_data_dir)
-            logging.debug(f"Saving metric file to: {destination}")
+        if parent and self.file_hash != parent.file_hash and Theorem().has_any_change():
+            self.parent_hash = parent.file_hash
 
-            return super().save(destination)
+        destination = gen_meta_file_name_from_hash(str(self.timestamp), '', mmd.get_dir())
+        logging.debug(f"Saving metric file to: {destination}")
+        return super().save(destination)
 
-
-def get_latest_metrics_metadata() -> MetricsMetaData:
-    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
-    files = dir_files_by_last_modification_date(meta_data_dir)
-
-    if len(files) > 0:
-        return MetricsMetaData(files[0][1])
-
-    return MetricsMetaData()
+    def get_dir(self):
+        return os.path.join(
+            git.get_git_repo_root(),
+            cons.REPOSITORY_DIR,
+            cons.METRICS_METADATA_DIR,
+        )
