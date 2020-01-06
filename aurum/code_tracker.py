@@ -22,8 +22,7 @@
 ##
 import logging
 
-from .metadata import CodeMetaData
-from .metadata.code import get_latest_code_metadata_by_date, generate_src_files_hash
+from .metadata import CodeMetaData, generate_src_files_hash
 
 
 def is_new_code() -> (bool, str):
@@ -31,7 +30,7 @@ def is_new_code() -> (bool, str):
     current_code_hash = generate_src_files_hash()
 
     # Get the latest saved version of the code
-    latest = get_latest_code_metadata_by_date()
+    latest = CodeMetaData().get_latest()
 
     # If we don't have a latest. then this is the first run.
     if not latest:

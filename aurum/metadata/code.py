@@ -23,25 +23,14 @@
 
 import hashlib
 import os
-from datetime import datetime
 from glob import glob
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
-from .. import constants as cons
-from .. import git
-from ..utils import gen_file_hash, dir_files_by_last_modification_date
+from .. import constants as cons, git
+from ..utils import gen_file_hash
 
 
 class CodeMetaData(MetaData):
-    """
-    Responsible for interacting with Meta Data files:
-    - Accessing attributes such as hashes and timestamps ect.
-    - Serialize and deserialize from file format.
-    - Generate file hash.
-    - Generate meta data hash.
-    - Generate meta data file name.
-    - TODO: Traverse a code's history.
-    """
 
     def __init__(self, file_name: str = '') -> None:
         self.file_path_and_hash = None
@@ -58,16 +47,12 @@ class CodeMetaData(MetaData):
         )
         return super().save(destination)
 
-
-def get_code_metadata() -> CodeMetaData:
-    code_metadata_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
-
-    file_last_modified_list = dir_files_by_last_modification_date(code_metadata_path)
-
-    if len(file_last_modified_list) > 0:
-        return CodeMetaData(file_last_modified_list[0][1])
-
-    return CodeMetaData()
+    def get_dir(self):
+        return os.path.join(
+            git.get_git_repo_root(),
+            cons.REPOSITORY_DIR,
+            cons.CODE_METADATA_DIR,
+        )
 
 
 def list_src_files() -> list:
@@ -90,27 +75,3 @@ def generate_src_files_hash() -> str:
         main_hash.update(gen_file_hash(p).encode())
 
     return main_hash.hexdigest()
-
-
-def get_latest_code_metadata_by_date() -> CodeMetaData:
-    newest = None
-    now = datetime.now()
-
-    code_metadata_dir = os.path.join(
-        git.get_git_repo_root(),
-        cons.REPOSITORY_DIR,
-        cons.CODE_METADATA_DIR,
-    )
-
-    for file in os.listdir(code_metadata_dir):
-        if file == cons.KEEP_FILE:
-            continue
-
-        full_path = os.path.join(code_metadata_dir, file)
-
-        cmd = CodeMetaData(full_path)
-        if now > cmd.timestamp:
-            newest = cmd
-            now = cmd.timestamp
-
-    return newest
