@@ -6,12 +6,15 @@ import unittest
 
 from aurum import use_datasets
 from aurum.dataset_tracker import DatasetTracker, is_new_dataset
+from tests import set_git_for_test
 
 
 class DatasetTrackerCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        set_git_for_test()
+
         self.repository_path = "/tmp/repository/"
         # Create the root repository
         os.mkdir(self.repository_path)

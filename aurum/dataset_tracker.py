@@ -1,9 +1,8 @@
 import hashlib
 
-from .theorem import Theorem
-from .metadata.dataset import get_dataset_metadata
-from .metadata.experiment import get_latest_experiment_metadata_by_date
+from .metadata import DatasetMetaData, get_latest_experiment_metadata_by_date
 from .singleton import SingletonDecorator
+from .theorem import Theorem
 
 
 @SingletonDecorator
@@ -17,7 +16,7 @@ class DatasetTracker:
         full_hash_str = ""
 
         for ds in self.datasets:
-            _, dsm = get_dataset_metadata(ds)
+            dsm = DatasetMetaData().get_by_ds_name(ds)
             full_hash_str += dsm.file_hash
 
         full_hash = hashlib.sha1()
@@ -44,7 +43,7 @@ def use_datasets(*args):
 
 def check_ds_exists(file_name: str) -> bool:
     try:
-        get_dataset_metadata(file_name)
+        DatasetMetaData().get_by_ds_name(file_name)
         return True
     except FileNotFoundError:
         return False

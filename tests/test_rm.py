@@ -38,13 +38,13 @@ class RmTestCase(unittest.TestCase):
             shutil.rmtree(path, ignore_errors=True)
 
     def test_rm_from_metadata(self):
-        # Assert there is one metadata files
-        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 1)
+        # Assert there is one metadata files, and one .keep
+        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 2)
 
         commands.run_rm(self.parser)
 
-        # Assert there is no metadata files
-        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 0)
+        # Assert there is no metadata files, and just one .keep
+        self.assertEqual(len(os.listdir(os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))), 1)
 
         # Assert files are not in git.
         proc = git.run_git(
