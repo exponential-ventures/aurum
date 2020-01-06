@@ -29,6 +29,7 @@ import sys
 import time
 import shutil
 import errno
+import urllib.request
 from collections import OrderedDict
 
 from . import constants as cons
@@ -148,3 +149,8 @@ def copy_dir_and_files(source, destiny):
             shutil.copy(source, destiny)
         else:
             logging.error(f'Directory not copied, error: {e}')
+
+
+def download_file_from_web(url: str, output: str) -> None:
+    with urllib.request.urlopen(url) as response, open(output, 'wb') as f:
+        shutil.copyfileobj(response, f)
