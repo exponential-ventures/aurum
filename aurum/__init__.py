@@ -40,7 +40,7 @@ from .dry_run import Dehydrator
 from .experiment_parser import ExperimentArgParser
 from .logging_tracker import LoggingTracker
 from .package_tracker import is_new_requirements
-from .theorem import Theorem
+from aurum.theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import check_inside_au
 

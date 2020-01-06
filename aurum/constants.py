@@ -1,6 +1,7 @@
 REPOSITORY_DIR = ".au"
 KEEP_FILE = ".keep"
 SOURCE_CODE_DIR = "src"
+LOGS_DIR = "logs"
 
 DATASET_METADATA_DIR = "datasets"
 PARAMETER_METADATA_DIR = "parameters"
@@ -18,3 +19,4 @@ DATA = 'data'
 DATA_ADD = 'add'
 DATA_RM = 'rm'
 EXPERIMENT_IDS = 'experiment_ids'
+EXPORT_TAG = 'export'

@@ -94,6 +94,16 @@ def config_parser() -> argparse.ArgumentParser:
     parser_metrics.set_defaults(subcommand=cons.METRICS)
     parser_metrics.add_argument(cons.EXPERIMENT_IDS, type=str, nargs='?', default=None)
 
+    #######
+    # export tag
+    parser_export = subparsers.add_parser(cons.EXPORT_TAG, help="export tag")
+    parser_export.set_defaults(subcommand=cons.EXPORT_TAG)
+    parser_export.add_argument("tag", type=str, action="store")
+    parser_export.add_argument("--no-data", dest="no_data", action="store_true", default=False)
+    parser_export.add_argument("--no-metrics", dest="no_metrics", action="store_true", default=False)
+    parser_export.add_argument("--no-logs", dest="no_logs", action="store_true", default=False)
+
+
     ######
     # Other arguments
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")

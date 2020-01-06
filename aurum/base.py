@@ -31,11 +31,11 @@ from pynvml import *
 
 from . import constants as cons
 from . import git
-from .commands import run_init, run_rm, run_add, display_metrics, run_load
+from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, get_code_metadata, DatasetMetaData
 from .metadata.experiment import get_latest_experiment_metadata_by_date
-from .theorem import Theorem
+from aurum.theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 
@@ -106,6 +106,11 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
         if parsed.experiment_ids:
             experiment_ids = parsed.experiment_ids.split(',')
         display_metrics(experiment_ids)
+    elif parsed.subcommand == cons.EXPORT_TAG:
+        data_command_checker(parser)
+        if parsed.tag not in git.current_branch_name():
+            run_load(parsed)
+        export_experiment(parsed)
 
 
 def data_command_checker(parser: argparse.ArgumentParser):
@@ -239,7 +244,7 @@ def end_experiment() -> bool:
         metrics_metadata = get_latest_metrics_metadata()
         parameters_metadata = get_latest_parameter()
         requirements_metadata = get_latest_rmd()
-        dataset_metadata = DatasetMetaData().get_latest()
+        dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
         code_metadata = get_code_metadata()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
                                    f"{theorem.experiment_id}.json")
