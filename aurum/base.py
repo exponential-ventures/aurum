@@ -31,8 +31,14 @@ from pynvml import *
 
 from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
-from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, \
-    get_latest_rmd, DatasetMetaData, CodeMetaData
+from .metadata import (
+    ParameterMetaData,
+    MetricsMetaData,
+    ExperimentMetaData,
+    DatasetMetaData,
+    CodeMetaData,
+    RequirementsMetaData,
+)
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
@@ -241,7 +247,7 @@ def end_experiment() -> bool:
         mdt.file_name = theorem.experiment_id
         metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
         parameters_metadata = ParameterMetaData().get_latest() or ParameterMetaData()
-        requirements_metadata = get_latest_rmd()
+        requirements_metadata = RequirementsMetaData().get_latest() or RequirementsMetaData()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
         code_metadata = CodeMetaData().get_latest() or CodeMetaData()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,

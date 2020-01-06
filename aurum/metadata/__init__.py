@@ -4,4 +4,4 @@ from .dataset import DatasetMetaData
 from .experiment import ExperimentMetaData
 from .metrics import MetricsMetaData
 from .parameters import ParameterMetaData
-from .requirements import RequirementsMetaData, get_latest_rmd
+from .requirements import RequirementsMetaData

@@ -2,7 +2,6 @@ import os
 
 from .metadata import MetaData
 from .. import constants as cons, git
-from ..utils import dir_files_by_last_modification_date
 
 
 class RequirementsMetaData(MetaData):
@@ -14,21 +13,13 @@ class RequirementsMetaData(MetaData):
     def save(self, destination: str = None) -> str:
         name = f"{self.file_hash}.json"
 
-        requirements_metadata_dir = \
-            os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
-
-        destination = os.path.join(requirements_metadata_dir, name)
+        destination = os.path.join(self.get_dir(), name)
 
         return super().save(destination)
 
-
-def get_latest_rmd() -> RequirementsMetaData:
-    requirements_metadata_dir = \
-        os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
-
-    files = dir_files_by_last_modification_date(requirements_metadata_dir)
-
-    if len(files) > 0:
-        return RequirementsMetaData(files[0][1])
-
-    return RequirementsMetaData()
+    def get_dir(self):
+        return os.path.join(
+            git.get_git_repo_root(),
+            cons.REPOSITORY_DIR,
+            cons.REQUIREMENTS_METADATA_DIR,
+        )
