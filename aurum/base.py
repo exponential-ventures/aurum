@@ -147,7 +147,7 @@ def parameters(**kwargs):
         setattr(sys.modules['aurum'], key, new_dict[key])
 
     pmd = ParameterMetaData()
-    pmd.parameters = json.dumps(kwargs)
+    pmd.parameters = kwargs
 
     latest_exp = ExperimentMetaData().get_latest()
 

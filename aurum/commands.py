@@ -28,12 +28,13 @@ import os
 import shutil
 import sys
 import zipfile
+import re
 from pathlib import Path
 
 from . import constants as cons, base, git
 from .env_builder import create_temporary_env, install_packages
 from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
-from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files
+from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files, download_file_from_web
 
 
 def run_init() -> None:
@@ -48,6 +49,14 @@ def run_init() -> None:
 
 def run_add(parsed_result: argparse.Namespace) -> None:
     for f in parsed_result.files:
+        if re.search('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', f):
+            filename = ntpath.basename(f)
+            logging.info(f"Downloading {filename} from {f}")
+            _, file_extension = os.path.splitext(f)
+            local_path = os.path.join(git.get_git_repo_root(), f"{make_safe_filename(filename)}{file_extension}")
+            download_file_from_web(f, local_path)
+            logging.info(f"Downloaded {filename} to {local_path}")
+            f = local_path
 
         full_f = os.path.join(os.getcwd(), f)
         f = check_file(f)
