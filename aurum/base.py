@@ -143,7 +143,7 @@ def parameters(**kwargs):
         setattr(sys.modules['aurum'], key, new_dict[key])
 
     pmd = ParameterMetaData()
-    pmd.parameters = json.dumps(kwargs)
+    pmd.parameters = kwargs
 
     latest_exp = get_latest_experiment_metadata_by_date()
 
@@ -217,7 +217,7 @@ def gpu_info():
 
 def save_metrics(**kwargs):
     mmd = MetricsMetaData()
-    mmd.metrics = json.dumps(kwargs)
+    mmd.metrics = kwargs
     meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
