@@ -14,6 +14,7 @@ EXPERIMENTS_METADATA_DIR = "experiments"
 
 METRICS = 'metrics'
 INIT = 'init'
+LOAD = 'load'
 DATA = 'data'
 DATA_ADD = 'add'
 DATA_RM = 'rm'

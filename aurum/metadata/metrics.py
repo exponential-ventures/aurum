@@ -26,7 +26,7 @@ import os
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
 from .. import constants as cons
-from aurum.theorem import Theorem
+from ..theorem import Theorem
 from .. import git
 from ..utils import gen_dict_hash, dir_files_by_last_modification_date
 
