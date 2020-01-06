@@ -20,25 +20,36 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
+import logging
 
-import ntpath
-
-from aurum.metadata import CodeMetaData, load_code, generate_src_files_hash, get_code_metadata
-from aurum.utils import did_dict_change
+from .metadata import CodeMetaData
+from .metadata.code import get_latest_code_metadata_by_date, generate_src_files_hash
 
 
-def is_new_code() -> bool:
-    mdt = CodeMetaData()
-    old_code_references = load_code()
-    new_code_references = generate_src_files_hash()
+def is_new_code() -> (bool, str):
+    # Generate the current code hash string
+    current_code_hash = generate_src_files_hash()
 
-    is_new = did_dict_change(new_code_references, old_code_references)
+    # Get the latest saved version of the code
+    latest = get_latest_code_metadata_by_date()
 
-    if is_new:
-        metadata = get_code_metadata()
-        mdt.file_path_and_hash = new_code_references
-        if metadata[0]:
-            mdt.parent_file_name = ntpath.basename(metadata[0])
-        mdt.save()
+    # If we don't have a latest. then this is the first run.
+    if not latest:
+        cmd = CodeMetaData()
+        cmd.file_path_and_hash = current_code_hash
+        logging.debug(f"Saving CodeMetaData without latest and with file_path_and_hash: {current_code_hash} ")
+        cmd.save()
+        return True, current_code_hash
 
-    return is_new
+    # If we do have a latest and the file hash has changed.
+    if latest.file_path_and_hash != current_code_hash:
+        cmd = CodeMetaData()
+        cmd.file_path_and_hash = current_code_hash
+        cmd.parent_hash = latest.file_path_and_hash
+        logging.debug(f"Saving CodeMetaData latest file_path_and_hash: {latest.file_path_and_hash} "
+                      f"and with file_path_and_hash: {current_code_hash} ")
+        cmd.save()
+        return True, current_code_hash
+
+    # Code has not changed and is the same as it was in latest
+    return False, latest.file_path_and_hash

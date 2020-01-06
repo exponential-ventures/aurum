@@ -56,12 +56,13 @@ class RmTestCase(unittest.TestCase):
     def test_is_relevant_file(self):
         parser = argparse.Namespace(
             files=[
-                self.absolute_path,
                 self.relative_path,
             ],
             soft_delete=True,
         )
         commands.run_rm(parser)
+
+    def test_out_of_repo(self):
 
         with self.assertRaises(SystemExit):
             parser = argparse.Namespace(

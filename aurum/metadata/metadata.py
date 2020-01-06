@@ -15,7 +15,10 @@ from enum import Enum
 from typing import Collection, Mapping, Union
 from uuid import UUID
 
-from aurum.utils import make_safe_filename
+from .. import constants as cons
+from ..dry_run import dehydratable
+from ..theorem import Theorem
+from ..utils import make_safe_filename
 
 
 def _isinstance_safe(o, t):
@@ -63,13 +66,19 @@ class MetaData:
 
     def __init__(self, file_name: str = '') -> None:
         self.parent_hash = None
-        self.file_name = file_name
         self.file_hash = None
+
+        self.file_name = file_name
         self.timestamp = datetime.now()
 
+        self.experiment_id = Theorem().experiment_id
+
         if file_name != '':
-            with open(file_name, 'r') as f:
-                self.deserialize(f.read())
+            try:
+                with open(file_name, 'r') as f:
+                    self.deserialize(f.read())
+            except Exception as e:
+                raise Exception(f"Failed to deserialize '{file_name}: {e}' ")
 
     def serialize(self) -> str:
         """convert MetaData object to json string."""
@@ -83,16 +92,64 @@ class MetaData:
         for k, v in json_obj.items():
             setattr(self, k, v)
 
-        self.timestamp = datetime.fromtimestamp(self.timestamp)
+        if isinstance(self.timestamp, datetime):
+            self.timestamp = datetime.timestamp(self.timestamp)
+        else:
+            self.timestamp = datetime.fromtimestamp(self.timestamp)
 
+    @dehydratable
     def save(self, destination: str) -> str:
         """perform a serialization and save to file"""
 
         with open(destination, "w+") as f:
-            logging.info(f"saving file: {destination}")
+            logging.debug(f"Saving: {destination}")
             f.write(self.serialize())
 
         return destination
+
+    def get_dir(self):
+        raise NotImplementedError()
+
+    def get_latest(self):
+
+        newest = None
+        now = datetime.now()
+
+        metadata_dir = self.get_dir()
+
+        for file in os.listdir(metadata_dir):
+
+            # Ignore keep files.
+            if cons.KEEP_FILE in file:
+                continue
+
+            full_path = os.path.join(metadata_dir, file)
+
+            # Files can be 1 level nested (See Datasets for an example)
+            if os.path.isdir(full_path):
+
+                for sub_file in os.listdir(full_path):
+
+                    sub_full_path = os.path.join(full_path, sub_file)
+
+                    # Ignore keep files.
+                    if cons.KEEP_FILE in sub_file:
+                        continue
+
+                    dmd = MetaData(sub_full_path)
+                    if now > dmd.timestamp:
+                        newest = dmd
+                        now = dmd.timestamp
+
+            else:
+
+                dmd = MetaData(full_path)
+
+                if now > dmd.timestamp:
+                    newest = dmd
+                    now = dmd.timestamp
+
+        return newest
 
 
 def gen_meta_file_name_from_hash(meta_data_str, file_name, path):

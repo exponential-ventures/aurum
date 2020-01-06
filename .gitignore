@@ -108,3 +108,8 @@ venv.bak/
 
 # vscode
 .vscode/
+
+# au specific repositories
+.au/
+logs/
+src/

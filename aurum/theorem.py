@@ -1,4 +1,5 @@
 from .singleton import SingletonDecorator
+import uuid
 
 
 @SingletonDecorator
@@ -13,6 +14,7 @@ class Theorem:
         self.code_changed = False
         self.dataset_changed = False
         self.parameters_changed = False
+        self.experiment_id = str(uuid.uuid4())
 
     def has_any_change(self):
         return self.requirements_changed is not False or self.code_changed is not False or \

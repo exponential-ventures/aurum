@@ -1,34 +1,34 @@
 import os
-import uuid
 
-from aurum import constants as cons, git
-from aurum.metadata import MetaData
+from .metadata import MetaData
+from .. import constants as cons, git
+from ..utils import dir_files_by_last_modification_date
 
 
 class RequirementsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.contents = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        name = f"{uuid.uuid4()}.json"
-        root = git.get_git_repo_root()
-        destination = os.path.join(root, cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR, name)
+        name = f"{self.file_hash}.json"
+
+        requirements_metadata_dir = \
+            os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
+
+        destination = os.path.join(requirements_metadata_dir, name)
 
         return super().save(destination)
 
 
 def get_latest_rmd() -> RequirementsMetaData:
-    newest = RequirementsMetaData()
-    requirements_metadata_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR,
-                                             cons.REQUIREMENTS_METADATA_DIR)
-    for file in os.listdir(requirements_metadata_dir):
+    requirements_metadata_dir = \
+        os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
-        full_path = os.path.join(requirements_metadata_dir, file)
+    files = dir_files_by_last_modification_date(requirements_metadata_dir)
 
-        rmd = RequirementsMetaData(full_path)
-        if rmd.timestamp < newest.timestamp:
-            newest = rmd
+    if len(files) > 0:
+        return RequirementsMetaData(files[0][1])
 
-    return newest
+    return RequirementsMetaData()

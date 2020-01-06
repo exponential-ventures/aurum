@@ -21,47 +21,40 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 
+import logging
 import os
 
-from aurum import constants as cons
-from aurum import git
-from aurum.metadata import MetaData
-from aurum.metadata.metadata import gen_meta_file_name_from_hash
+from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import constants as cons
+from ..theorem import Theorem
+from .. import git
+from ..utils import gen_dict_hash, dir_files_by_last_modification_date
 
 
 class MetricsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        super().__init__(file_name)
         self.metrics = None
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
         parent_metrics_metadata = get_latest_metrics_metadata()
+        self.file_hash = gen_dict_hash(self.metrics)
 
-        if parent_metrics_metadata.timestamp < self.timestamp:
+        if self.file_hash != parent_metrics_metadata.file_hash and Theorem().has_any_change():
             self.parent_hash = parent_metrics_metadata.file_hash
+            meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
+            destination = gen_meta_file_name_from_hash(str(self.timestamp), '', meta_data_dir)
+            logging.debug(f"Saving metric file to: {destination}")
 
-        destination_path = os.path.join(
-            git.get_git_repo_root(),
-            cons.REPOSITORY_DIR,
-            cons.METRICS_METADATA_DIR,
-        )
-
-        destination = gen_meta_file_name_from_hash(str(self.timestamp), '', destination_path)
-
-        return super().save(destination)
+            return super().save(destination)
 
 
 def get_latest_metrics_metadata() -> MetricsMetaData:
-    newest = MetricsMetaData()
     meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
+    files = dir_files_by_last_modification_date(meta_data_dir)
 
-    for file in os.listdir(meta_data_dir):
+    if len(files) > 0:
+        return MetricsMetaData(files[0][1])
 
-        full_path = os.path.join(meta_data_dir, file)
-
-        mmd = MetricsMetaData(full_path)
-        if mmd.timestamp < newest.timestamp:
-            newest = mmd
-
-    return newest
+    return MetricsMetaData()

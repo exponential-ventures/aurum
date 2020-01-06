@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 
@@ -15,21 +16,36 @@ class DatasetMetaData(MetaData):
         self.size = 0
 
     def save(self, destination: str = None) -> str:
-        meta_data_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, "datasets")
+        meta_data_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)
         destination = gen_meta_file_name_from_hash(
             meta_data_str=json.dumps(self.serialize()),
             file_name=self.file_name,
-            path=meta_data_path
+            path=meta_data_path,
         )
 
         self.file_hash = gen_file_hash(os.path.join(git.get_git_repo_root(), self.file_name))
 
+        old_dataset_metadata = DatasetMetaData().get_latest()
+
+        if old_dataset_metadata and self.file_hash != old_dataset_metadata.file_hash:
+            self.parent_hash = old_dataset_metadata.file_hash
+
+        logging.debug(f"Saving dataset metadata file to: {destination}")
         return super().save(destination)
+
+    def get_dir(self):
+        return os.path.join(
+            git.get_git_repo_root(),
+            cons.REPOSITORY_DIR,
+            cons.DATASET_METADATA_DIR,
+        )
 
 
 def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
-    meta_data_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR,
-                                 make_safe_filename(file_name))
+    meta_data_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)
+
+    meta_data_dir = os.path.join(meta_data_path, make_safe_filename(file_name))
+
     for mdf in os.listdir(meta_data_dir):
 
         mdf_path = os.path.join(meta_data_dir, mdf)
@@ -42,23 +58,22 @@ def get_dataset_metadata(file_name: str) -> (str, DatasetMetaData):
     raise FileNotFoundError(f"Metadata not found for {file_name}")
 
 
-def get_latest_dataset_metadata() -> DatasetMetaData:
-    newest = None
-    now = datetime.now()
+def get_dataset_metadata_by_experiment_id(experiment_id: str, dir_path: str = None) -> DatasetMetaData:
+    meta_data_path = dir_path or os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)
 
-    dataset_metadata_dir = os.path.join(
-        git.get_git_repo_root(),
-        cons.REPOSITORY_DIR,
-        cons.DATASET_METADATA_DIR,
-    )
+    for path in os.listdir(meta_data_path):
 
-    for file in os.listdir(dataset_metadata_dir):
+        # Ignore keep files.
+        if cons.KEEP_FILE in path:
+            continue
 
-        full_path = os.path.join(dataset_metadata_dir, file)
+        full_path = os.path.join(meta_data_path, path)
 
-        dmd = DatasetMetaData(full_path)
-        if now > dmd.timestamp:
-            newest = dmd
-            now = dmd.timestamp
+        if os.path.isdir(full_path):
+            get_dataset_metadata_by_experiment_id(experiment_id, full_path)
+        else:
+            dataset_metadata = DatasetMetaData(full_path)
+            if dataset_metadata.experiment_id == experiment_id:
+                return dataset_metadata
 
-    return newest
+    return None

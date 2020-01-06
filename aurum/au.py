@@ -30,6 +30,7 @@ __version__ = "0.1"
 import argparse
 
 from .base import execute_commands
+import aurum.constants as cons
 
 
 def config_parser() -> argparse.ArgumentParser:
@@ -45,41 +46,63 @@ def config_parser() -> argparse.ArgumentParser:
 
     #######
     # init
-    parser_init = subparsers.add_parser("init", help="initialize current directory as an aurum repository")
-    parser_init.set_defaults(subcommand="init")
+    parser_init = subparsers.add_parser(cons.INIT, help="initialize current directory as an aurum repository")
+    parser_init.set_defaults(subcommand=cons.INIT)
+
+    #######
+    # load
+    parser_load = subparsers.add_parser("load", help="load a specific experiment by tag")
+    parser_load.set_defaults(subcommand="load")
+    parser_load.add_argument("tag", type=str, action="store")
 
     #######
     # data
-    parser_data = subparsers.add_parser("data", help="operations on data files")
-    parser_data.set_defaults(subcommand="data")
+    parser_data = subparsers.add_parser(cons.DATA, help="operations on data files")
+    parser_data.set_defaults(subcommand=cons.DATA)
 
     subparser_data = parser_data.add_subparsers()
 
-    parser_data_add = subparser_data.add_parser("add", help="add specified data file(s) to the data index")
-    parser_data_add.set_defaults(subcommand2="add")
+    parser_data_add = subparser_data.add_parser(cons.DATA_ADD, help="add specified data file(s) to the data index")
+    parser_data_add.set_defaults(subcommand2=cons.DATA_ADD)
     parser_data_add.add_argument("files", type=str, nargs='+')
 
     ######
     # add
-    parser_add = subparsers.add_parser("add", help="add specified file to the index")
-    parser_add.set_defaults(subcommand="add")
+    parser_add = subparsers.add_parser(cons.DATA_ADD, help="add specified file to the index")
+    parser_add.set_defaults(subcommand=cons.DATA_ADD)
 
     subparser_add = parser_add.add_subparsers()
 
-    parser_add_files = subparser_add.add_parser("add", help="add specified file(s) to the data index")
-    parser_add_files.set_defaults(subcommand2="add")
+    parser_add_files = subparser_add.add_parser(cons.DATA_ADD, help="add specified file(s) to the data index")
+    parser_add_files.set_defaults(subcommand2=cons.DATA_ADD)
     parser_add_files.add_argument("files", type=str, nargs="+")
 
     #######
     # data rm
-    parser_data_rm = subparser_data.add_parser("rm", help="remove specified data file(s) from the data index")
-    parser_data_rm.set_defaults(subcommand2="rm")
+    parser_data_rm = subparser_data.add_parser(cons.DATA_RM, help="remove specified data file(s) from the data index")
+    parser_data_rm.set_defaults(subcommand2=cons.DATA_RM)
     parser_data_rm.add_argument("files", type=str, nargs="+")
 
     deletion_type_parser = parser_data_rm.add_mutually_exclusive_group(required=False)
     deletion_type_parser.add_argument("--soft-delete", dest="soft_delete", action="store_true")
     deletion_type_parser.add_argument("--hard-delete", dest="soft_delete", action="store_false")
     parser_data_rm.set_defaults(soft_delete=True)
+
+    #######
+    # metrics
+    parser_metrics = subparsers.add_parser(cons.METRICS, help="display metrics")
+    parser_metrics.set_defaults(subcommand=cons.METRICS)
+    parser_metrics.add_argument(cons.EXPERIMENT_IDS, type=str, nargs='?', default=None)
+
+    #######
+    # export tag
+    parser_export = subparsers.add_parser(cons.EXPORT_TAG, help="export tag")
+    parser_export.set_defaults(subcommand=cons.EXPORT_TAG)
+    parser_export.add_argument("tag", type=str, action="store")
+    parser_export.add_argument("--no-data", dest="no_data", action="store_true", default=False)
+    parser_export.add_argument("--no-metrics", dest="no_metrics", action="store_true", default=False)
+    parser_export.add_argument("--no-logs", dest="no_logs", action="store_true", default=False)
+
 
     ######
     # Other arguments

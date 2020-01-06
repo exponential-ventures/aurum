@@ -100,7 +100,9 @@ If you make changes to your code that you want to commit to the repository but y
 
 After you're run your experiment a few times, you can check the performance and compare the results from the command line:
 
-    $ au metrics
+    $ au metrics # display metrics from all experiments
+    $ au metrics acfdf6cd-1f1a-4929-b036-7b0a5399b0c6 # display metrics of the experiment with id acfdf6cd-1f1a-4929-b036-7b0a5399b0c6
+    $ au metrics acfdf6cd-1f1a-4929-b036-7b0a5399b0c6,280459c5-b183-462d-b89e-e53019f81c88 # display metrics of the experiments with id acfdf6cd-1f1a-4929-b036-7b0 and 280459c5-b183-462d-b89e-e53019f81c88
 
 If you want to go back to a specific experiment, run:
 

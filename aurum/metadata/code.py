@@ -23,16 +23,13 @@
 
 import hashlib
 import os
-import json
-from glob import glob
 from datetime import datetime
+from glob import glob
 
-from aurum import constants as cons
-from aurum import git
-from aurum.metadata import MetaData, gen_meta_file_name_from_hash
-from aurum.utils import gen_file_hash
-
-CODE_METADATA_PATH = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
+from .metadata import MetaData, gen_meta_file_name_from_hash
+from .. import constants as cons
+from .. import git
+from ..utils import gen_file_hash, dir_files_by_last_modification_date
 
 
 class CodeMetaData(MetaData):
@@ -48,49 +45,29 @@ class CodeMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
         self.file_path_and_hash = None
-        self.parent_file_name = None
-        self.timestamp = datetime.now()
-
-        if file_name != '':
-            with open(file_name, 'r') as f:
-                self.deserialize(f.read())
-
-    def deserialize(self, raw_json: str):
-        super().deserialize(raw_json)
-        if isinstance(self.timestamp, int):
-            self.timestamp = datetime.fromtimestamp(self.timestamp)
+        super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        if destination is None:
-            destination_path = os.path.join(git.get_git_repo_root(),
-                                            cons.REPOSITORY_DIR,
-                                            cons.CODE_METADATA_DIR)
-            destination = gen_meta_file_name_from_hash(
-                meta_data_str=str(self.timestamp),
-                file_name='',
-                path=destination_path
-            )
+        destination_path = os.path.join(git.get_git_repo_root(),
+                                        cons.REPOSITORY_DIR,
+                                        cons.CODE_METADATA_DIR)
+        destination = gen_meta_file_name_from_hash(
+            meta_data_str=str(self.timestamp),
+            file_name='',
+            path=destination_path
+        )
         return super().save(destination)
 
 
-def get_code_metadata() -> (str, CodeMetaData):
-    if os.path.exists(CODE_METADATA_PATH):
-        for mdf in os.listdir(CODE_METADATA_PATH):
-            mdf_path = os.path.join(CODE_METADATA_PATH, mdf)
+def get_code_metadata() -> CodeMetaData:
+    code_metadata_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 
-            mdo = CodeMetaData(mdf_path)
-            return mdf_path, mdo
+    file_last_modified_list = dir_files_by_last_modification_date(code_metadata_path)
 
-    return None, None
+    if len(file_last_modified_list) > 0:
+        return CodeMetaData(file_last_modified_list[0][1])
 
-
-def load_code() -> dict:
-    metadata = get_code_metadata()
-
-    if metadata[1]:
-        return metadata[1].file_path_and_hash
-    else:
-        return {}
+    return CodeMetaData()
 
 
 def list_src_files() -> list:
@@ -98,9 +75,42 @@ def list_src_files() -> list:
     return glob(f"{path}/*")
 
 
-def generate_src_files_hash() -> dict:
+def generate_src_files_hash_dict() -> dict:
     new_dict = {}
     for p in list_src_files():
         new_dict[p] = gen_file_hash(p)
 
     return new_dict
+
+
+def generate_src_files_hash() -> str:
+    main_hash = hashlib.sha1()
+
+    for p in list_src_files():
+        main_hash.update(gen_file_hash(p).encode())
+
+    return main_hash.hexdigest()
+
+
+def get_latest_code_metadata_by_date() -> CodeMetaData:
+    newest = None
+    now = datetime.now()
+
+    code_metadata_dir = os.path.join(
+        git.get_git_repo_root(),
+        cons.REPOSITORY_DIR,
+        cons.CODE_METADATA_DIR,
+    )
+
+    for file in os.listdir(code_metadata_dir):
+        if file == cons.KEEP_FILE:
+            continue
+
+        full_path = os.path.join(code_metadata_dir, file)
+
+        cmd = CodeMetaData(full_path)
+        if now > cmd.timestamp:
+            newest = cmd
+            now = cmd.timestamp
+
+    return newest
