@@ -32,7 +32,7 @@ from pynvml import *
 from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, \
-    get_latest_parameter, get_latest_rmd, DatasetMetaData, CodeMetaData
+    get_latest_rmd, DatasetMetaData, CodeMetaData
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
@@ -240,7 +240,7 @@ def end_experiment() -> bool:
 
         mdt.file_name = theorem.experiment_id
         metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
-        parameters_metadata = get_latest_parameter()
+        parameters_metadata = ParameterMetaData().get_latest() or ParameterMetaData()
         requirements_metadata = get_latest_rmd()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
         code_metadata = CodeMetaData().get_latest() or CodeMetaData()
