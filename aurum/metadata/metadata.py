@@ -77,6 +77,8 @@ class MetaData:
             try:
                 with open(file_name, 'r') as f:
                     self.deserialize(f.read())
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Metadata not found for {file_name}")
             except Exception as e:
                 raise Exception(f"Failed to deserialize '{file_name}: {e}' ")
 
