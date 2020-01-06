@@ -33,7 +33,6 @@ from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
 from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
     get_latest_parameter, get_latest_rmd, DatasetMetaData, CodeMetaData
-from .metadata.experiment import get_latest_experiment_metadata_by_date
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
@@ -144,7 +143,7 @@ def parameters(**kwargs):
     pmd = ParameterMetaData()
     pmd.parameters = json.dumps(kwargs)
 
-    latest_exp = get_latest_experiment_metadata_by_date()
+    latest_exp = ExperimentMetaData().get_latest()
 
     if latest_exp and latest_exp.parameter_hash != pmd.parameter_hash:
         Theorem().parameters_did_change(pmd.parameter_hash)
