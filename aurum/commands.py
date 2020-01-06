@@ -224,7 +224,6 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
     remove_dirs = []
     dataset_path = None
     repo_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
-    # dataset_metadata = get_dataset_metadata_by_experiment_id(parsed_args.tag)
     dataset_metadata = DatasetMetaData().get_latest()
     root_path = git.get_git_repo_root()
 

@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from typing import Tuple
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
 from .. import constants as cons
@@ -57,24 +56,3 @@ class DatasetMetaData(MetaData):
                 return mdo, meta_data_path
 
         raise FileNotFoundError(f"Metadata not found for {file_name}")
-
-
-def get_dataset_metadata_by_experiment_id(experiment_id: str, dir_path: str = None) -> DatasetMetaData:
-    meta_data_path = dir_path or os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)
-
-    for path in os.listdir(meta_data_path):
-
-        # Ignore keep files.
-        if cons.KEEP_FILE in path:
-            continue
-
-        full_path = os.path.join(meta_data_path, path)
-
-        if os.path.isdir(full_path):
-            get_dataset_metadata_by_experiment_id(experiment_id, full_path)
-        else:
-            dataset_metadata = DatasetMetaData(full_path)
-            if dataset_metadata.experiment_id == experiment_id:
-                return dataset_metadata
-
-    return None
