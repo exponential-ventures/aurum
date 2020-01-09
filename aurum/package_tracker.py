@@ -2,7 +2,7 @@ import hashlib
 import logging
 import subprocess
 
-from .metadata import get_latest_rmd, RequirementsMetaData
+from .metadata import RequirementsMetaData
 
 
 def is_new_requirements() -> (bool, str):
@@ -26,9 +26,18 @@ def is_new_requirements() -> (bool, str):
     packages_hash.update(output)
     packages_hash = packages_hash.hexdigest()
 
-    latest_mdf = get_latest_rmd()
-    if latest_mdf.file_hash != packages_hash:
+    latest_mdf = RequirementsMetaData().get_latest()
+
+    if not latest_mdf:
         logging.debug("This is a new requirements")
+        rmd = RequirementsMetaData()
+        rmd.file_hash = packages_hash
+        rmd.contents = output.decode()
+        rmd.save()
+        return True, rmd.file_hash
+
+    elif latest_mdf and latest_mdf.file_hash != packages_hash:
+        logging.debug("This are changed requirements")
         rmd = RequirementsMetaData()
         rmd.file_hash = packages_hash
         rmd.parent_hash = latest_mdf.file_hash

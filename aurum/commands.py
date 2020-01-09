@@ -33,7 +33,7 @@ from pathlib import Path
 
 from . import constants as cons, base, git
 from .env_builder import create_temporary_env, install_packages
-from .metadata import get_dataset_metadata, DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
+from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
 from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files, download_file_from_web
 
 
@@ -90,27 +90,22 @@ def run_rm(parsed_result: argparse.Namespace) -> None:
         git.rm(filepath, soft_delete=parsed_result.soft_delete)
         logging.info(f"{filepath} removed from git")
 
-        meta_data_path, _ = get_dataset_metadata(filepath)
+        _, meta_data_path = DatasetMetaData().get_by_ds_name(filepath)
 
-        if meta_data_path:
+        logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
 
-            logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
+        git.rm(meta_data_path, soft_delete=parsed_result.soft_delete)
 
-            git.rm(meta_data_path, soft_delete=parsed_result.soft_delete)
+        # might have been removed by git, might not.
+        if os.path.exists(meta_data_path):
+            os.remove(meta_data_path)
 
-            # might have been removed by git, might not.
-            if os.path.exists(meta_data_path):
-                os.remove(meta_data_path)
+        # remove parent dir if empty to avoid lots of empty dirs.
+        parent_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
+        if len(os.listdir(parent_dir)) <= 1:
+            shutil.rmtree(parent_dir, ignore_errors=True)
 
-            # remove parent dir if empty to avoid lots of empty dirs.
-            parent_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
-            if len(os.listdir(parent_dir)) <= 1:
-                shutil.rmtree(parent_dir, ignore_errors=True)
-
-            logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
-
-        else:
-            logging.warning(f"Unable to find metadata for file: '{filepath}' ")
+        logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
 
 
 def run_load(parsed_result: argparse.Namespace) -> None:
@@ -138,7 +133,6 @@ def run_load(parsed_result: argparse.Namespace) -> None:
             continue
 
         rmd = RequirementsMetaData(os.path.join(requirements_metadata_dir, r))
-
         if emd.requirements_hash == rmd.file_hash:
             git.run_git("checkout", "-B", f"{parsed_result.tag}")
 
@@ -239,7 +233,6 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
     remove_dirs = []
     dataset_path = None
     repo_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
-    # dataset_metadata = get_dataset_metadata_by_experiment_id(parsed_args.tag)
     dataset_metadata = DatasetMetaData().get_latest()
     root_path = git.get_git_repo_root()
 

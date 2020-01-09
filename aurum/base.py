@@ -21,7 +21,6 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import json
 import logging
 import platform
 from pathlib import Path
@@ -29,13 +28,17 @@ from pathlib import Path
 import psutil
 from pynvml import *
 
-from . import constants as cons
-from . import git
+from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
-from .metadata import ParameterMetaData, MetricsMetaData, ExperimentMetaData, get_latest_metrics_metadata, \
-    get_latest_parameter, get_latest_rmd, get_code_metadata, DatasetMetaData
-from .metadata.experiment import get_latest_experiment_metadata_by_date
-from aurum.theorem import Theorem
+from .metadata import (
+    ParameterMetaData,
+    MetricsMetaData,
+    ExperimentMetaData,
+    DatasetMetaData,
+    CodeMetaData,
+    RequirementsMetaData,
+)
+from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 
@@ -143,11 +146,11 @@ def parameters(**kwargs):
         setattr(sys.modules['aurum'], key, new_dict[key])
 
     pmd = ParameterMetaData()
-    pmd.parameters = kwargs
+    pmd.parameters = new_dict
 
-    latest_exp = get_latest_experiment_metadata_by_date()
+    latest_exp = ExperimentMetaData().get_latest()
 
-    if latest_exp and latest_exp.parameter_hash != pmd.parameter_hash:
+    if (latest_exp and latest_exp.parameter_hash != pmd.parameter_hash) or (latest_exp is None):
         Theorem().parameters_did_change(pmd.parameter_hash)
         meta_data_file_name = pmd.save()
         git_proc = git.run_git("add", meta_data_file_name)
@@ -158,18 +161,6 @@ def parameters(**kwargs):
             if git_proc.stderr:
                 message += f"{git_proc.stderr.read()}\n"
             logging.error(message)
-    elif latest_exp is None:
-        Theorem().parameters_did_change(pmd.parameter_hash)
-        meta_data_file_name = pmd.save()
-        git_proc = git.run_git("add", meta_data_file_name)
-
-        result = git_proc.wait()
-        if result != 0:
-            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
-            if git_proc.stderr:
-                message += f"{git_proc.stderr.read()}\n"
-            logging.error(message)
-
 
 
 def register_metrics(**kwargs):
@@ -228,9 +219,12 @@ def gpu_info():
 
 
 def save_metrics(**kwargs):
+    meta_data_file_name = None
     mmd = MetricsMetaData()
     mmd.metrics = kwargs
-    meta_data_file_name = mmd.save()
+
+    if Theorem().has_any_change():
+        meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
 
@@ -253,11 +247,11 @@ def end_experiment() -> bool:
         mdt = ExperimentMetaData()
 
         mdt.file_name = theorem.experiment_id
-        metrics_metadata = get_latest_metrics_metadata()
-        parameters_metadata = get_latest_parameter()
-        requirements_metadata = get_latest_rmd()
+        metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
+        parameters_metadata = ParameterMetaData().get_latest() or ParameterMetaData()
+        requirements_metadata = RequirementsMetaData().get_latest() or RequirementsMetaData()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
-        code_metadata = get_code_metadata()
+        code_metadata = CodeMetaData().get_latest() or CodeMetaData()
         destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
                                    f"{theorem.experiment_id}.json")
 
