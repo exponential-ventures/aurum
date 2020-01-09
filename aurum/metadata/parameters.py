@@ -20,7 +20,6 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-import hashlib
 import logging
 import os
 
@@ -39,7 +38,7 @@ class ParameterMetaData(MetaData):
         parent = self.get_latest()
         self.file_hash = gen_dict_hash(self.parameters)
 
-        if self.file_hash != parent.file_hash:
+        if parent and self.file_hash != parent.file_hash:
             self.parent_hash = parent.file_hash
 
         destination = gen_meta_file_name_from_hash(
@@ -53,9 +52,7 @@ class ParameterMetaData(MetaData):
 
     @property
     def parameter_hash(self) -> str:
-        p_hash = hashlib.sha1()
-        p_hash.update(self.parameters.encode())
-        return p_hash.hexdigest()
+        return gen_dict_hash(self.parameters)
 
     def get_dir(self):
         return os.path.join(

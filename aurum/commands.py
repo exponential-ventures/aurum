@@ -129,11 +129,11 @@ def run_load(parsed_result: argparse.Namespace) -> None:
         os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
     for r in os.listdir(requirements_metadata_dir):
-        if r == ".keep":
+        if r == cons.KEEP_FILE:
             continue
 
         rmd = RequirementsMetaData(os.path.join(requirements_metadata_dir, r))
-        if rmd.experiment_id == emd.experiment_id:
+        if emd.requirements_hash == rmd.file_hash:
             git.run_git("checkout", "-B", f"{parsed_result.tag}")
 
             virtual_env_dir = create_temporary_env(parsed_result.tag)

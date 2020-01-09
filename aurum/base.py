@@ -21,7 +21,6 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import json
 import logging
 import platform
 from pathlib import Path
@@ -147,11 +146,11 @@ def parameters(**kwargs):
         setattr(sys.modules['aurum'], key, new_dict[key])
 
     pmd = ParameterMetaData()
-    pmd.parameters = kwargs
+    pmd.parameters = new_dict
 
     latest_exp = ExperimentMetaData().get_latest()
 
-    if latest_exp and latest_exp.parameter_hash != pmd.parameter_hash:
+    if (latest_exp and latest_exp.parameter_hash != pmd.parameter_hash) or (latest_exp is None):
         Theorem().parameters_did_change(pmd.parameter_hash)
         meta_data_file_name = pmd.save()
         git_proc = git.run_git("add", meta_data_file_name)
@@ -220,9 +219,12 @@ def gpu_info():
 
 
 def save_metrics(**kwargs):
+    meta_data_file_name = None
     mmd = MetricsMetaData()
     mmd.metrics = kwargs
-    meta_data_file_name = mmd.save()
+
+    if Theorem().has_any_change():
+        meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
 
@@ -266,7 +268,7 @@ def end_experiment() -> bool:
             commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
 
         if requirements_metadata.file_hash:
-            commit_msg += f"\n Requiments hash {requirements_metadata.file_hash}"
+            commit_msg += f"\n Requirements hash {requirements_metadata.file_hash}"
 
         if dataset_metadata.file_hash:
             commit_msg += f"\n Dataset hash: {dataset_metadata.file_hash}"

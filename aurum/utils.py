@@ -31,6 +31,7 @@ import shutil
 import errno
 import urllib.request
 from collections import OrderedDict
+from pathlib import PurePosixPath, PureWindowsPath
 
 from . import constants as cons
 from . import git
@@ -120,7 +121,11 @@ def did_dict_change(d1, d2):
 
 
 def is_unnitest_running() -> bool:
-    return 'unittest' in sys.modules.keys()
+    if os.name == 'nt':
+        command = PureWindowsPath(sys.argv[0]).name
+    else:
+        command = PurePosixPath(sys.argv[0]).name
+    return 'unittest' in sys.modules.keys() or 'unittest' in command
 
 
 def dir_files_by_last_modification_date(directory_path: str, descending_order: bool = True) -> list:

@@ -112,12 +112,12 @@ class MetaData:
     def get_dir(self):
         raise NotImplementedError()
 
-    def get_latest(self):
+    def get_latest(self, subdir_path: str = None):
 
         newest = None
-        now = datetime.now()
+        now = datetime.min
 
-        metadata_dir = self.get_dir()
+        metadata_dir = subdir_path or self.get_dir()
 
         for file in os.listdir(metadata_dir):
 
@@ -129,27 +129,13 @@ class MetaData:
 
             # Files can be 1 level nested (See Datasets for an example)
             if os.path.isdir(full_path):
+                return self.get_latest(full_path)
 
-                for sub_file in os.listdir(full_path):
+            dmd = MetaData(full_path)
 
-                    sub_full_path = os.path.join(full_path, sub_file)
-
-                    # Ignore keep files.
-                    if cons.KEEP_FILE in sub_file:
-                        continue
-
-                    dmd = MetaData(sub_full_path)
-                    if now > dmd.timestamp:
-                        newest = dmd
-                        now = dmd.timestamp
-
-            else:
-
-                dmd = MetaData(full_path)
-
-                if now > dmd.timestamp:
-                    newest = dmd
-                    now = dmd.timestamp
+            if dmd.timestamp > now:
+                newest = dmd
+                now = dmd.timestamp
 
         return newest
 
