@@ -112,7 +112,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
     elif parsed.subcommand == cons.EXPORT_TAG:
         data_command_checker(parser)
         if parsed.tag not in git.current_branch_name():
-            run_load(parsed)
+            run_load(parsed, skip_package_install=True)
         export_experiment(parsed)
 
 

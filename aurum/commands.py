@@ -108,7 +108,7 @@ def run_rm(parsed_result: argparse.Namespace) -> None:
         logging.info(f"Removed meta data '{meta_data_path}' and removed from git.")
 
 
-def run_load(parsed_result: argparse.Namespace) -> None:
+def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = False) -> None:
     logging.info(f"Attempting to load experiment with tag: {parsed_result.tag}")
 
     experiment_dir = os.path.join(
@@ -147,7 +147,8 @@ def run_load(parsed_result: argparse.Namespace) -> None:
 
                 contents.append(line)
 
-            install_packages(virtual_env_dir, contents)
+            if not skip_package_install:
+                install_packages(virtual_env_dir, contents)
 
             print(f"Please activate your new virtual environment at: {virtual_env_dir}")
 
