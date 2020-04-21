@@ -129,5 +129,15 @@ def current_branch_name() -> str:
     return output.decode('utf-8').replace('\n', '')
 
 
+def push() -> str:
+    sub = run_git('push')
+    output, error = sub.communicate()
+
+    if sub.returncode != 0:
+        raise Exception(f"Failed to run 'git push': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
 def run_git(*args):
     return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

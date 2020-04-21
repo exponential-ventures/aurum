@@ -19,12 +19,13 @@ from setuptools import setup, find_packages
 
 setup(
     name='aurum',
-    version='0.1',
+    version='0.1.2',
     description='Data and Code Versioning for Data Scientists',
     author='Adriano Marques, Nathan Martins, Thales Ribeiro',
     author_email='adriano@xnv.io, nathan@xnv.io, thales@xnv.io',
     python_requires='>=3.7.0',
     include_package_data=True,
+    install_requires=['nvidia-ml-py3', 'psutil'],
     url='https://github.com/exponential-ventures/aurum',
     packages=find_packages(exclude=['*tests*', 'test*']),
     platforms=['any'],

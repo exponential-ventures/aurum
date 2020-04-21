@@ -22,8 +22,7 @@
 ##
 import logging
 
-from .metadata import CodeMetaData
-from .metadata.code import get_latest_code_metadata_by_date, generate_src_files_hash
+from .metadata import CodeMetaData, generate_src_files_hash
 
 
 def is_new_code() -> (bool, str):
@@ -31,24 +30,27 @@ def is_new_code() -> (bool, str):
     current_code_hash = generate_src_files_hash()
 
     # Get the latest saved version of the code
-    latest = get_latest_code_metadata_by_date()
+    latest = CodeMetaData().get_latest()
+
+    def save_code_metadata(parent_hash: str = None) -> None:
+        cmd = CodeMetaData()
+        cmd.file_path_and_hash = current_code_hash
+        cmd.parent_hash = parent_hash
+        if parent_hash:
+            logging.debug(f"Saving CodeMetaData latest file_path_and_hash: {latest.file_path_and_hash} "
+                          f"and with file_path_and_hash: {current_code_hash} ")
+        else:
+            logging.debug(f"Saving CodeMetaData without latest and with file_path_and_hash: {current_code_hash} ")
+        cmd.save()
 
     # If we don't have a latest. then this is the first run.
     if not latest:
-        cmd = CodeMetaData()
-        cmd.file_path_and_hash = current_code_hash
-        logging.debug(f"Saving CodeMetaData without latest and with file_path_and_hash: {current_code_hash} ")
-        cmd.save()
+        save_code_metadata()
         return True, current_code_hash
 
     # If we do have a latest and the file hash has changed.
-    if latest.file_path_and_hash != current_code_hash:
-        cmd = CodeMetaData()
-        cmd.file_path_and_hash = current_code_hash
-        cmd.parent_hash = latest.file_path_and_hash
-        logging.debug(f"Saving CodeMetaData latest file_path_and_hash: {latest.file_path_and_hash} "
-                      f"and with file_path_and_hash: {current_code_hash} ")
-        cmd.save()
+    if latest and latest.file_path_and_hash != current_code_hash:
+        save_code_metadata(latest.file_path_and_hash)
         return True, current_code_hash
 
     # Code has not changed and is the same as it was in latest
