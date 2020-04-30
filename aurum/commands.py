@@ -166,12 +166,12 @@ def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = Fal
 
 def create_default_dirs() -> None:
     for path in base.DEFAULT_DIRS:
-        if path.exists():
+        if path.exists() and path.parts[-1] != cons.REPOSITORY_DIR and os.listdir(path) != ['.keep']:
             logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
 
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
 
