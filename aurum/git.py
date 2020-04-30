@@ -112,6 +112,8 @@ def commit(commit_message: str, secondary_msg: str = '') -> None:
         raise GitCommandError(
             f"Failed to run 'git commit -am {commit_message} -m {secondary_msg}': {stdout} -- {stderr}")
 
+    return stdout, stderr
+
 
 def last_commit_hash() -> str:
     process = run_git('rev-parse', 'HEAD')
@@ -142,6 +144,16 @@ def push() -> str:
         raise GitCommandError(f"Failed to run 'git push': {error}")
 
     return output.decode('utf-8').replace('\n', '')
+
+
+def add(filename) -> str:
+    sub = run_git('add', filename)
+    stdout, stderr = sub.communicate()
+
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git add {filename}': {stderr}")
+
+    return stdout.decode('utf-8').replace('\n', '')
 
 
 def run_git(*args):

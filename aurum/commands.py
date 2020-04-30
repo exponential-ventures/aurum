@@ -38,6 +38,10 @@ from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir
 
 
 def run_init() -> None:
+    if os.path.exists(base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE):
+        logging.warning("Aurum was already initialized. Aborting.")
+        sys.exit(1)
+    
     logging.info("Initializing git...")
     git.init()
 
@@ -183,8 +187,14 @@ def au_init() -> None:
     # TODO: Move this code to the test case.
     # This is not a good idea.
     if not is_unnitest_running():
-        git.commit('Initial Commit')
+        stdout, stderr = git.commit('Initial Commit')
         logging.info("Initial commit")
+
+        initial_commit = base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE
+        open(initial_commit, 'wb').write(stdout.split()[2][:-1])
+        git.add(initial_commit)
+        
+        
 
 
 def check_file(file_path: str) -> str:
