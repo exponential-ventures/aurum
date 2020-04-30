@@ -39,7 +39,7 @@ from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir
 
 def run_init() -> None:
     if os.path.exists(base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE):
-        logging.warning("Aurum was already initialized. Aborting.")
+        logging.error("Aurum was previously initialized. Aborting.")
         sys.exit(1)
     
     logging.info("Initializing git...")
@@ -193,6 +193,7 @@ def au_init() -> None:
         initial_commit = base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE
         open(initial_commit, 'wb').write(stdout.split()[2][:-1])
         git.add(initial_commit)
+        git.commit("Recording initial commit file.")
         
         
 
