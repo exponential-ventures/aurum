@@ -42,7 +42,6 @@ from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
 
-
 def get_cwd():
     return Path(os.getcwd())
 

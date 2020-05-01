@@ -26,6 +26,8 @@ import os
 import subprocess
 import sys
 
+from typing import List
+
 
 class GitCommandError(Exception):
     pass
@@ -146,12 +148,12 @@ def push() -> str:
     return output.decode('utf-8').replace('\n', '')
 
 
-def add(filename) -> str:
-    sub = run_git('add', filename)
+def add(*filenames: List[str]) -> str:
+    sub = run_git('add', *filenames)
     stdout, stderr = sub.communicate()
 
     if sub.returncode != 0:
-        raise GitCommandError(f"Failed to run 'git add {filename}': {stderr}")
+        raise GitCommandError(f"Failed to run 'git add {filenames}': {stderr}")
 
     return stdout.decode('utf-8').replace('\n', '')
 
