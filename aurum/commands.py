@@ -45,6 +45,9 @@ def run_init() -> None:
     logging.info("Initializing git...")
     git.init()
 
+    logging.info("Creating .gitignore...")
+    create_gitignore()
+
     logging.info("Initializing aurum...")
     au_init()
 
@@ -178,7 +181,16 @@ def create_default_dirs() -> None:
         os.makedirs(path, exist_ok=True)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
+        
+def create_gitignore() -> None:
+    gitignore_path = base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE
+    with open(os.path.join(os.path.dirname(__file__), cons.GITIGNORE_TEMPLATE_FILE), 'rb') as template_file:
+        template = template_file.read()
+        with open(gitignore_path, 'ab') as gitignore:
+            gitignore.write(b"\n" + template)
+    git.add(gitignore_path)
 
+            
 def au_init() -> None:
     create_default_dirs()
     git.add_dirs(base.DEFAULT_DIRS)

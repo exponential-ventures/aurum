@@ -49,7 +49,10 @@ def get_cwd():
 
 #######
 # TODO: Figure out whether we can stick with only one of DEFAULT_DIRS or get_default_dirs.
-# Not sure why we're duplicating this here.
+# Not sure why we're duplicating this here. HINT: could be because we may want to have the
+# paths generated during call time as opposed to right after the app is run but things are
+# still changing.
+
 DEFAULT_DIRS = [
     get_cwd() / cons.REPOSITORY_DIR,
     get_cwd() / "src",
