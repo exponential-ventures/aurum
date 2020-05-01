@@ -47,6 +47,9 @@ def get_cwd():
     return Path(os.getcwd())
 
 
+#######
+# TODO: Figure out whether we can stick with only one of DEFAULT_DIRS or get_default_dirs.
+# Not sure why we're duplicating this here.
 DEFAULT_DIRS = [
     get_cwd() / cons.REPOSITORY_DIR,
     get_cwd() / "src",
