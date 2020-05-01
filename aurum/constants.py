@@ -9,6 +9,7 @@ METRICS_METADATA_DIR = "metrics"
 REQUIREMENTS_METADATA_DIR = "requirements"
 CODE_METADATA_DIR = "code"
 EXPERIMENTS_METADATA_DIR = "experiments"
+INITIAL_COMMIT_FILE = "initial_commit"
 
 #### COMMANDS
 
