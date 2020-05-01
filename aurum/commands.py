@@ -183,10 +183,12 @@ def create_default_dirs() -> None:
 
         
 def create_gitignore() -> None:
+    gitignore_path = base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE
     with open(os.path.join(os.path.dirname(__file__), cons.GITIGNORE_TEMPLATE_FILE), 'rb') as template_file:
         template = template_file.read()
-        with open(base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE, 'ab') as gitignore:
+        with open(gitignore_path, 'ab') as gitignore:
             gitignore.write(b"\n" + template)
+    git.add(gitignore_path)
 
             
 def au_init() -> None:
