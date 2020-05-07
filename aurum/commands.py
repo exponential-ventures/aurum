@@ -35,6 +35,7 @@ from . import constants as cons, base, git
 from .env_builder import create_temporary_env, install_packages
 from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
 from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files, download_file_from_web
+from .dataset_tracker import check_ds_exists
 
 
 def run_init() -> None:
@@ -55,15 +56,25 @@ def run_init() -> None:
 
 
 def run_add(parsed_result: argparse.Namespace) -> None:
+    files_added = 0
     for f in parsed_result.files:
         if re.search('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', f):
             filename = ntpath.basename(f)
+
+            if check_ds_exists(filename):
+                logging.warning(f"Dataset {filename} already added to the system. Skipping...")
+                continue
+            
             logging.info(f"Downloading {filename} from {f}")
             _, file_extension = os.path.splitext(f)
             local_path = os.path.join(git.get_git_repo_root(), f"{make_safe_filename(filename)}{file_extension}")
             download_file_from_web(f, local_path)
             logging.info(f"Downloaded {filename} to {local_path}")
             f = local_path
+        else:
+            if check_ds_exists(f):
+                logging.warning(f"Dataset {f} already added to the system. Skipping...")
+                continue
 
         full_f = os.path.join(os.getcwd(), f)
         f = check_file(f)
@@ -73,21 +84,22 @@ def run_add(parsed_result: argparse.Namespace) -> None:
         mdf.size = os.path.getsize(full_f)
         meta_data_file_name = mdf.save()
 
-        git_proc = git.run_git("add", full_f, meta_data_file_name, )
+        git.add(meta_data_file_name)
+        files_added += 1
 
-        _, err = git_proc.communicate()
+    if files_added > 0:
+        git.commit(f"Aurum added the metadata files for dataset(s) {', '.join(parsed_result.files)} to the project.")
+        print(f"\nAurum added the metadata files for the following datasets: {', '.join(parsed_result.files)}\n")
+        print(f"-"*80)
+        print(f"If you'd like to add the actual dataset files to the project's repository,\n"
+              f"you'll need to run the following commands:\n")
 
-        if git_proc.returncode != 0:
-            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {git_proc.returncode}\n"
-            if err:
-                message += f"{err}\n"
+        for dataset_filename in parsed_result.files:
+            print(f"git add {dataset_filename}")
 
-            logging.error(message)
-            sys.exit(1)
+        print(f"git commit -a -m 'Adding dataset files to project'\n")
 
-    sys.stdout.write(f"Added: {parsed_result.files}\n")
-
-
+    
 def run_rm(parsed_result: argparse.Namespace) -> None:
     for filepath in parsed_result.files:
 
