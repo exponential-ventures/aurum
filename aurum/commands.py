@@ -42,7 +42,7 @@ def run_init() -> None:
     if os.path.exists(base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE):
         logging.error("Aurum was previously initialized. Aborting.")
         sys.exit(1)
-    
+
     logging.info("Initializing git...")
     git.init()
 
@@ -64,7 +64,7 @@ def run_add(parsed_result: argparse.Namespace) -> None:
             if check_ds_exists(filename):
                 logging.warning(f"Dataset {filename} already added to the system. Skipping...")
                 continue
-            
+
             logging.info(f"Downloading {filename} from {f}")
             _, file_extension = os.path.splitext(f)
             local_path = os.path.join(git.get_git_repo_root(), f"{make_safe_filename(filename)}{file_extension}")
@@ -99,7 +99,7 @@ def run_add(parsed_result: argparse.Namespace) -> None:
 
         print(f"git commit -a -m 'Adding dataset files to project'\n")
 
-    
+
 def run_rm(parsed_result: argparse.Namespace) -> None:
     for filepath in parsed_result.files:
 
@@ -185,7 +185,7 @@ def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = Fal
 
 def create_default_dirs() -> None:
     for path in base.DEFAULT_DIRS:
-        if path.exists() and path.parts[-1] != cons.REPOSITORY_DIR and os.listdir(path) != ['.keep']:
+        if path.exists() and path.parts[-1] != cons.REPOSITORY_DIR and path.parts[-1] != cons.SOURCE_CODE_DIR and os.listdir(path) != ['.keep']:
             logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
@@ -193,7 +193,7 @@ def create_default_dirs() -> None:
         os.makedirs(path, exist_ok=True)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
 
-        
+
 def create_gitignore() -> None:
     gitignore_path = base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE
     with open(os.path.join(os.path.dirname(__file__), cons.GITIGNORE_TEMPLATE_FILE), 'rb') as template_file:
@@ -202,7 +202,7 @@ def create_gitignore() -> None:
             gitignore.write(b"\n" + template)
     git.add(gitignore_path)
 
-            
+
 def au_init() -> None:
     create_default_dirs()
     git.add_dirs(base.DEFAULT_DIRS)
@@ -218,8 +218,8 @@ def au_init() -> None:
         open(initial_commit, 'wb').write(stdout.split()[2][:-1])
         git.add(initial_commit)
         git.commit("Recording initial commit file.")
-        
-        
+
+
 
 
 def check_file(file_path: str) -> str:

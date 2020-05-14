@@ -20,10 +20,12 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
+
 import argparse
 import logging
 import platform
 from pathlib import Path
+from typing import BinaryIO
 
 import psutil
 from pynvml import *
@@ -41,6 +43,9 @@ from .metadata import (
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
+from .dataset_tracker import check_ds_exists
+from .metadata.dataset import DatasetMetaData
+
 
 def get_cwd():
     return Path(os.getcwd())
@@ -166,6 +171,25 @@ def parameters(**kwargs):
             if git_proc.stderr:
                 message += f"{git_proc.stderr.read()}\n"
             logging.error(message)
+
+def fetch_data_file(filename: str) -> BinaryIO:
+    '''Fetch the data file based on the metadata collected about it during data add procedure.
+    If data file was not added or doesn't exist, will raise an error instead.
+    '''
+    if not check_ds_exists(filename):
+        logging.error(f"Dataset '{filename}' was not previously added to Aurum. Use the command 'au data add {filename}' to register it first.")
+        sys.exit(1)
+
+    ds_meta = DatasetMetaData().get_by_ds_name(filename)[0]
+    latest_dataset_meta = ds_meta.get_latest()
+
+    data_file = Path(get_cwd(), latest_dataset_meta.file_name)
+    if data_file.exists():
+        return data_file
+    else:
+        logging.error(f"Dataset '{filename}' is known to Aurum but seems to have been removed from '{data_file}'.")
+        logging.error(f"Can't proceed without {data_file}. Aborting.")
+        sys.exit(1)
 
 
 def register_metrics(**kwargs):

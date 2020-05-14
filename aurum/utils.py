@@ -63,12 +63,12 @@ def gen_dict_hash(dictionary: dict) -> str:
 
 def make_safe_filename(s):
     def safe_char(c):
-        if c.isalnum():
+        if c.isalnum() or c in ['\\','/']:
             return c
         else:
             return "_"
 
-    return "".join(safe_char(c) for c in s).rstrip("_")
+    return "".join(safe_char(c) for c in s).strip("_")
 
 
 def size_in_gb(size):

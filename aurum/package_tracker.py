@@ -21,7 +21,7 @@ def is_new_requirements() -> (bool, str):
 
     process = subprocess.run("pip freeze", shell=True, check=True, capture_output=True)
     output = process.stdout
-    logging.debug(f"\nInstalled packages: \n {output} \n\n")
+    logging.debug("\n" + ("-"*80) + f"\nInstalled packages:\n\n{output.decode('utf-8')}" + ("-" *80) + "\n")
     packages_hash = hashlib.sha1()
     packages_hash.update(output)
     packages_hash = packages_hash.hexdigest()

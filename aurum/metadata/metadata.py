@@ -76,7 +76,12 @@ class MetaData:
         if file_name != '':
             try:
                 with open(file_name, 'r') as f:
-                    self.deserialize(f.read())
+                    try:
+                        self.deserialize(f.read())
+                    except json.decoder.JSONDecodeError as err:
+                        logging.error(f"Failed to decode json: {file_name}")
+                        raise err
+
             except FileNotFoundError:
                 raise FileNotFoundError(f"Metadata not found for {file_name}")
             except Exception as e:
@@ -144,7 +149,7 @@ def gen_meta_file_name_from_hash(meta_data_str, file_name, path):
     meta_data_dir = os.path.join(path, make_safe_filename(file_name))
 
     if not os.path.exists(meta_data_dir):
-        os.mkdir(meta_data_dir)
+        os.makedirs(meta_data_dir, exist_ok=True)
 
     meta_hash = gen_meta_hash(meta_data_str)
     meta_data_file_name = meta_hash + ".json"
