@@ -58,6 +58,7 @@ DEFAULT_DIRS = [
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR, cons.MODELS_BINARIES_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
 
@@ -73,6 +74,7 @@ def get_default_dirs():
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR, cons.MODELS_BINARIES_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
     ]
 
@@ -244,7 +246,7 @@ def save_model(model_encoded):
     meta_data_file_name = None
     mmd = ModelMetaData()
     mmd.model = {
-        'model': model_encoded
+        'encoded_model': model_encoded
     }
 
     if Theorem().has_any_change():
@@ -262,7 +264,9 @@ def save_model(model_encoded):
             logging.error(message)
 
 def load_model():
-    return ModelMetaData().get_latest().model
+    mmd = ModelMetaData().get_latest()
+    with open(os.path.join(ModelMetaData().get_binaries_dir(), mmd.model['binary_file']), mode='rb') as f:
+        return f.read()
 
 def end_experiment() -> bool:
     commit_msg = ""

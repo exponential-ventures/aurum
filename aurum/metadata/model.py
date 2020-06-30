@@ -21,6 +21,7 @@
 
 import logging
 import os
+import time
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
 from .. import constants as cons, git
@@ -34,15 +35,22 @@ class ModelMetaData(MetaData):
         super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        mmd = ModelMetaData()
+        current_timestamp = str(round(time.time() * 1000))
+        binary_file_path = os.path.join(self.get_binaries_dir(), current_timestamp)
+        with open(binary_file_path, 'wb') as f:
+            f.write(self.model['encoded_model'])
 
-        parent = mmd.get_latest()
-        self.file_hash = gen_dict_hash(self.model)
+        self.model = {
+            'binary_file': current_timestamp
+        }
 
-        if parent and self.file_hash != parent.file_hash and Theorem().has_any_change():
-            self.parent_hash = parent.file_hash
+        if Theorem().has_any_change():
+            self.file_hash = gen_dict_hash(self.model)
+            parent = self.get_latest()
+            if parent and self.file_hash != parent.file_hash:
+                self.parent_hash = parent.file_hash
 
-        destination = gen_meta_file_name_from_hash(str(self.timestamp), '', mmd.get_dir())
+        destination = gen_meta_file_name_from_hash(str(current_timestamp), '', self.get_dir())
         logging.debug(f"Saving model file to: {destination}")
         return super().save(destination)
 
@@ -51,4 +59,12 @@ class ModelMetaData(MetaData):
             git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.MODELS_METADATA_DIR,
+        )
+
+    def get_binaries_dir(self):
+        return os.path.join(
+            git.get_git_repo_root(),
+            cons.REPOSITORY_DIR,
+            cons.MODELS_METADATA_DIR,
+            cons.MODELS_BINARIES_DIR,
         )
