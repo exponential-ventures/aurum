@@ -1,9 +1,10 @@
+import json
 import shutil
 import unittest
-import pickle
 
 import aurum as au
 from aurum.metadata.model import ModelMetaData
+
 
 class TestModel(unittest.TestCase):
     def setUp(self):
@@ -15,16 +16,17 @@ class TestModel(unittest.TestCase):
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
-    def test_save_model(self):
-        object_to_encode = {
-            'sample_field_a': 'sample value a',
-            'sample_field_b': 'sample value b'
-        }
+    def test_save(self):
 
-        au.save_model(pickle.dumps(object_to_encode))
-        recovered_data = pickle.loads(au.load_model())
+        path = "/tmp/model.o"
+        magic_d = {'sample_field_a': 'sample value a', 'sample_field_b': 'sample value b'}
 
-        self.assertEqual(recovered_data['sample_field_a'], object_to_encode['sample_field_a'])
+        mmd = ModelMetaData()
+
+        mmd.model = json.dumps(magic_d)
+        mmd.save_binary(path)
+
+        self.assertEqual(magic_d, json.loads(mmd.load_binary(path)))
 
 
 if __name__ == '__main__':

@@ -198,6 +198,7 @@ def register_metrics(**kwargs):
     metrics = {**kwargs, **hardware_metric}
     save_metrics(**metrics)
 
+
 def gpu_info():
     info = {}
     try:
@@ -245,9 +246,7 @@ def save_metrics(**kwargs):
 def save_model(model_encoded):
     meta_data_file_name = None
     mmd = ModelMetaData()
-    mmd.model = {
-        'encoded_model': model_encoded
-    }
+    mmd.model = model_encoded
 
     if Theorem().has_any_change():
         meta_data_file_name = mmd.save()
@@ -263,10 +262,11 @@ def save_model(model_encoded):
                 message += f"{git_proc.stderr.read()}\n"
             logging.error(message)
 
-def load_model():
+
+def load_model(destination: str = ""):
     mmd = ModelMetaData().get_latest()
-    with open(os.path.join(ModelMetaData().get_binaries_dir(), mmd.model['binary_file']), mode='rb') as f:
-        return f.read()
+    return mmd.load_binary(destination)
+
 
 def end_experiment() -> bool:
     commit_msg = ""
