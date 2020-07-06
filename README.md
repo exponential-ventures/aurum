@@ -78,6 +78,17 @@ If the parameters are also specified inside the code, the command line arguments
 This trick is specially interesting if you'd like to automate the execution of multiple experiments, varying the parameters
 automatically.
 
+Sometimes you want to keep track of your file. You can do this with `aurum` running this:
+
+    myTrainedModel = ... # train your model
+    au.save_model(pickle.dumps(myTrainedModel))
+
+Node that we used the pickle example here, but all you need to do is to pass the `byte[]` representation of your model and it will handle it. You don't need to use `pickle` to serialise data, you can use anything you want. Now on the next iteration you won't need to loose time training your model again. All you need to do in that case is:
+
+    myLastTrainedModel = pickle.loads(au.load_model())
+
+Note that the `load_model` method will return the previously registered `byte[]` representation of your model. So, the use of pickle is not mandatory and you can serialise and desserialise it the way you want.
+
 At the end of your script, make sure to add the relevant metrics for comparison, and tell aurum that the experiment ends there.    
     
     au.register_metric(error=0.01, accuracy=0.99, ...)

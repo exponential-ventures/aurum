@@ -33,7 +33,7 @@ import sys
 from pathlib import PurePosixPath, PureWindowsPath
 
 from .au import main
-from .base import execute_commands, parameters, register_metrics, save_metrics, end_experiment
+from .base import execute_commands, parameters, register_metrics, save_metrics, end_experiment, save_model, load_model
 from .code_tracker import is_new_code
 from .dataset_tracker import use_datasets
 from .dry_run import Dehydrator
@@ -76,5 +76,7 @@ __all__ = [
     parameters,
     register_metrics,
     use_datasets,
-    end_experiment
+    end_experiment,
+    save_model,
+    load_model
 ]
