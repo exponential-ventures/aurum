@@ -1,0 +1,43 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: build
+    image: banzaicloud/drone-kaniko
+    settings:
+      dockerfile: Dockerfile
+      repo: xnv/aurum
+      registry: k2so.xnv.io
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+  - name: unit_test
+    image: k2so.xnv.io/xnv/aurum
+    commands:
+      - "python3 -m unittest tests"
+
+  - name: slack
+    image: plugins/slack
+    when:
+      status:
+        - failure
+        - success
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: infrastructure
+      template: >
+        {{#success build.status}}
+          build {{build.number}} succeeded. Good job.
+        {{else}}
+          build {{build.number}} failed. Fix me please.
+        {{/success}}
+
+
+trigger:
+  branch:
+    - master
+    - develop
