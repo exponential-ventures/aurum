@@ -41,7 +41,9 @@ class ModelMetaData(MetaData):
         self.save_binary()
 
         if Theorem().has_any_change():
-            self.file_hash = gen_dict_hash(self.model)
+            self.file_hash = gen_dict_hash({
+                'encoded_model': str(self.model),
+            })
             parent = self.get_latest()
             if parent and self.file_hash != parent.file_hash:
                 self.parent_hash = parent.file_hash
