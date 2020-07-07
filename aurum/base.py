@@ -305,11 +305,11 @@ def end_experiment() -> bool:
         if metrics_metadata.metrics:
             commit_msg += dic_to_str(metrics_metadata.metrics, 'Metrics')
 
-        if model_metadata.model:
-            commit_msg += dic_to_str(model_metadata.model, 'Model')
-
         if parameters_metadata.parameters:
             commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
+
+        if model_metadata.file_hash:
+            commit_msg += f"\n Model hash: {code_metadata.file_hash}"
 
         if requirements_metadata.file_hash:
             commit_msg += f"\n Requirements hash {requirements_metadata.file_hash}"

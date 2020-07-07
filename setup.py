@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aurum',
-    version='0.1.6',
+    version='0.1.7',
     description='Data and Code Versioning for Data Scientists',
     author='Adriano Marques, Nathan Martins, Thales Ribeiro',
     author_email='adriano@xnv.io, nathan@xnv.io, thales@xnv.io',
