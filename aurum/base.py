@@ -208,7 +208,7 @@ def gpu_info():
     info = {}
     try:
         nvmlInit()
-    except:
+    except Exception:
         info['no-gpu'] = 'No Nvidia GPU detected'
         return info
 
@@ -216,12 +216,16 @@ def gpu_info():
 
     info['driver_version'] = nvmlSystemGetDriverVersion().decode()
     info['device_count'] = device_count
-    info['device'] = {}
+    info['device'] = dict()
     for i in range(device_count):
         handle = nvmlDeviceGetHandleByIndex(i)
         memory = nvmlDeviceGetMemoryInfo(handle)
-        info['device'][i] = nvmlDeviceGetName(handle)
-        info['device'][i]['memory']['total'] = size_in_gb(memory.total)
+
+        info['device'][i] = dict()
+        info['device'][i]['name'] = str(nvmlDeviceGetName(handle))
+
+        info['device'][i]['memory'] = dict()
+        info['device'][i]['memory']['total'] = str(size_in_gb(memory.total))
 
     nvmlShutdown()
 
