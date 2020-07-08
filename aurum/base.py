@@ -21,6 +21,7 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
+import json
 import logging
 import platform
 from pathlib import Path
@@ -42,6 +43,7 @@ from .metadata import (
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
+
 
 def get_cwd():
     return Path(os.getcwd())
@@ -255,9 +257,9 @@ def save_metrics(**kwargs):
 def save_model(model_encoded):
     meta_data_file_name = None
     mmd = ModelMetaData()
-    mmd.model = model_encoded
 
     if Theorem().has_any_change():
+        mmd.save_binary(model_encoded)
         meta_data_file_name = mmd.save()
 
     if meta_data_file_name:
@@ -273,8 +275,11 @@ def save_model(model_encoded):
 
 
 def load_model(destination: str = ""):
-    mmd = ModelMetaData().get_latest()
-    return mmd.load_binary(destination)
+    if destination == "":
+        mmd = ModelMetaData().get_latest()
+        destination = mmd.binary_file_path
+
+    return ModelMetaData.load_binary(destination)
 
 
 def end_experiment() -> bool:
