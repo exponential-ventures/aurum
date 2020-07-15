@@ -29,10 +29,10 @@ from ..theorem import Theorem
 from ..utils import gen_dict_hash
 
 
-class ModelMetaData(MetaData):
+class WeightsMetaData(MetaData):
 
     def __init__(self, file_name: str = '') -> None:
-        self.model = None
+        self.weights = None
         self.binary_file_path = ''
         super().__init__(file_name)
 
@@ -73,7 +73,7 @@ class ModelMetaData(MetaData):
         return os.path.join(
             git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
-            cons.MODELS_METADATA_DIR,
+            cons.WEIGHTS_METADATA_DIR,
         )
 
     @staticmethod
@@ -84,8 +84,7 @@ class ModelMetaData(MetaData):
     @staticmethod
     def get_binaries_dir():
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
-            cons.MODELS_METADATA_DIR,
-            cons.MODELS_BINARIES_DIR,
+            cons.WEIGHTS_METADATA_DIR,
+            cons.WEIGHTS_BINARIES_DIR,
         )

@@ -21,8 +21,9 @@
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
 import argparse
-import json
 import logging
+import os
+import sys
 import platform
 from pathlib import Path
 
@@ -33,7 +34,7 @@ from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
 from .metadata import (
     ParameterMetaData,
-    ModelMetaData,
+    WeightsMetaData,
     MetricsMetaData,
     ExperimentMetaData,
     DatasetMetaData,
@@ -64,8 +65,8 @@ DEFAULT_DIRS = [
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR, cons.MODELS_BINARIES_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR, cons.WEIGHTS_BINARIES_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
 
@@ -80,8 +81,8 @@ def get_default_dirs():
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
-        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR),
-        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.MODELS_METADATA_DIR, cons.MODELS_BINARIES_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR, cons.WEIGHTS_BINARIES_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
     ]
 
@@ -254,13 +255,13 @@ def save_metrics(**kwargs):
             logging.error(message)
 
 
-def save_model(model_encoded):
+def save_weights(model_encoded):
     meta_data_file_name = None
-    mmd = ModelMetaData()
+    wmd = WeightsMetaData()
 
     if Theorem().has_any_change():
-        mmd.save_binary(model_encoded)
-        meta_data_file_name = mmd.save()
+        wmd.save_binary(model_encoded)
+        meta_data_file_name = wmd.save()
 
     if meta_data_file_name:
 
@@ -274,12 +275,12 @@ def save_model(model_encoded):
             logging.error(message)
 
 
-def load_model(destination: str = ""):
+def load_weights(destination: str = ""):
     if destination == "":
-        mmd = ModelMetaData().get_latest()
-        destination = mmd.binary_file_path
+        wmd = WeightsMetaData().get_latest()
+        destination = wmd.binary_file_path
 
-    return ModelMetaData.load_binary(destination)
+    return WeightsMetaData.load_binary(destination)
 
 
 def end_experiment() -> bool:
@@ -292,7 +293,7 @@ def end_experiment() -> bool:
 
         mdt.file_name = theorem.experiment_id
         metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
-        model_metadata = ModelMetaData().get_latest() or ModelMetaData()
+        weights_metadata = WeightsMetaData().get_latest() or WeightsMetaData()
         parameters_metadata = ParameterMetaData().get_latest() or ParameterMetaData()
         requirements_metadata = RequirementsMetaData().get_latest() or RequirementsMetaData()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
@@ -301,7 +302,7 @@ def end_experiment() -> bool:
                                    f"{theorem.experiment_id}.json")
 
         mdt.metrics_hash = metrics_metadata.file_hash
-        mdt.models_hash = model_metadata.file_hash
+        mdt.weights_hash = weights_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
         mdt.code_hash = code_metadata.file_hash
@@ -313,8 +314,8 @@ def end_experiment() -> bool:
         if parameters_metadata.parameters:
             commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
 
-        if model_metadata.file_hash:
-            commit_msg += f"\n Model hash: {code_metadata.file_hash}"
+        if weights_metadata.file_hash:
+            commit_msg += f"\n Weights hash: {weights_metadata.file_hash}"
 
         if requirements_metadata.file_hash:
             commit_msg += f"\n Requirements hash {requirements_metadata.file_hash}"
