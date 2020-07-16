@@ -103,6 +103,9 @@ class MetaData:
     def save(self, destination: str) -> str:
         """perform a serialization and save to file"""
 
+        if not os.path.exists(os.path.dirname(destination)):
+            os.makedirs(os.path.dirname(destination))
+
         with open(destination, "w+") as f:
             logging.debug(f"Saving: {destination}")
             f.write(self.serialize())
@@ -142,10 +145,6 @@ class MetaData:
 
 def gen_meta_file_name_from_hash(meta_data_str, file_name, path):
     meta_data_dir = os.path.join(path, make_safe_filename(file_name))
-
-    if not os.path.exists(meta_data_dir):
-        os.mkdir(meta_data_dir)
-
     meta_hash = gen_meta_hash(meta_data_str)
     meta_data_file_name = meta_hash + ".json"
 

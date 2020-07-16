@@ -46,8 +46,7 @@ class PackageTrackerTestCase(unittest.TestCase):
         is_new, r_hash = is_new_requirements()
         self.assertTrue(is_new)
 
-        requirements_metadata_dir = \
-            os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
+        requirements_metadata_dir = os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
         with open(os.path.join(requirements_metadata_dir, f"{r_hash}.json")) as f:
             self.assertIn("minimal", f.read())

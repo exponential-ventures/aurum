@@ -3,9 +3,9 @@ import logging
 import os
 import shutil
 import unittest
+from uuid import uuid4
 
-from aurum import base, git, commands
-from aurum.constants import REPOSITORY_DIR
+from aurum import commands
 from tests.utils import run_test_init, set_git_for_test
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -15,49 +15,40 @@ class AddTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        set_git_for_test()
-        run_test_init()
-        self.relative_path = "README.md"
-        self.absolute_path = os.path.abspath("README.md")
+
+        self.test_dir = f'/tmp/{uuid4()}'
+        os.makedirs(self.test_dir)
+
+        set_git_for_test(self.test_dir)
+        run_test_init(selected_dir=self.test_dir)
+
+        f_name = f'{uuid4()}.txt'
+
+        self.relative_path = f_name
+        self.absolute_path = os.path.abspath(f_name)
+
+        with open(self.absolute_path, 'w') as f:
+            f.write("Gibberish")
 
         self.absolute_path_outside_script = "/tmp/copy.txt"
-        tmp_file = open(self.absolute_path_outside_script, "w")
-        tmp_file.write("Your text goes here")
-        tmp_file.close()
+
+        with open(self.absolute_path_outside_script, "w") as f:
+            f.write("Your text goes here")
 
     def tearDown(self) -> None:
         super().tearDown()
-        for path in base.DEFAULT_DIRS:
-            shutil.rmtree(path, ignore_errors=True)
+        shutil.rmtree(self.test_dir)
 
     def test_add(self):
         parser = argparse.Namespace(files=[
             self.relative_path,
         ])
-        commands.run_add(parser)
 
-        proc = git.run_git(
-            "status"
-        )
+        with self.assertRaises(FileNotFoundError):
+            commands.run_add(parser, selected_dir='')
 
-        self.assertEqual(proc.wait(), 0)
-        prod_res = proc.stdout.read()
-
-        self.assertIn(b"new file:   README.md", prod_res)
-
-
-    def test_is_relevant_file(self):
-        parser = argparse.Namespace(files=[
-            self.absolute_path,
-            self.relative_path,
-        ])
-        commands.run_add(parser)
-
-        with self.assertRaises(SystemExit):
-            parser = argparse.Namespace(files=[
-                self.absolute_path_outside_script,
-            ])
-            commands.run_add(parser)
+        files_added = commands.run_add(parser, selected_dir=self.test_dir)
+        self.assertEqual(files_added, 1)
 
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@ class TestInitMethod(unittest.TestCase):
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
 
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)

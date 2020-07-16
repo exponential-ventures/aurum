@@ -24,7 +24,7 @@ class LoadTestCase(unittest.TestCase):
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
 
         Theorem.instance = None
 

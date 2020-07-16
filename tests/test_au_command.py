@@ -23,7 +23,7 @@ class AuCommandTestCase(unittest.TestCase):
         self.random_dirs = dict()
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
 
         # Create files at the root of the repository to be added and removed
         for i in range(3):
@@ -43,7 +43,7 @@ class AuCommandTestCase(unittest.TestCase):
                 dir_name: path
             })
 
-            os.mkdir(path)
+            os.makedirs(path)
 
             for i in range(3):
                 file_path = os.path.join(path, f"{i}_{dir_name}.txt")

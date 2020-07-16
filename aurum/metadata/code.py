@@ -37,9 +37,7 @@ class CodeMetaData(MetaData):
         super().__init__(file_name)
 
     def save(self, destination: str = None) -> str:
-        destination_path = os.path.join(git.get_git_repo_root(),
-                                        cons.REPOSITORY_DIR,
-                                        cons.CODE_METADATA_DIR)
+        destination_path = os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
         destination = gen_meta_file_name_from_hash(
             meta_data_str=str(self.timestamp),
             file_name='',
@@ -50,14 +48,13 @@ class CodeMetaData(MetaData):
 
     def get_dir(self):
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.CODE_METADATA_DIR,
         )
 
 
 def list_src_files() -> list:
-    path = os.path.join(git.get_git_repo_root(), cons.SOURCE_CODE_DIR)
+    path = cons.SOURCE_CODE_DIR
     return glob(f"{path}/*")
 
 

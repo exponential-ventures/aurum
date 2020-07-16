@@ -17,7 +17,7 @@ class DatasetTrackerCase(unittest.TestCase):
 
         self.repository_path = "/tmp/repository/"
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
         test_run_init()
 
         self.ds = f"dataset.txt"

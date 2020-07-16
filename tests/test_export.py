@@ -24,7 +24,7 @@ class TestExport(unittest.TestCase):
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
 
         Theorem.instance = None
 
@@ -89,7 +89,7 @@ class TestExport(unittest.TestCase):
         self.experiment_id = Theorem().experiment_id
 
         self.assertTrue(end_experiment())
-        
+
 
     def test_export_known_experiment(self):
         cli_result = argparse.Namespace(

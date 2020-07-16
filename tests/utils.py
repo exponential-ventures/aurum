@@ -1,34 +1,37 @@
-import logging
 import subprocess
 
 from aurum import git
 
 
-def run_test_init():
-    proc = subprocess.Popen(
+def run_test_init(selected_dir: str):
+    proc = subprocess.run(
         ["au -v init"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=True,
+        cwd=selected_dir,
     )
 
-    _, e = proc.communicate()
-
     if proc.returncode != 0:
-        raise RuntimeError(f"Unable to run init. {e} {proc.returncode}")
+        raise RuntimeError(f"Unable to run init.{proc.stderr} {proc.returncode}")
 
 
-def set_git_for_test():
-    proc = git.run_git('config', '--global', 'user.email', '"test@example.com"', )
+def set_git_for_test(selected_dir: str):
+
+    proc = git.run_git('init', cwd=selected_dir)
     _, err = proc.communicate()
 
     if proc.returncode != 0:
         raise Exception(err)
 
-    proc = git.run_git('config', '--global', 'user.name', '"test"', )
+    proc = git.run_git('config', 'user.email', '"test@example.com"', cwd=selected_dir)
     _, err = proc.communicate()
 
     if proc.returncode != 0:
         raise Exception(err)
 
-    logging.debug("Git config successful")
+    proc = git.run_git('config', 'user.name', '"test"', cwd=selected_dir)
+    _, err = proc.communicate()
+
+    if proc.returncode != 0:
+        raise Exception(err)

@@ -26,6 +26,12 @@ import os
 import subprocess
 import sys
 
+from typing import List
+
+
+class GitCommandError(Exception):
+    pass
+
 
 def check_git():
     process = run_git("--version")
@@ -69,7 +75,7 @@ def init():
     p = run_git("init")
     _, err = p.communicate()
     if p.returncode != 0:
-        raise Exception(f"Failed to run 'git init': {err}")
+        raise GitCommandError(f"Failed to run 'git init': {err}")
 
 
 def rm(filepath, soft_delete: bool = True):
@@ -85,7 +91,7 @@ def add_dirs(dirs: list) -> None:
         _, error = process.communicate()
 
         if process.returncode != 0:
-            raise Exception(f"Failed to run 'git add {path}': {error}")
+            raise GitCommandError(f"Failed to run 'git add {path}': {error}")
 
 
 def tag(experiment_id: str, message: str) -> None:
@@ -93,19 +99,22 @@ def tag(experiment_id: str, message: str) -> None:
     _, error = process.communicate()
 
     if process.returncode != 0:
-        raise Exception(f"Failed to run 'git tag -a {experiment_id} -m {message}': {error}")
+        raise GitCommandError(f"Failed to run 'git tag -a {experiment_id} -m {message}': {error}")
 
 
-def commit(commit_message: str, secondary_msg: str = '') -> None:
+def commit(commit_message: str, secondary_msg: str = '', cwd: str = '') -> (str, str):
     if secondary_msg is not '':
-        process = run_git('commit', '-am', commit_message, '-m', secondary_msg)
+        process = run_git('commit', '-am', commit_message, '-m', secondary_msg, cwd=cwd)
     else:
-        process = run_git('commit', '-am', commit_message)
+        process = run_git('commit', '-am', commit_message, cwd=cwd)
 
-    _, error = process.communicate()
+    stdout, stderr = process.communicate()
 
     if process.returncode != 0:
-        raise Exception(f"Failed to run 'git commit -am {commit_message} -m {secondary_msg}': {error}")
+        raise GitCommandError(
+            f"Failed to run 'git commit -am {commit_message} -m {secondary_msg}': {stdout} -- {stderr}")
+
+    return stdout, stderr
 
 
 def last_commit_hash() -> str:
@@ -114,7 +123,7 @@ def last_commit_hash() -> str:
     output, error = process.communicate()
 
     if process.returncode != 0:
-        raise Exception(f"Failed to run 'git rev-parse': {error}")
+        raise GitCommandError(f"Failed to run 'git rev-parse': {error}")
 
     return output.decode('utf-8').replace('\n', '')
 
@@ -124,7 +133,7 @@ def current_branch_name() -> str:
     output, error = process.communicate()
 
     if process.returncode != 0:
-        raise Exception(f"Failed to run 'git rev-parse --abbrev-ref HEAD': {error}")
+        raise GitCommandError(f"Failed to run 'git rev-parse --abbrev-ref HEAD': {error}")
 
     return output.decode('utf-8').replace('\n', '')
 
@@ -134,10 +143,22 @@ def push() -> str:
     output, error = sub.communicate()
 
     if sub.returncode != 0:
-        raise Exception(f"Failed to run 'git push': {error}")
+        raise GitCommandError(f"Failed to run 'git push': {error}")
 
     return output.decode('utf-8').replace('\n', '')
 
 
-def run_git(*args):
-    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def add(*filenames: str, cwd: str = '') -> str:
+    sub = run_git('add', *filenames, cwd=cwd)
+    stdout, stderr = sub.communicate()
+
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git add {filenames}': {stderr}")
+
+    return stdout.decode('utf-8').replace('\n', '')
+
+
+def run_git(*args, cwd: str = ''):
+    if cwd == '':
+        cwd = os.getcwd()
+    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)

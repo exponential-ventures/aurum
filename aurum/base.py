@@ -88,7 +88,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
     git.check_git()
 
-    if os.getcwd().startswith(os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)):
+    if os.getcwd().startswith(cons.REPOSITORY_DIR):
         parser.error(f"Cannot run commands from inside '.au' folder")
 
     if not hasattr(parsed, "subcommand"):
@@ -283,8 +283,7 @@ def end_experiment() -> bool:
         requirements_metadata = RequirementsMetaData().get_latest() or RequirementsMetaData()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
         code_metadata = CodeMetaData().get_latest() or CodeMetaData()
-        destination = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR,
-                                   f"{theorem.experiment_id}.json")
+        destination = os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR, f"{theorem.experiment_id}.json")
 
         mdt.metrics_hash = metrics_metadata.file_hash
         mdt.models_hash = model_metadata.file_hash

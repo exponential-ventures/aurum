@@ -25,6 +25,7 @@ import argparse
 import logging
 import ntpath
 import os
+import re
 import shutil
 import sys
 import zipfile
@@ -32,14 +33,22 @@ import re
 from pathlib import Path
 
 from . import constants as cons, base, git
+from .dataset_tracker import check_ds_exists
 from .env_builder import create_temporary_env, install_packages
 from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
 from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files, download_file_from_web
 
 
 def run_init() -> None:
+    if os.path.exists(base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE):
+        logging.error("Aurum was previously initialized. Aborting.")
+        sys.exit(1)
+
     logging.info("Initializing git...")
     git.init()
+
+    logging.info("Creating .gitignore...")
+    create_gitignore()
 
     logging.info("Initializing aurum...")
     au_init()
@@ -47,16 +56,29 @@ def run_init() -> None:
     logging.debug(f"Repository {base.get_cwd()} initialized.")
 
 
-def run_add(parsed_result: argparse.Namespace) -> None:
+def run_add(parsed_result: argparse.Namespace, selected_dir: str) -> int:
+    files_added = 0
+
     for f in parsed_result.files:
-        if re.search('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', f):
+
+        # Check if file is a network address so we download it.
+        if re.search("https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+", f):
             filename = ntpath.basename(f)
+
+            if check_ds_exists(filename):
+                logging.warning(f"Dataset {filename} already added to the system. Skipping...")
+                continue
+
             logging.info(f"Downloading {filename} from {f}")
             _, file_extension = os.path.splitext(f)
-            local_path = os.path.join(git.get_git_repo_root(), f"{make_safe_filename(filename)}{file_extension}")
+            local_path = f"{make_safe_filename(filename)}{file_extension}"
             download_file_from_web(f, local_path)
             logging.info(f"Downloaded {filename} to {local_path}")
             f = local_path
+        else:
+            if check_ds_exists(f):
+                logging.warning(f"Dataset {f} already added to the system. Skipping...")
+                continue
 
         full_f = os.path.join(os.getcwd(), f)
         f = check_file(f)
@@ -64,21 +86,24 @@ def run_add(parsed_result: argparse.Namespace) -> None:
         mdf = DatasetMetaData()
         mdf.file_name = f
         mdf.size = os.path.getsize(full_f)
-        meta_data_file_name = mdf.save()
+        meta_data_file_name = mdf.save(cwd=selected_dir)
+        git.add(meta_data_file_name, cwd=selected_dir)
+        files_added += 1
 
-        git_proc = git.run_git("add", full_f, meta_data_file_name, )
+    if files_added > 0:
+        git.commit(f"Aurum added the metadata files for dataset(s) {', '.join(parsed_result.files)} to the project.",
+                   cwd=selected_dir)
+        print(f"\nAurum added the metadata files for the following datasets: {', '.join(parsed_result.files)}\n")
+        print(f"-" * 80)
+        print(f"If you'd like to add the actual dataset files to the project's repository,\n"
+              f"you'll need to run the following commands:\n")
 
-        _, err = git_proc.communicate()
+        for dataset_filename in parsed_result.files:
+            print(f"git add {dataset_filename}")
 
-        if git_proc.returncode != 0:
-            message = f"Unable to run 'git add {meta_data_file_name} {f}' Exit code: {git_proc.returncode}\n"
-            if err:
-                message += f"{err}\n"
+        print(f"git commit -a -m 'Adding dataset files to project'\n")
 
-            logging.error(message)
-            sys.exit(1)
-
-    sys.stdout.write(f"Added: {parsed_result.files}\n")
+    return files_added
 
 
 def run_rm(parsed_result: argparse.Namespace) -> None:
@@ -111,11 +136,7 @@ def run_rm(parsed_result: argparse.Namespace) -> None:
 def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = False) -> None:
     logging.info(f"Attempting to load experiment with tag: {parsed_result.tag}")
 
-    experiment_dir = os.path.join(
-        git.get_git_repo_root(),
-        cons.REPOSITORY_DIR,
-        cons.EXPERIMENTS_METADATA_DIR,
-    )
+    experiment_dir = os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR)
 
     experiments = os.listdir(experiment_dir)
     if f"{parsed_result.tag}.json" not in experiments:
@@ -125,8 +146,7 @@ def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = Fal
 
     emd = ExperimentMetaData(os.path.join(experiment_dir, f"{parsed_result.tag}.json"))
 
-    requirements_metadata_dir = \
-        os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
+    requirements_metadata_dir = os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
 
     for r in os.listdir(requirements_metadata_dir):
         if r == cons.KEEP_FILE:
@@ -166,13 +186,22 @@ def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = Fal
 
 def create_default_dirs() -> None:
     for path in base.DEFAULT_DIRS:
-        if path.exists():
+        if path.exists() and path.parts[-1] != cons.REPOSITORY_DIR and os.listdir(path) != ['.keep']:
             logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
         logging.debug(f"Creating dir {path}")
 
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
         Path(path, '.keep').touch()  # Needed to allow adding an empty directory to git
+
+
+def create_gitignore() -> None:
+    gitignore_path = base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE
+    with open(os.path.join(os.path.dirname(__file__), cons.GITIGNORE_TEMPLATE_FILE), 'rb') as template_file:
+        template = template_file.read()
+        with open(gitignore_path, 'ab') as gitignore:
+            gitignore.write(b"\n" + template)
+    git.add(gitignore_path)
 
 
 def au_init() -> None:
@@ -183,8 +212,13 @@ def au_init() -> None:
     # TODO: Move this code to the test case.
     # This is not a good idea.
     if not is_unnitest_running():
-        git.commit('Initial Commit')
+        stdout, stderr = git.commit('Initial Commit')
         logging.info("Initial commit")
+
+        initial_commit = base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE
+        open(initial_commit, 'wb').write(stdout.split()[2][:-1])
+        git.add(initial_commit)
+        git.commit("Recording initial commit file.")
 
 
 def check_file(file_path: str) -> str:
@@ -195,12 +229,8 @@ def check_file(file_path: str) -> str:
 
     full_path = os.path.join(os.getcwd(), file_path)
 
-    # If file is not in root of the repository then we need to get its full relative path
-    if not os.path.exists(os.path.join(cons.REPOSITORY_DIR, file_path)):
-        file_path = full_path.split(git.get_git_repo_root())[1]
-
     if not os.path.exists(full_path):
-        logging.error(f"Path '{file_path}' does not exist")
+        logging.error(f"Path '{file_path}' does not exist or is not in the repository")
         sys.exit(1)
 
     if not os.path.isfile(full_path):
@@ -219,7 +249,7 @@ def check_file(file_path: str) -> str:
 
 
 def display_metrics(experiment_ids: list) -> None:
-    metrics_path = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
+    metrics_path = os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
     for path in os.listdir(metrics_path):
         if cons.KEEP_FILE not in path:
             metrics_metadata = MetricsMetaData(os.path.join(metrics_path, path))
@@ -233,7 +263,7 @@ def display_metrics(experiment_ids: list) -> None:
 def export_experiment(parsed_args: argparse.Namespace) -> None:
     remove_dirs = []
     dataset_path = None
-    repo_dir = os.path.join(git.get_git_repo_root(), cons.REPOSITORY_DIR)
+    repo_dir = cons.REPOSITORY_DIR
     dataset_metadata = DatasetMetaData().get_latest()
     root_path = git.get_git_repo_root()
 
@@ -253,7 +283,7 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
 
     destiny_path = os.path.join(parsed_args.tag)
     if not Path(destiny_path).exists():
-        os.mkdir(destiny_path)
+        os.makedirs(destiny_path)
 
     for path in base.DEFAULT_DIRS:
         if path.as_posix() in remove_dirs:
