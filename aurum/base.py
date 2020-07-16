@@ -106,7 +106,7 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
             run_rm(parsed)
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_ADD:
             data_command_checker(parser)
-            run_add(parsed)
+            run_add(parsed, selected_dir=os.getcwd())
         else:
             parser.error("Unknown command for data")
     elif parsed.subcommand == cons.METRICS:

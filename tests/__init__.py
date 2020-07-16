@@ -20,4 +20,4 @@
 ##    License along with this library; if not, write to the Free Software
 ##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ##
-from .utils import set_git_for_test
+from .utils import set_git_for_test, run_test_init

@@ -3,9 +3,10 @@ import random
 import shutil
 import subprocess
 import unittest
-import uuid
+from uuid import uuid4
 
 from aurum import constants as cons
+from tests import set_git_for_test, run_test_init
 
 
 class AuCommandTestCase(unittest.TestCase):
@@ -19,11 +20,14 @@ class AuCommandTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.repository_path = "/tmp/repository/"
+        self.repository_path = f"/tmp/{uuid4()}/"
         self.random_dirs = dict()
 
         # Create the root repository
         os.makedirs(self.repository_path)
+
+        set_git_for_test(self.repository_path)
+        run_test_init(selected_dir=self.repository_path)
 
         # Create files at the root of the repository to be added and removed
         for i in range(3):
@@ -35,7 +39,7 @@ class AuCommandTestCase(unittest.TestCase):
         # Create random directories in the root with random files in them.
         for _ in range(3):
 
-            dir_name = str(uuid.uuid4())
+            dir_name = str(uuid4())
 
             path = os.path.join(self.repository_path, dir_name)
 
@@ -69,7 +73,6 @@ class AuCommandTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.repository_path, cons.REPOSITORY_DIR)))
 
     def test_add_from_repo_root(self):
-        self._run_init()
 
         proc = subprocess.Popen(
             ["au data add 0.txt", ],
@@ -85,8 +88,6 @@ class AuCommandTestCase(unittest.TestCase):
         self.assertEqual(o, b"Added: ['0.txt']\n")
 
     def test_add_from_random_dir_in_repo(self):
-
-        self._run_init()
 
         chosen = random.choice(list(self.random_dirs.keys()))
         path = f"0_{chosen}.txt"
@@ -108,8 +109,6 @@ class AuCommandTestCase(unittest.TestCase):
 
     def test_add_from_outside_repo(self):
 
-        self._run_init()
-
         chosen = random.choice(list(self.random_dirs.keys()))
         path = f"0_{chosen}.txt"
 
@@ -128,8 +127,6 @@ class AuCommandTestCase(unittest.TestCase):
 
     def test_add_from_inside_repo_root(self):
 
-        self._run_init()
-
         chosen = random.choice(list(self.random_dirs.keys()))
         path = f"0_{chosen}.txt"
 
@@ -143,22 +140,8 @@ class AuCommandTestCase(unittest.TestCase):
 
         _, e = proc.communicate()
 
-        self.assertEqual(proc.returncode, 2)
-        self.assertIn(b"error: Cannot run commands from inside '.au' folder\n", e)
-
-    def _run_init(self):
-        proc = subprocess.Popen(
-            ["au -v init"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            cwd=self.repository_path,
-        )
-
-        _, e = proc.communicate()
-
-        if proc.returncode != 0:
-            raise RuntimeError(f"Unable to run init. {e} {proc.returncode}")
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn(b"does not exist or is not in the repository", e)
 
 
 if __name__ == '__main__':

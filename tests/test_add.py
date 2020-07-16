@@ -6,7 +6,7 @@ import unittest
 from uuid import uuid4
 
 from aurum import commands
-from tests.utils import run_test_init, set_git_for_test
+from tests import run_test_init, set_git_for_test
 
 logging.getLogger().setLevel(logging.DEBUG)
 
