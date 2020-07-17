@@ -106,7 +106,7 @@ def config_parser() -> argparse.ArgumentParser:
 
     ######
     # Other arguments
-    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("--verbose", help="increase output verbosity", action="store_true")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     return parser
