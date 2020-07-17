@@ -25,18 +25,16 @@ import argparse
 import logging
 import ntpath
 import os
-import re
 import shutil
 import sys
 import zipfile
-import re
 from pathlib import Path
 
 from . import constants as cons, base, git
 from .dataset_tracker import check_ds_exists
 from .env_builder import create_temporary_env, install_packages
 from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
-from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files, download_file_from_web
+from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files
 
 
 def run_init() -> None:
@@ -62,32 +60,39 @@ def run_add(parsed_result: argparse.Namespace, selected_dir: str) -> int:
     for f in parsed_result.files:
 
         # Check if file is a network address so we download it.
-        if re.search("https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+", f):
-            filename = ntpath.basename(f)
+        # if re.search("https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+", f):
+        #     filename = ntpath.basename(f)
+        #
+        #     if check_ds_exists(filename, cwd=selected_dir):
+        #         logging.warning(f"Dataset {filename} already added to the system. Skipping...")
+        #         continue
+        #
+        #     logging.info(f"Downloading {filename} from {f}")
+        #     _, file_extension = os.path.splitext(f)
+        #     local_path = f"{make_safe_filename(filename)}{file_extension}"
+        #     download_file_from_web(f, local_path)
+        #     logging.info(f"Downloaded {filename} to {local_path}")
+        #     f = local_path
+        # else:
+        if check_ds_exists(f, cwd=selected_dir):
+            logging.warning(f"Dataset {f} already added to the system. Skipping...")
+            continue
 
-            if check_ds_exists(filename):
-                logging.warning(f"Dataset {filename} already added to the system. Skipping...")
-                continue
+        full_f = os.path.join(selected_dir, f)
+        logging.debug(f"full f is {full_f}")
 
-            logging.info(f"Downloading {filename} from {f}")
-            _, file_extension = os.path.splitext(f)
-            local_path = f"{make_safe_filename(filename)}{file_extension}"
-            download_file_from_web(f, local_path)
-            logging.info(f"Downloaded {filename} to {local_path}")
-            f = local_path
+        if Path(git.get_git_repo_root(selected_dir)) != Path(selected_dir):
+            check_file(f, cwd=git.get_git_repo_root(selected_dir))
+            # Use relative from here on out.
+            f = full_f.split(git.get_git_repo_root(selected_dir))[1]
         else:
-            if check_ds_exists(f):
-                logging.warning(f"Dataset {f} already added to the system. Skipping...")
-                continue
-
-        full_f = os.path.join(os.getcwd(), f)
-        f = check_file(f)
+            check_file(f, cwd=selected_dir)
 
         mdf = DatasetMetaData()
         mdf.file_name = f
         mdf.size = os.path.getsize(full_f)
-        meta_data_file_name = mdf.save(cwd=selected_dir)
-        git.add(meta_data_file_name, cwd=selected_dir)
+        meta_data_file_name = mdf.save(cwd=git.get_git_repo_root(selected_dir))
+        git.add(meta_data_file_name, cwd=git.get_git_repo_root(selected_dir))
         files_added += 1
 
     if files_added > 0:
@@ -221,29 +226,32 @@ def au_init() -> None:
         git.commit("Recording initial commit file.")
 
 
-def check_file(file_path: str) -> str:
+def check_file(file_path: str, cwd: str = '') -> str:
     """
     Checks if path exists, is a file, and if absolute if can be made into a au relative path.
     If not raises SystemExit.
     """
 
-    full_path = os.path.join(os.getcwd(), file_path)
+    if cwd == '':
+        cwd = git.get_git_repo_root()
 
-    if not os.path.exists(full_path):
-        logging.error(f"Path '{file_path}' does not exist or is not in the repository")
+    full_path = os.path.join(cwd, file_path)
+
+    if not os.path.exists(full_path) and not os.path.exists(file_path):
+        logging.error(f"Path '{file_path}' does not exist or is not in the repository: {full_path}")
         sys.exit(1)
 
-    if not os.path.isfile(full_path):
-        logging.error(f"Path '{file_path}' must be a file")
-        sys.exit(1)
-
-    if os.path.isabs(file_path):
-
-        if str(base.get_cwd()) in file_path:
-            file_path = file_path.split(str(base.get_cwd()), 1)[1][1:]
-        else:
-            logging.error(f"File '{file_path}' is not relative to au repository")
-            sys.exit(1)
+    # if not os.path.isfile(full_path):
+    #     logging.error(f"Path '{file_path}' must be a file")
+    #     sys.exit(1)
+    #
+    # if os.path.isabs(file_path):
+    #
+    #     if str(base.get_cwd()) in file_path:
+    #         file_path = file_path.split(str(base.get_cwd()), 1)[1][1:]
+    #     else:
+    #         logging.error(f"File '{file_path}' is not relative to au repository")
+    #         sys.exit(1)
 
     return file_path
 

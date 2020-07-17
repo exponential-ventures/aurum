@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 import shutil
@@ -7,6 +8,8 @@ from uuid import uuid4
 
 from aurum import constants as cons
 from tests import set_git_for_test, run_test_init
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 class AuCommandTestCase(unittest.TestCase):
@@ -59,18 +62,24 @@ class AuCommandTestCase(unittest.TestCase):
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
     def test_init(self):
+
+        r = f"/tmp/{uuid4()}/"
+        os.mkdir(r)
+        set_git_for_test(r)
+
         proc = subprocess.Popen(
             ["au -v init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
-            cwd=self.repository_path,
+            cwd=r,
         )
 
-        proc.communicate()
+        _, e = proc.communicate()
 
         self.assertEqual(proc.returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.repository_path, cons.REPOSITORY_DIR)))
+        self.assertTrue(os.path.exists(os.path.join(r, cons.REPOSITORY_DIR)))
+        shutil.rmtree(r, ignore_errors=True)
 
     def test_add_from_repo_root(self):
 
@@ -85,7 +94,8 @@ class AuCommandTestCase(unittest.TestCase):
         o, _ = proc.communicate()
 
         self.assertEqual(proc.returncode, 0)
-        self.assertEqual(o, b"Added: ['0.txt']\n")
+        s = "Aurum added the metadata files for the following datasets: 0.txt"
+        self.assertIn(s, o.decode(encoding="utf-8"))
 
     def test_add_from_random_dir_in_repo(self):
 
@@ -104,8 +114,8 @@ class AuCommandTestCase(unittest.TestCase):
 
         self.assertEqual(proc.returncode, 0)
 
-        s = f"Added: ['{path}']\n"
-        self.assertEqual(o, s.encode())
+        s = f"Aurum added the metadata files for the following datasets: {path}"
+        self.assertIn(s, o.decode(encoding="utf-8"))
 
     def test_add_from_outside_repo(self):
 

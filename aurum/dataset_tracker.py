@@ -41,9 +41,12 @@ def use_datasets(*args):
         Theorem().dataset_did_change(str_hash)
 
 
-def check_ds_exists(file_name: str) -> bool:
+def check_ds_exists(file_name: str, cwd: str = '') -> bool:
     try:
-        DatasetMetaData().get_by_ds_name(file_name)
+        dmd = DatasetMetaData()
+        if cwd != '':
+            dmd.cwd = cwd
+        dmd.get_by_ds_name(file_name)
         return True
     except FileNotFoundError:
         return False

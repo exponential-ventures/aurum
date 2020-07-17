@@ -18,6 +18,7 @@ class AddTestCase(unittest.TestCase):
 
         self.test_dir = f'/tmp/{uuid4()}'
         os.makedirs(self.test_dir)
+        self.random_dirs = dict()
 
         set_git_for_test(self.test_dir)
         run_test_init(selected_dir=self.test_dir)
@@ -25,7 +26,7 @@ class AddTestCase(unittest.TestCase):
         f_name = f'{uuid4()}.txt'
 
         self.relative_path = f_name
-        self.absolute_path = os.path.abspath(f_name)
+        self.absolute_path = os.path.join(self.test_dir, f_name)
 
         with open(self.absolute_path, 'w') as f:
             f.write("Gibberish")
@@ -44,11 +45,11 @@ class AddTestCase(unittest.TestCase):
             self.relative_path,
         ])
 
-        with self.assertRaises(FileNotFoundError):
-            commands.run_add(parser, selected_dir='')
-
         files_added = commands.run_add(parser, selected_dir=self.test_dir)
         self.assertEqual(files_added, 1)
+
+        with self.assertRaises(SystemExit):
+            commands.run_add(parser, selected_dir='')
 
 
 if __name__ == '__main__':

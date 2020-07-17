@@ -44,12 +44,16 @@ def check_git():
     logging.debug("Git found.")
 
 
-def running_from_git_repo() -> bool:
+def running_from_git_repo(cwd: str = "") -> bool:
+
+    if cwd == "":
+        cwd = os.getcwd()
+
     process = subprocess.Popen(
         ["git", "rev-parse", "--is-inside-work-tree"],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
-        cwd=os.getcwd(),
+        cwd=cwd,
     )
     output, _ = process.communicate()
     output = output.decode("utf-8")
@@ -57,14 +61,19 @@ def running_from_git_repo() -> bool:
     return str(output) == "true\n"
 
 
-def get_git_repo_root() -> str:
-    if not running_from_git_repo():
+def get_git_repo_root(cwd: str = '') -> str:
+
+    if cwd == "":
+        cwd = os.getcwd()
+
+    if not running_from_git_repo(cwd):
         logging.debug("Not running from a git repo")
         return ""
 
     process = run_git(
         "rev-parse",
-        "--show-toplevel"
+        "--show-toplevel",
+        cwd=cwd
     )
 
     output, _ = process.communicate()
