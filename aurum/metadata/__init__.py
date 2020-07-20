@@ -3,6 +3,6 @@ from .code import CodeMetaData, generate_src_files_hash_dict, generate_src_files
 from .dataset import DatasetMetaData
 from .experiment import ExperimentMetaData
 from .metrics import MetricsMetaData
-from .model import ModelMetaData
+from .weights import WeightsMetaData
 from .parameters import ParameterMetaData
 from .requirements import RequirementsMetaData

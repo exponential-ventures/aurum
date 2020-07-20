@@ -15,6 +15,7 @@ class ExperimentMetaData(MetaData):
         self.parameter_hash = None
         self.requirements_hash = None
         self.logging_hash = None
+        self.weights_hash = None
         super().__init__(file_name)
 
     def save(self, destination: str) -> str:
