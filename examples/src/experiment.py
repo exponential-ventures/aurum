@@ -1,19 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##
-## ----------------
-## |              |
-## | CONFIDENTIAL |
-## |              |
-## ----------------
+## Authors: Adriano Marques
+##          Nathan Martins
+##          Thales Ribeiro
 ##
-## Copyright Exponential Ventures LLC (C), 2019 All Rights Reserved
+## Copyright (C) 2019 Exponential Ventures LLC
 ##
-## Author: Adriano Marques <adriano@xnv.io>
+##    This library is free software; you can redistribute it and/or
+##    modify it under the terms of the GNU Library General Public
+##    License as published by the Free Software Foundation; either
+##    version 2 of the License, or (at your option) any later version.
 ##
-## If you do not have a written authorization to read this code
-## PERMANENTLY REMOVE IT FROM YOUR SYSTEM IMMEDIATELY.
+##    This library is distributed in the hope that it will be useful,
+##    but WITHOUT ANY WARRANTY; without even the implied warranty of
+##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+##    Library General Public License for more details.
 ##
+##    You should have received a copy of the GNU Library General Public
+##    License along with this library; if not, write to the Free Software
+##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+##
+
 
 import aurum as au
 
