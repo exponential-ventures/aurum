@@ -138,7 +138,6 @@ def data_command_checker(parser: argparse.ArgumentParser):
 
 
 def parameters(cwd: str = '', **kwargs):
-
     if cwd == '':
         cwd = os.getcwd()
 
@@ -260,13 +259,15 @@ def save_metrics(cwd: str, **kwargs):
             logging.error(message)
 
 
-def save_weights(model_encoded):
+def save_weights(model_encoded, cwd: str = "", ):
     meta_data_file_name = None
     wmd = WeightsMetaData()
+    if cwd == "":
+        cwd = os.getcwd()
 
     if Theorem().has_any_change():
         wmd.save_binary(model_encoded)
-        meta_data_file_name = wmd.save()
+        meta_data_file_name = wmd.save(cwd)
 
     if meta_data_file_name:
 
@@ -281,12 +282,12 @@ def save_weights(model_encoded):
 
 
 def load_weights(cwd: str = "", destination: str = ""):
-
     if cwd == "":
         cwd = os.getcwd()
 
     if destination == "":
-        wmd = WeightsMetaData().get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
+        wmd = WeightsMetaData().get_latest(
+            subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
         destination = wmd.binary_file_path
 
     return WeightsMetaData.load_binary(destination)
