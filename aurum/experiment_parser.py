@@ -47,8 +47,8 @@ class ExperimentArgParser:
 
         self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
 
-        self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-        self.parser.add_argument("-n", "--no-tracking", help="Don't store any metadata about this experiment",
+        self.parser.add_argument("--verbose", help="increase output verbosity", action="store_true")
+        self.parser.add_argument("--no-tracking", help="Don't store any metadata about this experiment",
                                  action="store_true")
 
         try:

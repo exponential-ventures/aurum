@@ -22,6 +22,8 @@
 ##
 import argparse
 import logging
+import os
+import sys
 import platform
 from pathlib import Path
 
@@ -32,6 +34,7 @@ from . import constants as cons, git
 from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
 from .metadata import (
     ParameterMetaData,
+    WeightsMetaData,
     MetricsMetaData,
     ExperimentMetaData,
     DatasetMetaData,
@@ -41,6 +44,7 @@ from .metadata import (
 from .theorem import Theorem
 from .time_tracker import time_tracker
 from .utils import size_in_gb, dic_to_str
+
 
 def get_cwd():
     return Path(os.getcwd())
@@ -61,6 +65,8 @@ DEFAULT_DIRS = [
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR),
+    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR, cons.WEIGHTS_BINARIES_DIR),
     get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
 ]
 
@@ -75,6 +81,8 @@ def get_default_dirs():
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR),
+        get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR, cons.WEIGHTS_BINARIES_DIR),
         get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
     ]
 
@@ -203,7 +211,7 @@ def gpu_info():
     info = {}
     try:
         nvmlInit()
-    except:
+    except Exception:
         info['no-gpu'] = 'No Nvidia GPU detected'
         return info
 
@@ -211,12 +219,16 @@ def gpu_info():
 
     info['driver_version'] = nvmlSystemGetDriverVersion().decode()
     info['device_count'] = device_count
-    info['device'] = {}
+    info['device'] = dict()
     for i in range(device_count):
         handle = nvmlDeviceGetHandleByIndex(i)
         memory = nvmlDeviceGetMemoryInfo(handle)
-        info['device'][i] = nvmlDeviceGetName(handle)
-        info['device'][i]['memory']['total'] = size_in_gb(memory.total)
+
+        info['device'][i] = dict()
+        info['device'][i]['name'] = str(nvmlDeviceGetName(handle))
+
+        info['device'][i]['memory'] = dict()
+        info['device'][i]['memory']['total'] = str(size_in_gb(memory.total))
 
     nvmlShutdown()
 
@@ -243,6 +255,34 @@ def save_metrics(**kwargs):
             logging.error(message)
 
 
+def save_weights(model_encoded):
+    meta_data_file_name = None
+    wmd = WeightsMetaData()
+
+    if Theorem().has_any_change():
+        wmd.save_binary(model_encoded)
+        meta_data_file_name = wmd.save()
+
+    if meta_data_file_name:
+
+        git_proc = git.run_git("add", meta_data_file_name)
+
+        result = git_proc.wait()
+        if result != 0:
+            message = f"Unable to run 'git add {meta_data_file_name}' Exit code: {result}\n"
+            if git_proc.stderr:
+                message += f"{git_proc.stderr.read()}\n"
+            logging.error(message)
+
+
+def load_weights(destination: str = ""):
+    if destination == "":
+        wmd = WeightsMetaData().get_latest()
+        destination = wmd.binary_file_path
+
+    return WeightsMetaData.load_binary(destination)
+
+
 def end_experiment() -> bool:
     commit_msg = ""
 
@@ -253,6 +293,7 @@ def end_experiment() -> bool:
 
         mdt.file_name = theorem.experiment_id
         metrics_metadata = MetricsMetaData().get_latest() or MetricsMetaData()
+        weights_metadata = WeightsMetaData().get_latest() or WeightsMetaData()
         parameters_metadata = ParameterMetaData().get_latest() or ParameterMetaData()
         requirements_metadata = RequirementsMetaData().get_latest() or RequirementsMetaData()
         dataset_metadata = DatasetMetaData().get_latest() or DatasetMetaData()
@@ -261,6 +302,7 @@ def end_experiment() -> bool:
                                    f"{theorem.experiment_id}.json")
 
         mdt.metrics_hash = metrics_metadata.file_hash
+        mdt.weights_hash = weights_metadata.file_hash
         mdt.parameter_hash = parameters_metadata.file_hash
         mdt.requirements_hash = requirements_metadata.file_hash
         mdt.code_hash = code_metadata.file_hash
@@ -268,9 +310,12 @@ def end_experiment() -> bool:
 
         if metrics_metadata.metrics:
             commit_msg += dic_to_str(metrics_metadata.metrics, 'Metrics')
-        #
+
         if parameters_metadata.parameters:
             commit_msg += dic_to_str(parameters_metadata.parameters, 'Parameters')
+
+        if weights_metadata.file_hash:
+            commit_msg += f"\n Weights hash: {weights_metadata.file_hash}"
 
         if requirements_metadata.file_hash:
             commit_msg += f"\n Requirements hash {requirements_metadata.file_hash}"

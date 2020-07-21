@@ -80,7 +80,7 @@ class AuCommandTestCase(unittest.TestCase):
 
     def test_init(self):
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
@@ -172,7 +172,7 @@ class AuCommandTestCase(unittest.TestCase):
 
     def _run_init(self):
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

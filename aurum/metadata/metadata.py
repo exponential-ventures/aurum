@@ -122,7 +122,7 @@ class MetaData:
         for file in os.listdir(metadata_dir):
 
             # Ignore keep files.
-            if cons.KEEP_FILE in file:
+            if cons.KEEP_FILE in file or os.path.isdir(os.path.join(metadata_dir, file)):
                 continue
 
             full_path = os.path.join(metadata_dir, file)

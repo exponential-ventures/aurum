@@ -43,7 +43,7 @@ def is_new_requirements() -> (bool, str):
     then the code should proceed as if this is a brand new experiment, except that parent will be None.
     """
 
-    process = subprocess.run("pip freeze", shell=True, check=True, capture_output=True)
+    process = subprocess.run("pip freeze", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = process.stdout
     logging.debug(f"\nInstalled packages: \n {output} \n\n")
     packages_hash = hashlib.sha1()

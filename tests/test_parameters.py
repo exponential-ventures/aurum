@@ -26,6 +26,7 @@ import os
 import shutil
 import subprocess
 import unittest
+import tracemalloc
 
 import aurum as au
 
@@ -34,11 +35,13 @@ class TestParameters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.current_dir = os.getcwd()
+        tracemalloc.start()
 
         au.base.run_init()
 
     @classmethod
     def tearDownClass(cls):
+        tracemalloc.stop()
         for path in au.base.DEFAULT_DIRS:
             shutil.rmtree(path, ignore_errors=True)
 
@@ -52,7 +55,7 @@ class TestParameters(unittest.TestCase):
 
     def test_parameters_from_arg_wo_mock(self):
         proc = subprocess.Popen(
-            [f"python3 {self.current_dir}/examples/src/experiment.py -a 40 -epochs 99", ],
+            [f"python3 {self.current_dir}/tests/utils/parameters.py -a 40 -epochs 99" ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

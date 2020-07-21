@@ -27,7 +27,6 @@ import os
 import shutil
 import subprocess
 import unittest
-import uuid
 from pathlib import Path
 
 from aurum import Theorem, is_new_requirements, end_experiment, commands
@@ -97,7 +96,7 @@ class TestExport(unittest.TestCase):
             tmp_file.write("Your dataset text goes here")
 
         proc = subprocess.Popen(
-            [f"au -v data add dataset.txt", ],
+            [f"au data add dataset.txt", ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
