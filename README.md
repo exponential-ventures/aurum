@@ -6,6 +6,10 @@ data and code without having to get another PhD for it.
 Aurum keeps track of all code and data changes, and lets you easily reproduce
 any experiment as well as easily compare metrics across experiments.
 
+__Aurum is currently in alpha state. There are a few rough edges we're still
+working to get fixed, so use at your own risk! Feel free to issue pull requests
+and contribute to the project__
+
 ## Give it a try!
 
     pip install aurum
