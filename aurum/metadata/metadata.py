@@ -141,7 +141,8 @@ class MetaData:
             if os.path.isdir(full_path):
                 return self.get_latest(full_path)
 
-            dmd = MetaData(full_path)
+            dmd = object.__new__(self.__class__)
+            self.__class__.__init__(dmd, full_path)
 
             if dmd.timestamp > now:
                 newest = dmd
