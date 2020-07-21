@@ -1,11 +1,13 @@
 import hashlib
 import logging
+import os
 import subprocess
+from . import constants as cons
 
 from .metadata import RequirementsMetaData
 
 
-def is_new_requirements() -> (bool, str):
+def is_new_requirements(cwd: str = '') -> (bool, str):
     """
     Run a pip freeze and create a hash to be saved in the requirements metadata, remember that we will also need to
     record the parent requirements (latest by date, if it exists) as well as all the contents of the pip freeze list
@@ -19,21 +21,33 @@ def is_new_requirements() -> (bool, str):
     then the code should proceed as if this is a brand new experiment, except that parent will be None.
     """
 
-    process = subprocess.run("pip freeze", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if cwd == '':
+        cwd = os.getcwd()
+
+    process = subprocess.run(
+        "pip freeze",
+        shell=True,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+    )
     output = process.stdout
     logging.debug(f"\nInstalled packages: \n {output} \n\n")
     packages_hash = hashlib.sha1()
     packages_hash.update(output)
     packages_hash = packages_hash.hexdigest()
 
-    latest_mdf = RequirementsMetaData().get_latest()
+    latest_mdf = RequirementsMetaData().get_latest(
+        subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR)
+    )
 
     if not latest_mdf:
         logging.debug("This is a new requirements")
         rmd = RequirementsMetaData()
         rmd.file_hash = packages_hash
         rmd.contents = output.decode()
-        rmd.save()
+        rmd.save(cwd=cwd)
         return True, rmd.file_hash
 
     elif latest_mdf and latest_mdf.file_hash != packages_hash:
@@ -42,7 +56,7 @@ def is_new_requirements() -> (bool, str):
         rmd.file_hash = packages_hash
         rmd.parent_hash = latest_mdf.file_hash
         rmd.contents = output.decode()
-        rmd.save()
+        rmd.save(cwd=cwd)
         return True, rmd.file_hash
 
     return False, ""

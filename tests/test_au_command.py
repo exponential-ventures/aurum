@@ -68,7 +68,7 @@ class AuCommandTestCase(unittest.TestCase):
         set_git_for_test(r)
 
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

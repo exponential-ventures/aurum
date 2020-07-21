@@ -111,16 +111,17 @@ def run_add(parsed_result: argparse.Namespace, selected_dir: str) -> int:
     return files_added
 
 
-def run_rm(parsed_result: argparse.Namespace) -> None:
+def run_rm(parsed_result: argparse.Namespace, selected_dir: str) -> None:
     for filepath in parsed_result.files:
 
-        filepath = check_file(filepath)
+        filepath = check_file(filepath, cwd=git.get_git_repo_root(selected_dir))
 
         logging.info(f"Removing {filepath} from git")
         git.rm(filepath, soft_delete=parsed_result.soft_delete)
         logging.info(f"{filepath} removed from git")
 
-        _, meta_data_path = DatasetMetaData().get_by_ds_name(filepath)
+        _, meta_data_path = DatasetMetaData().get_by_ds_name(cwd=git.get_git_repo_root(selected_dir),
+                                                             file_name=filepath)
 
         logging.info(f"Removing meta data '{meta_data_path}' and removing from git.")
 
@@ -131,7 +132,8 @@ def run_rm(parsed_result: argparse.Namespace) -> None:
             os.remove(meta_data_path)
 
         # remove parent dir if empty to avoid lots of empty dirs.
-        parent_dir = os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR, make_safe_filename(filepath))
+        parent_dir = os.path.join(selected_dir, cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR,
+                                  make_safe_filename(filepath))
         if len(os.listdir(parent_dir)) <= 1:
             shutil.rmtree(parent_dir, ignore_errors=True)
 
@@ -281,8 +283,6 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
             remove_dirs.append(os.path.join(repo_dir, dataset_metadata.file_name))
         else:
             dataset_path = dataset_metadata.file_name
-    else:
-        remove_dirs.append(os.path.join(repo_dir, dataset_metadata.file_name))
 
     if parsed_args.no_logs:
         remove_dirs.append(os.path.join(root_path, cons.LOGS_DIR))

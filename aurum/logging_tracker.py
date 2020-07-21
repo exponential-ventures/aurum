@@ -31,6 +31,7 @@ class LoggingTracker:
 
         self.stdout = tee(sys.stdout)
         self.stderr = tee(sys.stderr)
+        logging.getLogger().addHandler(logging.StreamHandler(self.stdout.temp_file))
 
         sys.stdout = self.stdout
         sys.stderr = self.stderr

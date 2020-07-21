@@ -67,6 +67,7 @@ class MetaData:
     def __init__(self, file_name: str = '') -> None:
         self.parent_hash = None
         self.file_hash = None
+        self.cwd = os.getcwd()
 
         self.file_name = file_name
         self.timestamp = datetime.now()
@@ -100,12 +101,18 @@ class MetaData:
             self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     @dehydratable
-    def save(self, destination: str) -> str:
+    def save(self, destination: str, cwd: str = '',) -> str:
         """perform a serialization and save to file"""
+
+        if cwd == '':
+            cwd = self.cwd
+
+        destination = os.path.join(cwd, destination)
 
         if not os.path.exists(os.path.dirname(destination)):
             os.makedirs(os.path.dirname(destination))
 
+        logging.debug(f"Saving dataset metadata file to: {destination}")
         with open(destination, "w+") as f:
             logging.debug(f"Saving: {destination}")
             f.write(self.serialize())

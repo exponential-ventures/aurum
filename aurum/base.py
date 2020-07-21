@@ -22,8 +22,6 @@
 ##
 import argparse
 import logging
-import os
-import sys
 import platform
 from pathlib import Path
 
@@ -139,7 +137,11 @@ def data_command_checker(parser: argparse.ArgumentParser):
         parser.error(f"Path '.au' does not exist, please run au init")
 
 
-def parameters(**kwargs):
+def parameters(cwd: str = '', **kwargs):
+
+    if cwd == '':
+        cwd = os.getcwd()
+
     from .experiment_parser import ExperimentArgParser
 
     p = ExperimentArgParser()
@@ -161,11 +163,13 @@ def parameters(**kwargs):
     pmd = ParameterMetaData()
     pmd.parameters = new_dict
 
-    latest_exp = ExperimentMetaData().get_latest()
+    latest_exp = ExperimentMetaData().get_latest(
+        subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
+    )
 
     if (latest_exp and latest_exp.parameter_hash != pmd.parameter_hash) or (latest_exp is None):
         Theorem().parameters_did_change(pmd.parameter_hash)
-        meta_data_file_name = pmd.save()
+        meta_data_file_name = pmd.save(cwd=cwd)
         git_proc = git.run_git("add", meta_data_file_name)
 
         result = git_proc.wait()
@@ -176,7 +180,10 @@ def parameters(**kwargs):
             logging.error(message)
 
 
-def register_metrics(**kwargs):
+def register_metrics(cwd: str = '', **kwargs):
+    if cwd == '':
+        cwd = os.getcwd()
+
     swap_mem = psutil.swap_memory()
     virtual_memory = psutil.virtual_memory()
     disk_usage = psutil.disk_usage('/')
@@ -204,7 +211,7 @@ def register_metrics(**kwargs):
                        }
 
     metrics = {**kwargs, **hardware_metric}
-    save_metrics(**metrics)
+    save_metrics(cwd=cwd, **metrics)
 
 
 def gpu_info():
@@ -235,13 +242,11 @@ def gpu_info():
     return info
 
 
-def save_metrics(**kwargs):
-    meta_data_file_name = None
+def save_metrics(cwd: str, **kwargs):
     mmd = MetricsMetaData()
     mmd.metrics = kwargs
 
-    if Theorem().has_any_change():
-        meta_data_file_name = mmd.save()
+    meta_data_file_name = mmd.save(cwd=cwd)
 
     if meta_data_file_name:
 
@@ -275,9 +280,13 @@ def save_weights(model_encoded):
             logging.error(message)
 
 
-def load_weights(destination: str = ""):
+def load_weights(cwd: str = "", destination: str = ""):
+
+    if cwd == "":
+        cwd = os.getcwd()
+
     if destination == "":
-        wmd = WeightsMetaData().get_latest()
+        wmd = WeightsMetaData().get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
         destination = wmd.binary_file_path
 
     return WeightsMetaData.load_binary(destination)

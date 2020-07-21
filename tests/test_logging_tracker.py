@@ -1,5 +1,4 @@
 import logging
-import shutil
 import sys
 import unittest
 

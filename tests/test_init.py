@@ -23,7 +23,7 @@ class TestInitMethod(unittest.TestCase):
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)
 
-        set_git_for_test()
+        set_git_for_test(self.repository_path)
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -34,7 +34,7 @@ class TestInitMethod(unittest.TestCase):
         os.chdir(self.repository_path)
 
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

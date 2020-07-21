@@ -1,5 +1,4 @@
 import argparse
-import logging
 import os
 import shutil
 import subprocess
@@ -16,8 +15,6 @@ class LoadTestCase(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        set_git_for_test()
-
         self.repository_path = "/tmp/repository/"
 
         # Remove if it exists
@@ -26,13 +23,15 @@ class LoadTestCase(unittest.TestCase):
         # Create the root repository
         os.makedirs(self.repository_path)
 
+        set_git_for_test(self.repository_path)
+
         Theorem.instance = None
 
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)
 
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
@@ -73,7 +72,7 @@ class LoadTestCase(unittest.TestCase):
             tmp_file.write("Your dataset text goes here")
 
         proc = subprocess.Popen(
-            [f"au -v data add dataset.txt", ],
+            [f"au --verbose data add dataset.txt", ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

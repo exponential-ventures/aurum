@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import unittest
+from uuid import uuid4
 
 from aurum import use_datasets
 from aurum.dataset_tracker import DatasetTracker, is_new_dataset
@@ -15,7 +16,7 @@ class DatasetTrackerCase(unittest.TestCase):
         super().setUp()
 
         # Create the root repository
-        self.repository_path = "/tmp/repository/"
+        self.repository_path = f"/tmp/{uuid4()}/"
         os.makedirs(self.repository_path)
         set_git_for_test(self.repository_path)
         run_test_init(selected_dir=self.repository_path)
@@ -48,11 +49,11 @@ class DatasetTrackerCase(unittest.TestCase):
 
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)
-        use_datasets(self.ds)
+        use_datasets(self.ds, cwd=self.repository_path)
         self.assertIn(self.ds, DatasetTracker().datasets)
 
         # No previous experiment run, so it should be true
-        is_new, h = is_new_dataset()
+        is_new, h = is_new_dataset(self.repository_path)
         self.assertTrue(is_new)
         self.assertIsInstance(h, str)
 

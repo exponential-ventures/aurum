@@ -5,7 +5,7 @@ from aurum import git
 
 def run_test_init(selected_dir: str):
     proc = subprocess.run(
-        ["au -v init"],
+        ["au --verbose init"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=True,
