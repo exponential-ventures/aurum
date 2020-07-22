@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 from .metadata import DatasetMetaData, ExperimentMetaData
 from .singleton import SingletonDecorator
@@ -24,7 +25,10 @@ class DatasetTracker:
         return full_hash.hexdigest()
 
 
-def use_datasets(*args, cwd: str, ):
+def use_datasets(*args, cwd: str = '', ):
+    if cwd == '':
+        cwd = os.getcwd()
+
     dt = DatasetTracker()
 
     for ds in args:
