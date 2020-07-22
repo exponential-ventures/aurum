@@ -25,7 +25,7 @@ import argparse
 import json
 import os
 
-from . import constants as cons, git
+from . import constants as cons
 from .metadata import ParameterMetaData
 from .singleton import SingletonDecorator
 
@@ -71,9 +71,7 @@ def load_parameters() -> dict:
     metadata = ParameterMetaData().get_latest()
 
     if metadata and metadata.file_name:
-        filepath = os.path.join(
-            git.get_git_repo_root(), cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR, metadata.file_name
-        )
+        filepath = os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR, metadata.file_name)
     else:
         filepath = None
 

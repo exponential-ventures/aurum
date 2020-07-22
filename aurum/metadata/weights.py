@@ -25,7 +25,7 @@ import os
 import time
 
 from .metadata import MetaData, gen_meta_file_name_from_hash
-from .. import constants as cons, git
+from .. import constants as cons
 from ..theorem import Theorem
 from ..utils import gen_dict_hash
 
@@ -37,14 +37,14 @@ class WeightsMetaData(MetaData):
         self.binary_file_path = ''
         super().__init__(file_name)
 
-    def save(self, destination: str = None) -> str:
+    def save(self, cwd: str, destination: str = None) -> str:
         current_timestamp = str(round(time.time() * 1000))
 
         if Theorem().has_any_change():
             self.file_hash = gen_dict_hash({
                 'binary_file_path': self.binary_file_path,
             })
-            parent = self.get_latest()
+            parent = self.get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
             if parent and self.file_hash != parent.file_hash:
                 self.parent_hash = parent.file_hash
 
@@ -52,14 +52,17 @@ class WeightsMetaData(MetaData):
             destination = gen_meta_file_name_from_hash(str(current_timestamp), '', self.get_dir())
 
         logging.debug(f"Saving model file to: {destination}")
-        return super().save(destination)
+        return super().save(destination=destination, cwd=cwd)
 
-    def save_binary(self, encoded_model: bytes, destination: str = None) -> str:
+    def save_binary(self, encoded_model: bytes, cwd: str = '', destination: str = None) -> str:
 
         current_timestamp = str(round(time.time() * 1000))
 
+        if cwd == '':
+            cwd = os.getcwd()
+
         if destination is None:
-            binary_file_path = os.path.join(self.get_binaries_dir(), current_timestamp)
+            binary_file_path = os.path.join(cwd, self.get_binaries_dir(), current_timestamp)
         else:
             binary_file_path = destination
 
@@ -72,7 +75,6 @@ class WeightsMetaData(MetaData):
 
     def get_dir(self):
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.WEIGHTS_METADATA_DIR,
         )

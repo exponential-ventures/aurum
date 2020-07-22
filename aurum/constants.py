@@ -26,6 +26,9 @@ REPOSITORY_DIR = ".au"
 KEEP_FILE = ".keep"
 SOURCE_CODE_DIR = "src"
 LOGS_DIR = "logs"
+INITIAL_COMMIT_FILE = "initial_commit"
+GITIGNORE_FILE = ".gitignore"
+GITIGNORE_TEMPLATE_FILE = "gitignore_template.txt"
 
 DATASET_METADATA_DIR = "datasets"
 PARAMETER_METADATA_DIR = "parameters"
@@ -39,8 +42,7 @@ INITIAL_COMMIT_FILE = "initial_commit"
 GITIGNORE_FILE = ".gitignore"
 GITIGNORE_TEMPLATE_FILE = "gitignore_template.txt"
 
-#### COMMANDS
-
+# COMMANDS
 METRICS = 'metrics'
 INIT = 'init'
 LOAD = 'load'

@@ -34,8 +34,10 @@ class ParameterMetaData(MetaData):
         self.parameters = None
         super().__init__(file_name)
 
-    def save(self, destination: str = None) -> str:
-        parent = self.get_latest()
+    def save(self, cwd: str, destination: str = None) -> str:
+        parent = self.get_latest(
+            subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR)
+        )
         self.file_hash = gen_dict_hash(self.parameters)
 
         if parent and self.file_hash != parent.file_hash:
@@ -48,7 +50,7 @@ class ParameterMetaData(MetaData):
         )
 
         logging.debug(f"Saving parameters file to: {destination}")
-        return super().save(destination)
+        return super().save(destination=destination, cwd=cwd)
 
     @property
     def parameter_hash(self) -> str:
@@ -56,7 +58,6 @@ class ParameterMetaData(MetaData):
 
     def get_dir(self):
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.PARAMETER_METADATA_DIR,
         )

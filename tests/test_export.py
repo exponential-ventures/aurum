@@ -31,7 +31,7 @@ from pathlib import Path
 
 from aurum import Theorem, is_new_requirements, end_experiment, commands
 from aurum.code_tracker import is_new_code
-from tests.utils import set_git_for_test
+from tests.utils import set_git_for_test, run_test_init
 
 
 class TestExport(unittest.TestCase):
@@ -39,32 +39,21 @@ class TestExport(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        set_git_for_test()
-
         self.repository_path = "/tmp/repository/"
 
         # Remove if it exists
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
+
+        set_git_for_test(self.repository_path)
+        run_test_init(selected_dir=self.repository_path)
 
         Theorem.instance = None
 
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)
-
-        proc = subprocess.Popen(
-            ["au -v init"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            cwd=self.repository_path,
-        )
-
-        proc.communicate()
-
-        self.assertEqual(proc.returncode, 0)
 
         # Creating a new experiment
 
@@ -96,7 +85,7 @@ class TestExport(unittest.TestCase):
             tmp_file.write("Your dataset text goes here")
 
         proc = subprocess.Popen(
-            [f"au data add dataset.txt", ],
+            [f"au --verbose data add dataset.txt", ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
@@ -112,7 +101,6 @@ class TestExport(unittest.TestCase):
         self.experiment_id = Theorem().experiment_id
 
         self.assertTrue(end_experiment())
-
 
     def test_export_known_experiment(self):
         cli_result = argparse.Namespace(

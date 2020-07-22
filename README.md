@@ -87,7 +87,7 @@ Sometimes you want to keep track of your file. You can do this with `aurum` runn
     myTrainedModel = ... # train your model
     au.save_model(pickle.dumps(myTrainedModel))
 
-Node that we used the pickle example here, but all you need to do is to pass the `byte[]` representation of your model and it will handle it. You don't need to use `pickle` to serialise data, you can use anything you want. Now on the next iteration you won't need to loose time training your model again. All you need to do in that case is:
+Note that we used the pickle example here, but all you need to do is to pass the `byte[]` representation of your model and it will handle it. You don't need to use `pickle` to serialise data, you can use anything you want. Now on the next iteration you won't need to loose time training your model again. All you need to do in that case is:
 
     myLastTrainedModel = pickle.loads(au.load_model())
 

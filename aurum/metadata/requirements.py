@@ -34,16 +34,15 @@ class RequirementsMetaData(MetaData):
         self.contents = None
         super().__init__(file_name)
 
-    def save(self, destination: str = None) -> str:
+    def save(self, cwd: str, destination: str = None) -> str:
         name = f"{self.file_hash}.json"
 
         destination = os.path.join(self.get_dir(), name)
 
-        return super().save(destination)
+        return super().save(destination=destination, cwd=cwd)
 
     def get_dir(self):
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.REQUIREMENTS_METADATA_DIR,
         )

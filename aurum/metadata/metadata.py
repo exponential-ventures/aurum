@@ -91,6 +91,7 @@ class MetaData:
     def __init__(self, file_name: str = '') -> None:
         self.parent_hash = None
         self.file_hash = None
+        self.cwd = os.getcwd()
 
         self.file_name = file_name
         self.timestamp = datetime.now()
@@ -124,9 +125,18 @@ class MetaData:
             self.timestamp = datetime.fromtimestamp(self.timestamp)
 
     @dehydratable
-    def save(self, destination: str) -> str:
+    def save(self, destination: str, cwd: str = '',) -> str:
         """perform a serialization and save to file"""
 
+        if cwd == '':
+            cwd = self.cwd
+
+        destination = os.path.join(cwd, destination)
+
+        if not os.path.exists(os.path.dirname(destination)):
+            os.makedirs(os.path.dirname(destination))
+
+        logging.debug(f"Saving dataset metadata file to: {destination}")
         with open(destination, "w+") as f:
             logging.debug(f"Saving: {destination}")
             f.write(self.serialize())
@@ -155,7 +165,8 @@ class MetaData:
             if os.path.isdir(full_path):
                 return self.get_latest(full_path)
 
-            dmd = MetaData(full_path)
+            dmd = object.__new__(self.__class__)
+            self.__class__.__init__(dmd, full_path)
 
             if dmd.timestamp > now:
                 newest = dmd
@@ -166,10 +177,6 @@ class MetaData:
 
 def gen_meta_file_name_from_hash(meta_data_str, file_name, path):
     meta_data_dir = os.path.join(path, make_safe_filename(file_name))
-
-    if not os.path.exists(meta_data_dir):
-        os.mkdir(meta_data_dir)
-
     meta_hash = gen_meta_hash(meta_data_str)
     meta_data_file_name = meta_hash + ".json"
 

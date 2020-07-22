@@ -27,22 +27,23 @@ import os
 import shutil
 import subprocess
 import unittest
+from uuid import uuid4
 
 from aurum import use_datasets
 from aurum.dataset_tracker import DatasetTracker, is_new_dataset
-from tests import set_git_for_test
+from tests import set_git_for_test, run_test_init
 
 
 class DatasetTrackerCase(unittest.TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        set_git_for_test()
 
-        self.repository_path = "/tmp/repository/"
         # Create the root repository
-        os.mkdir(self.repository_path)
-        test_run_init()
+        self.repository_path = f"/tmp/{uuid4()}/"
+        os.makedirs(self.repository_path)
+        set_git_for_test(self.repository_path)
+        run_test_init(selected_dir=self.repository_path)
 
         self.ds = f"dataset.txt"
 
@@ -72,30 +73,13 @@ class DatasetTrackerCase(unittest.TestCase):
 
         # Needed so that we fake as if running from the au repo
         os.chdir(self.repository_path)
-        use_datasets(self.ds)
+        use_datasets(self.ds, cwd=self.repository_path)
         self.assertIn(self.ds, DatasetTracker().datasets)
 
         # No previous experiment run, so it should be true
-        is_new, h = is_new_dataset()
+        is_new, h = is_new_dataset(self.repository_path)
         self.assertTrue(is_new)
         self.assertIsInstance(h, str)
-
-
-def test_run_init(repository_path: str = "/tmp/repository/"):
-    proc = subprocess.Popen(
-        ["au -v init"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        cwd=repository_path,
-    )
-
-    _, e = proc.communicate()
-
-    if proc.returncode != 0:
-        raise RuntimeError(f"Unable to run init. {e} {proc.returncode}")
-
-    logging.debug("test_run_init ran successfully")
 
 
 if __name__ == '__main__':

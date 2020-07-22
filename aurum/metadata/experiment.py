@@ -54,7 +54,6 @@ class ExperimentMetaData(MetaData):
 
     def get_dir(self):
         return os.path.join(
-            git.get_git_repo_root(),
             cons.REPOSITORY_DIR,
             cons.EXPERIMENTS_METADATA_DIR,
         )

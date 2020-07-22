@@ -161,7 +161,7 @@ def create_temporary_env(name: str):
     if os.path.exists(dir_name):
         clear = True
     else:
-        os.mkdir(dir_name)
+        os.makedirs(dir_name)
 
     builder = venv.EnvBuilder(symlinks=use_symlinks, clear=clear, with_pip=True)
     builder.create(dir_name)

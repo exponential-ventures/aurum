@@ -44,12 +44,16 @@ def check_git():
     logging.debug("Git found.")
 
 
-def running_from_git_repo() -> bool:
+def running_from_git_repo(cwd: str = "") -> bool:
+
+    if cwd == "":
+        cwd = os.getcwd()
+
     process = subprocess.Popen(
         ["git", "rev-parse", "--is-inside-work-tree"],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
-        cwd=os.getcwd(),
+        cwd=cwd,
     )
     output, _ = process.communicate()
     output = output.decode("utf-8")
@@ -57,14 +61,19 @@ def running_from_git_repo() -> bool:
     return str(output) == "true\n"
 
 
-def get_git_repo_root() -> str:
-    if not running_from_git_repo():
+def get_git_repo_root(cwd: str = '') -> str:
+
+    if cwd == "":
+        cwd = os.getcwd()
+
+    if not running_from_git_repo(cwd):
         logging.debug("Not running from a git repo")
         return ""
 
     process = run_git(
         "rev-parse",
-        "--show-toplevel"
+        "--show-toplevel",
+        cwd=cwd
     )
 
     output, _ = process.communicate()
@@ -102,11 +111,11 @@ def tag(experiment_id: str, message: str) -> None:
         raise GitCommandError(f"Failed to run 'git tag -a {experiment_id} -m {message}': {error}")
 
 
-def commit(commit_message: str, secondary_msg: str = '') -> None:
+def commit(commit_message: str, secondary_msg: str = '', cwd: str = '') -> (str, str):
     if secondary_msg is not '':
-        process = run_git('commit', '-am', commit_message, '-m', secondary_msg)
+        process = run_git('commit', '-am', commit_message, '-m', secondary_msg, cwd=cwd)
     else:
-        process = run_git('commit', '-am', commit_message)
+        process = run_git('commit', '-am', commit_message, cwd=cwd)
 
     stdout, stderr = process.communicate()
 
@@ -148,8 +157,8 @@ def push() -> str:
     return output.decode('utf-8').replace('\n', '')
 
 
-def add(*filenames: List[str]) -> str:
-    sub = run_git('add', *filenames)
+def add(*filenames: str, cwd: str = '') -> str:
+    sub = run_git('add', *filenames, cwd=cwd)
     stdout, stderr = sub.communicate()
 
     if sub.returncode != 0:
@@ -158,5 +167,7 @@ def add(*filenames: List[str]) -> str:
     return stdout.decode('utf-8').replace('\n', '')
 
 
-def run_git(*args):
-    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def run_git(*args, cwd: str = ''):
+    if cwd == '':
+        cwd = os.getcwd()
+    return subprocess.Popen(["git"] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)

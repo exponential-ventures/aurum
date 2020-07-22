@@ -39,15 +39,15 @@ class LoadTestCase(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        set_git_for_test()
-
         self.repository_path = "/tmp/repository/"
 
         # Remove if it exists
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
         # Create the root repository
-        os.mkdir(self.repository_path)
+        os.makedirs(self.repository_path)
+
+        set_git_for_test(self.repository_path)
 
         Theorem.instance = None
 
@@ -55,7 +55,7 @@ class LoadTestCase(unittest.TestCase):
         os.chdir(self.repository_path)
 
         proc = subprocess.Popen(
-            ["au -v init"],
+            ["au --verbose init"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
@@ -96,7 +96,7 @@ class LoadTestCase(unittest.TestCase):
             tmp_file.write("Your dataset text goes here")
 
         proc = subprocess.Popen(
-            [f"au -v data add dataset.txt", ],
+            [f"au --verbose data add dataset.txt", ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
