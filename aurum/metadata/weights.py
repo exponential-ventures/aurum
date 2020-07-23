@@ -35,6 +35,7 @@ class WeightsMetaData(MetaData):
     def __init__(self, file_name: str = '') -> None:
         self.weights = None
         self.binary_file_path = ''
+        self.relative_path = ''
         super().__init__(file_name)
 
     def save(self, cwd: str, destination: str = None) -> str:
@@ -54,22 +55,18 @@ class WeightsMetaData(MetaData):
         logging.debug(f"Saving model file to: {destination}")
         return super().save(destination=destination, cwd=cwd)
 
-    def save_binary(self, encoded_model: bytes, cwd: str = '', destination: str = None) -> str:
+    def save_binary(self, encoded_model: bytes, cwd: str = '') -> str:
 
         current_timestamp = str(round(time.time() * 1000))
 
         if cwd == '':
             cwd = os.getcwd()
 
-        if destination is None:
-            binary_file_path = os.path.join(cwd, self.get_binaries_dir(), current_timestamp)
-        else:
-            binary_file_path = destination
+        self.relative_path = os.path.join(self.get_binaries_dir(), current_timestamp)
+        self.binary_file_path = os.path.join(cwd, self.relative_path)
 
-        with open(binary_file_path, 'wb') as f:
+        with open(self.binary_file_path, 'wb') as f:
             f.write(encoded_model)
-
-        self.binary_file_path = binary_file_path
 
         return self.binary_file_path
 
@@ -79,10 +76,16 @@ class WeightsMetaData(MetaData):
             cons.WEIGHTS_METADATA_DIR,
         )
 
-    @staticmethod
-    def load_binary(destination: str):
-        with open(destination, mode='rb') as f:
-            return f.read()
+    def load_binary(self):
+
+        if self.relative_path != '':
+            try:
+                with open(self.relative_path, mode='rb') as f:
+                    return f.read()
+            except FileNotFoundError:
+                logging.warning(f"tried loading from relative path: '{self.relative_path}' but failed")
+                with open(self.binary_file_path, mode='rb') as f:
+                    return f.read()
 
     @staticmethod
     def get_binaries_dir():

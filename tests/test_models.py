@@ -25,13 +25,13 @@ class TestModel(unittest.TestCase):
         shutil.rmtree(self.repository_path, ignore_errors=True)
 
     def test_save_binary(self):
-        path = "/tmp/model.o"
+
         magic_d = {'sample_field_a': 'sample value a', 'sample_field_b': 'sample value b'}
 
         wmd = WeightsMetaData()
-        wmd.save_binary(encoded_model=bytes(json.dumps(magic_d), encoding='utf-8'), destination=path)
+        wmd.save_binary(encoded_model=bytes(json.dumps(magic_d), encoding='utf-8'), cwd=self.repository_path)
 
-        self.assertEqual(magic_d, json.loads(wmd.load_binary(path)))
+        self.assertEqual(magic_d, json.loads(wmd.load_binary()))
 
     def test_save(self):
         magic_d = {'sample_field_a': 'sample value a', 'sample_field_b': 'sample value b'}

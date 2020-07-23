@@ -281,16 +281,13 @@ def save_weights(model_encoded, cwd: str = "", ):
             logging.error(message)
 
 
-def load_weights(cwd: str = "", destination: str = ""):
+def load_weights(cwd: str = ""):
     if cwd == "":
         cwd = os.getcwd()
 
-    if destination == "":
-        wmd = WeightsMetaData().get_latest(
-            subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
-        destination = wmd.binary_file_path
+    wmd = WeightsMetaData().get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
 
-    return WeightsMetaData.load_binary(destination)
+    return wmd.load_binary()
 
 
 def end_experiment() -> bool:
