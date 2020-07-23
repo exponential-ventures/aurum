@@ -23,6 +23,7 @@
 
 
 import sys
+import logging
 from tempfile import TemporaryFile
 
 from .singleton import SingletonDecorator
