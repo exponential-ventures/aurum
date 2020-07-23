@@ -22,4 +22,4 @@
 ##
 
 
-from .utils import set_git_for_test
+from .utils import set_git_for_test, run_test_init
