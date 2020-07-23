@@ -54,11 +54,19 @@ class TestMetrics(unittest.TestCase):
     def test_register_metrics(self):
         au.register_metrics(resga=800, foo=2_000, cwd=self.repository_path)
         metrics_metadata = MetricsMetaData().get_latest(
-            os.path.join(self.repository_path, cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))
+            os.path.join(self.repository_path, cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR))
+        self.assertIsNotNone(metrics_metadata)
         self.assertEqual(metrics_metadata.metrics['resga'], 800)
         self.assertEqual(metrics_metadata.metrics['foo'], 2_000)
         self.assertTrue('environment' in metrics_metadata.metrics)
         self.assertTrue('hardware' in metrics_metadata.metrics)
+
+    def test_save_metrics_is_creating_json_file(self):
+        au.register_metrics(resga=800, foo=2_000, cwd=self.repository_path)
+        files_in_metric = len(os.listdir(os.path.join(self.repository_path, ".au", "metrics")))
+
+        # it's 2 because of the .keep file
+        self.assertEqual(files_in_metric, 2)
 
 
 if __name__ == '__main__':

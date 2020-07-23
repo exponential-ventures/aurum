@@ -39,7 +39,7 @@ class MetricsMetaData(MetaData):
     def save(self, cwd: str, destination: str = None) -> str:
 
         mmd = MetricsMetaData()
-        parent = mmd.get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR))
+        parent = mmd.get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR))
 
         self.file_hash = gen_dict_hash(self.metrics)
 
@@ -49,7 +49,7 @@ class MetricsMetaData(MetaData):
         destination = gen_meta_file_name_from_hash(
             meta_data_str=str(self.timestamp),
             file_name='',
-            path=os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR)
+            path=os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR)
         )
 
         return super().save(cwd=cwd, destination=destination)
