@@ -18,12 +18,12 @@ steps:
         from_secret: docker_password
 
   - name: unit_test
-    image: k2so.xnv.io/xnv/mercury-backend:${DRONE_COMMIT_SHA:0:8}
+    image: k2so.xnv.io/xnv/mercury-aurum:${DRONE_COMMIT_SHA:0:8}
     commands:
       - "python3 -m unittest tests"
 
   - name: deploy_internal_pypi
-    image: k2so.xnv.io/xnv/mercury-backend:${DRONE_COMMIT_SHA:0:8}
+    image: k2so.xnv.io/xnv/mercury-aurum:${DRONE_COMMIT_SHA:0:8}
     settings:
       pypirc:
         from_secret: pypirc
@@ -44,8 +44,12 @@ steps:
       template: >
         {{#success build.status}}
           Aurum build {{build.number}} succeeded. Good job.
+        Commit: `${DRONE_COMMIT_SHA:0:8}`
+        ${DRONE_BUILD_LINK}
         {{else}}
          Aurum build {{build.number}} failed. Fix me please.
+        Commit: `${DRONE_COMMIT_SHA:0:8}`
+        ${DRONE_BUILD_LINK}
         {{/success}}
 
 
