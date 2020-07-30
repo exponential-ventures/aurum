@@ -43,11 +43,11 @@ steps:
       channel: amalgam
       template: >
         {{#success build.status}}
-          Aurum build {{build.number}} succeeded. Good job.
+          Aurum: #build {{build.number}} succeeded. Good job.
         Commit: `${DRONE_COMMIT_SHA:0:8}`
         ${DRONE_BUILD_LINK}
         {{else}}
-         Aurum build {{build.number}} failed. Fix me please.
+         Aurum: build #{{build.number}} failed. Fix me please.
         Commit: `${DRONE_COMMIT_SHA:0:8}`
         ${DRONE_BUILD_LINK}
         {{/success}}
