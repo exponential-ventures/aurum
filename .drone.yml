@@ -4,10 +4,13 @@ name: default
 
 steps:
   - name: build
-    image: banzaicloud/drone-kaniko
+    image:  banzaicloud/drone-kaniko
     settings:
       dockerfile: Dockerfile
       repo: xnv/aurum
+      tags:
+        - latest
+        - ${DRONE_COMMIT_SHA:0:8}
       registry: k2so.xnv.io
       username:
         from_secret: docker_username
@@ -15,9 +18,18 @@ steps:
         from_secret: docker_password
 
   - name: unit_test
-    image: k2so.xnv.io/xnv/aurum
+    image: k2so.xnv.io/xnv/mercury-backend:${DRONE_COMMIT_SHA:0:8}
     commands:
       - "python3 -m unittest tests"
+
+  - name: deploy_internal_pypi
+    image: k2so.xnv.io/xnv/mercury-backend:${DRONE_COMMIT_SHA:0:8}
+    settings:
+      pypirc:
+        from_secret: pypirc
+    commands:
+      - "echo $pypirc | base64 --decode >> ~/.pypirc"
+      - "python3 setup.py -vvv sdist upload -r internal"
 
   - name: slack
     image: plugins/slack
