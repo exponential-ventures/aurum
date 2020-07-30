@@ -28,7 +28,7 @@ steps:
       pypirc:
         from_secret: pypirc
     commands:
-      - "echo $pypirc | base64 --decode >> ~/.pypirc"
+      - "echo $pypirc | base64 -d >> ~/.pypirc"
       - "python3 setup.py -vvv sdist upload -r internal"
 
   - name: slack
