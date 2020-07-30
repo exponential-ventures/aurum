@@ -27,8 +27,11 @@ steps:
     settings:
       pypirc:
         from_secret: pypirc
+    environment:
+        PYPIRC:
+          from_secret: pypirc
     commands:
-      - "echo $pypirc >> /root/.pypirc"
+      - "echo $PYPIRC > /root/.pypirc"
       - "cat /root/.pypirc"
       - "python3 setup.py -vvv sdist upload -r internal"
 
