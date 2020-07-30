@@ -53,3 +53,6 @@ trigger:
   branch:
     - master
     - develop
+
+image_pull_secrets:
+  - dockerconfigjson
