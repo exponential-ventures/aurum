@@ -31,7 +31,7 @@ steps:
         PYPIRC:
           from_secret: pypirc
     commands:
-      - "echo $PYPIRC > /root/.pypirc"
+      - "echo $PYPIRC | base64 -d > /root/.pypirc"
       - "cat /root/.pypirc"
       - "python3 setup.py -vvv sdist upload -r internal"
 
