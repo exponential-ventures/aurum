@@ -189,6 +189,7 @@ def register_metrics(cwd: str = '', **kwargs):
 
     hardware_metric = {'environment': {'python_version': platform.python_version()},
                        'run time': str(time_tracker.log_time()),
+                       'run time in seconds': time_tracker.log_time().total_seconds(),
                        'hardware': {
                            'swap_memory': {
                                'total': size_in_gb(swap_mem.total)
