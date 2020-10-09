@@ -343,6 +343,11 @@ def end_experiment() -> bool:
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
 
+        # git push all branches
+        git.push()
+        # git push all tags
+        git.push_tags()
+
         return True
 
     return False

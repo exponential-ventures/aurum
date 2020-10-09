@@ -96,6 +96,18 @@ class TestExport(unittest.TestCase):
         if proc.returncode != 0:
             raise Exception(f"Failed: {err}")
 
+        add_remote_proc = subprocess.Popen(
+            [f"git remote add origin {self.repository_path}/.git "],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=self.repository_path,
+        )
+
+        out, err = add_remote_proc.communicate()
+        if add_remote_proc.returncode != 0:
+            raise Exception(f"Failed: {err}")
+
         Theorem().requirements_did_change(b_hash)
 
         self.experiment_id = Theorem().experiment_id

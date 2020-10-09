@@ -26,8 +26,6 @@ import os
 import subprocess
 import sys
 
-from typing import List
-
 
 class GitCommandError(Exception):
     pass
@@ -45,7 +43,6 @@ def check_git():
 
 
 def running_from_git_repo(cwd: str = "") -> bool:
-
     if cwd == "":
         cwd = os.getcwd()
 
@@ -62,7 +59,6 @@ def running_from_git_repo(cwd: str = "") -> bool:
 
 
 def get_git_repo_root(cwd: str = '') -> str:
-
     if cwd == "":
         cwd = os.getcwd()
 
@@ -148,13 +144,34 @@ def current_branch_name() -> str:
 
 
 def push() -> str:
-    sub = run_git('push')
+    if not has_remote():
+        return ''
+    sub = run_git('push', '--all')
     output, error = sub.communicate()
-
     if sub.returncode != 0:
-        raise GitCommandError(f"Failed to run 'git push': {error}")
+        raise GitCommandError(f"Failed to run 'git push --all': {error}")
 
     return output.decode('utf-8').replace('\n', '')
+
+
+def push_tags() -> str:
+    if not has_remote():
+        return ''
+    sub = run_git('push', '--tags')
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git push --tags': {error}")
+    return output.decode('utf-8').replace('\n', '')
+
+
+def has_remote() -> bool:
+    sub = run_git('remote', 'show')
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git remote show': {error} /n Please configure a remote repository")
+
+    output = output.decode('utf-8').replace('\n', '')
+    return bool(output and output.strip())
 
 
 def add(*filenames: str, cwd: str = '') -> str:
