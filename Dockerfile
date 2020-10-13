@@ -6,7 +6,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/"
 
 RUN pip install --upgrade pip
 
-RUN apt-get install gcc python3-dev -y
+RUN apt-get update && apt-get install gcc python3-dev -y
 
 COPY . /usr/src/app/
 
