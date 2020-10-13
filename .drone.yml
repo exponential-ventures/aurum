@@ -33,7 +33,7 @@ steps:
     commands:
       - "echo $PYPIRC | base64 -d > /root/.pypirc"
       - "pip install twine"
-      - "twine upload --repository pypi dist/* "
+      - "twine upload --repository pypi /usr/src/app/dist/* "
 
   - name: slack
     image: plugins/slack
