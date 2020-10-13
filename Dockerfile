@@ -1,15 +1,13 @@
-FROM python:3.7-alpine
+FROM python:3.7-slim
 
-RUN apk add --no-cache --update build-base gcc git bash  util-linux linux-headers
+ENV LANG C.UTF-8
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/"
 
-RUN mkdir /usr/src/app
+RUN pip install --upgrade pip
 
-ADD requirements.txt /usr/src/app
+COPY . /usr/src/app/
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/
 
-RUN pip install -r requirements.txt
-
-ADD . /usr/src/app
-
-RUN pip install .
+RUN python3 setup.py sdist && pip install .

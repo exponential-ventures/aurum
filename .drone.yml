@@ -22,7 +22,7 @@ steps:
     commands:
       - "python3 -m unittest tests"
 
-  - name: deploy_internal_pypi
+  - name: deploy_pypi
     image: k2so.xnv.io/xnv/aurum:${DRONE_COMMIT_SHA:0:8}
     settings:
       pypirc:
@@ -32,7 +32,7 @@ steps:
           from_secret: pypirc
     commands:
       - "echo $PYPIRC | base64 -d > /root/.pypirc"
-      - "python3 setup.py -vvv sdist upload -r internal"
+      - "python3 setup.py -vvv sdist upload -r pypi"
 
   - name: slack
     image: plugins/slack
@@ -59,7 +59,6 @@ steps:
 trigger:
   branch:
     - master
-    - develop
 
 image_pull_secrets:
   - dockerconfigjson
