@@ -12,4 +12,7 @@ COPY . /usr/src/app/
 
 WORKDIR /usr/src/app/
 
-RUN python3 setup.py sdist && pip install .
+RUN python3 setup.py sdist
+
+RUN pip install .
+
