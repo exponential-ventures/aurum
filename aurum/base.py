@@ -152,7 +152,7 @@ def parameters(cwd: str = '', **kwargs):
     p.parse_args()
 
     if len(p.unknown_params) > 0:
-        logging.warning(f"Unknown parameters passed to experiment are being ignored: {' '.join(p.unknown_params)}")
+        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)}")
 
     new_dict = {**kwargs, **p.known_params.__dict__}
 
