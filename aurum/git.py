@@ -146,7 +146,7 @@ def current_branch_name() -> str:
 def push() -> str:
     if not has_remote():
         return ''
-    sub = run_git('push', '--all')
+    sub = run_git('push', '-u', '--all')
     output, error = sub.communicate()
     if sub.returncode != 0:
         raise GitCommandError(f"Failed to run 'git push --all': {error}")
