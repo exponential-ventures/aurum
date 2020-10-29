@@ -1,37 +1,36 @@
 #!/usr/bin/env python3
-##
-## Authors: Adriano Marques
-##          Nathan Martins
-##          Thales Ribeiro
-##
-## Copyright (C) 2019 Exponential Ventures LLC
-##
-##    This library is free software; you can redistribute it and/or
-##    modify it under the terms of the GNU Library General Public
-##    License as published by the Free Software Foundation; either
-##    version 2 of the License, or (at your option) any later version.
-##
-##    This library is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-##    Library General Public License for more details.
-##
-##    You should have received a copy of the GNU Library General Public
-##    License along with this library; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-##
+#
+# Authors: Adriano Marques
+#          Nathan Martins
+#          Thales Ribeiro
+#
+# Copyright (C) 2019 Exponential Ventures LLC
+#
+#    This library is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU Library General Public
+#    License as published by the Free Software Foundation; either
+#    version 2 of the License, or (at your option) any later version.
+#
+#    This library is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#    Library General Public License for more details.
+#
+#    You should have received a copy of the GNU Library General Public
+#    License along with this library; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
+import errno
 import hashlib
 import json
 import logging
 import os
+import shutil
 import sys
 import time
-import shutil
-import errno
 import urllib.request
 from collections import OrderedDict
-from pathlib import PurePosixPath, PureWindowsPath
 
 from . import constants as cons
 from . import git
@@ -118,14 +117,6 @@ def did_dict_change(d1, d2):
             return True
 
     return False
-
-
-def is_unnitest_running() -> bool:
-    if os.name == 'nt':
-        command = PureWindowsPath(sys.argv[0]).name
-    else:
-        command = PurePosixPath(sys.argv[0]).name
-    return 'unittest' in sys.modules.keys() or 'unittest' in command
 
 
 def dir_files_by_last_modification_date(directory_path: str, descending_order: bool = True) -> list:
