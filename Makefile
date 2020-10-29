@@ -12,6 +12,11 @@ tests:
 unit-test:
 	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest python  -m unittest -v $(test_name)
 
+
+.PHONY: coverage
+coverage:
+	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest /bin/bash -c "pip install coverage && coverage run -m unittest discover -v -f  tests && coverage report"
+
 .PHONY: ssh
 ssh:
 	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest /bin/bash
