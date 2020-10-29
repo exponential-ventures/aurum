@@ -1,26 +1,3 @@
-#!/usr/bin/env python3
-##
-## Authors: Adriano Marques
-##          Nathan Martins
-##          Thales Ribeiro
-##
-## Copyright (C) 2019 Exponential Ventures LLC
-##
-##    This library is free software; you can redistribute it and/or
-##    modify it under the terms of the GNU Library General Public
-##    License as published by the Free Software Foundation; either
-##    version 2 of the License, or (at your option) any later version.
-##
-##    This library is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-##    Library General Public License for more details.
-##
-##    You should have received a copy of the GNU Library General Public
-##    License along with this library; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-##
-
 import argparse
 import logging
 import ntpath
@@ -34,11 +11,11 @@ from . import constants as cons, base, git
 from .dataset_tracker import check_ds_exists
 from .env_builder import create_temporary_env, install_packages
 from .metadata import DatasetMetaData, MetricsMetaData, ExperimentMetaData, RequirementsMetaData
-from .utils import make_safe_filename, is_unnitest_running, dic_to_str, copy_dir_and_files
+from .utils import make_safe_filename, dic_to_str, copy_dir_and_files
 
 
 def run_init() -> None:
-    if os.path.exists(base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE):
+    if os.path.exists(base.get_default_dirs()[0] / cons.INITIAL_COMMIT_FILE):
         logging.error("Aurum was previously initialized. Aborting.")
         sys.exit(1)
 
@@ -192,7 +169,7 @@ def run_load(parsed_result: argparse.Namespace, skip_package_install: bool = Fal
 
 
 def create_default_dirs() -> None:
-    for path in base.DEFAULT_DIRS:
+    for path in base.get_default_dirs():
         if path.exists() and path.parts[-1] != cons.REPOSITORY_DIR and os.listdir(path) != ['.keep']:
             logging.error(f"Can't create {path} directory. Already exists.")
             sys.exit(1)
@@ -203,7 +180,7 @@ def create_default_dirs() -> None:
 
 
 def create_gitignore() -> None:
-    gitignore_path = base.DEFAULT_DIRS[0].parent / cons.GITIGNORE_FILE
+    gitignore_path = base.get_default_dirs()[0].parent / cons.GITIGNORE_FILE
     with open(os.path.join(os.path.dirname(__file__), cons.GITIGNORE_TEMPLATE_FILE), 'rb') as template_file:
         template = template_file.read()
         with open(gitignore_path, 'ab') as gitignore:
@@ -213,19 +190,16 @@ def create_gitignore() -> None:
 
 def au_init() -> None:
     create_default_dirs()
-    git.add_dirs(base.DEFAULT_DIRS)
+    git.add_dirs(base.get_default_dirs())
     logging.info("Adding directories to git...")
 
-    # TODO: Move this code to the test case.
-    # This is not a good idea.
-    if not is_unnitest_running():
-        stdout, stderr = git.commit('Initial Commit')
-        logging.info("Initial commit")
+    stdout, stderr = git.commit('Initial Commit')
+    logging.info("Initial commit")
 
-        initial_commit = base.DEFAULT_DIRS[0] / cons.INITIAL_COMMIT_FILE
-        open(initial_commit, 'wb').write(stdout.split()[2][:-1])
-        git.add(initial_commit)
-        git.commit("Recording initial commit file.")
+    initial_commit = base.get_default_dirs()[0] / cons.INITIAL_COMMIT_FILE
+    open(initial_commit, 'wb').write(stdout.split()[2][:-1])
+    git.add(initial_commit)
+    git.commit("Recording initial commit file.")
 
 
 def check_file(file_path: str, cwd: str = '') -> str:
@@ -293,7 +267,7 @@ def export_experiment(parsed_args: argparse.Namespace) -> None:
     if not Path(destiny_path).exists():
         os.makedirs(destiny_path)
 
-    for path in base.DEFAULT_DIRS:
+    for path in base.get_default_dirs():
         if path.as_posix() in remove_dirs:
             continue
         copy_dir_and_files(path, os.path.join(destiny_path, ntpath.basename(path)))

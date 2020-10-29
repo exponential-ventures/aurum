@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-##
-## Authors: Adriano Marques
-##          Nathan Martins
-##          Thales Ribeiro
-##
-## Copyright (C) 2019 Exponential Ventures LLC
-##
-##    This library is free software; you can redistribute it and/or
-##    modify it under the terms of the GNU Library General Public
-##    License as published by the Free Software Foundation; either
-##    version 2 of the License, or (at your option) any later version.
-##
-##    This library is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-##    Library General Public License for more details.
-##
-##    You should have received a copy of the GNU Library General Public
-##    License along with this library; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-##
+#
+# Authors: Adriano Marques
+#          Nathan Martins
+#          Thales Ribeiro
+#
+# Copyright (C) 2019 Exponential Ventures LLC
+#
+#    This library is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU Library General Public
+#    License as published by the Free Software Foundation; either
+#    version 2 of the License, or (at your option) any later version.
+#
+#    This library is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#    Library General Public License for more details.
+#
+#    You should have received a copy of the GNU Library General Public
+#    License along with this library; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
 
 import argparse
@@ -31,7 +31,7 @@ from pathlib import Path
 
 from aurum import Theorem, is_new_requirements, end_experiment, commands
 from aurum.code_tracker import is_new_code
-from tests.utils import set_git_for_test, run_test_init
+from tests import set_git_for_test, run_test_init
 
 
 class TestExport(unittest.TestCase):
@@ -98,6 +98,18 @@ class TestExport(unittest.TestCase):
 
         add_remote_proc = subprocess.Popen(
             [f"git remote add origin {self.repository_path}/.git "],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=self.repository_path,
+        )
+
+        out, err = add_remote_proc.communicate()
+        if add_remote_proc.returncode != 0:
+            raise Exception(f"Failed: {err}")
+
+        add_remote_proc = subprocess.Popen(
+            [f"git push --set-upstream origin master "],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
