@@ -17,10 +17,10 @@ steps:
       password:
         from_secret: docker_password
 
-  - name: unit_test
-    image: k2so.xnv.io/xnv/aurum:${DRONE_COMMIT_SHA:0:8}
-    commands:
-      - "python -m unittest discover -v -f  tests"
+#  - name: unit_test
+#    image: k2so.xnv.io/xnv/aurum:${DRONE_COMMIT_SHA:0:8}
+#    commands:
+#      - "python -m unittest discover -v -f  tests"
 
   - name: deploy_pypi
     image: k2so.xnv.io/xnv/aurum:${DRONE_COMMIT_SHA:0:8}
