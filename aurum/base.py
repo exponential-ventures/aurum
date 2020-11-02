@@ -18,7 +18,15 @@ from pynvml import (
 )
 
 from . import constants as cons, git
-from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
+from .commands import (
+    run_init,
+    run_rm,
+    run_add,
+    run_load,
+    display_metrics,
+    export_experiment,
+)
+from .lock_file import remove_lock_file, get_parent_from_lock
 from .metadata import (
     ParameterMetaData,
     WeightsMetaData,
@@ -117,7 +125,7 @@ def parameters(cwd: str = '', **kwargs):
         if param not in p.known_params:
             p.parser.add_argument(f'-{param}', required=False, default=default)
 
-    p.parse_args()
+    parsed_args = p.parser.parse_args()
 
     # Give people the option to avoid parameter checking.
     if 'unsafe_parameter_checking' in kwargs.keys():
@@ -128,7 +136,7 @@ def parameters(cwd: str = '', **kwargs):
         unsafe_parameter_checking = False
 
     if len(p.unknown_params) > 0 and not unsafe_parameter_checking:
-        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)}")
+        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)} || {parsed_args}")
 
     new_dict = {**kwargs, **p.known_params.__dict__}
 
@@ -191,7 +199,6 @@ def register_metrics(cwd: str = '', **kwargs):
 
 
 def gpu_info() -> dict:
-
     info = dict()
 
     try:
@@ -206,7 +213,6 @@ def gpu_info() -> dict:
     info['device_count'] = device_count
     info['device'] = dict()
     for i in range(device_count):
-
         handle = nvmlDeviceGetHandleByIndex(i)
         memory = nvmlDeviceGetMemoryInfo(handle)
 
@@ -319,14 +325,30 @@ def end_experiment() -> bool:
 
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
+
+        # Parent branch
+        parent_branch = get_parent_from_lock(os.getcwd())
+
+        # Remove lock
+        remove_lock_file(os.getcwd())
+
+        # Commit and push branch once the experiment is ended
         git.add_dirs(get_default_dirs())
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
 
         # git push all branches
         git.push()
+
         # git push all tags
         git.push_tags()
+
+        # Return to parent and
+        git.checkout_branch(parent_branch)
+
+        # Delete local experiment branch
+        # current_branch = git.current_branch_name()
+        # git.delete_branch(current_branch)
 
         return True
 
