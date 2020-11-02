@@ -1,35 +1,32 @@
-#!/usr/bin/env python3
-##
-## Authors: Adriano Marques
-##          Nathan Martins
-##          Thales Ribeiro
-##
-## Copyright (C) 2019 Exponential Ventures LLC
-##
-##    This library is free software; you can redistribute it and/or
-##    modify it under the terms of the GNU Library General Public
-##    License as published by the Free Software Foundation; either
-##    version 2 of the License, or (at your option) any later version.
-##
-##    This library is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-##    Library General Public License for more details.
-##
-##    You should have received a copy of the GNU Library General Public
-##    License along with this library; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-##
 import argparse
 import logging
+import os
 import platform
+import sys
 from pathlib import Path
 
 import psutil
-from pynvml import *
+from pynvml import (
+    nvmlInit,
+    nvmlDeviceGetCount,
+    nvmlSystemGetDriverVersion,
+    nvmlDeviceGetHandleByIndex,
+    nvmlDeviceGetMemoryInfo,
+    nvmlDeviceGetName,
+    nvmlShutdown,
+    NVMLError,
+)
 
 from . import constants as cons, git
-from .commands import run_init, run_rm, run_add, run_load, display_metrics, export_experiment
+from .commands import (
+    run_init,
+    run_rm,
+    run_add,
+    run_load,
+    display_metrics,
+    export_experiment,
+)
+from .lock_file import remove_lock_file, get_parent_from_lock
 from .metadata import (
     ParameterMetaData,
     WeightsMetaData,
@@ -46,27 +43,6 @@ from .utils import size_in_gb, dic_to_str
 
 def get_cwd():
     return Path(os.getcwd())
-
-
-#######
-# TODO: Figure out whether we can stick with only one of DEFAULT_DIRS or get_default_dirs.
-# Not sure why we're duplicating this here. HINT: could be because we may want to have the
-# paths generated during call time as opposed to right after the app is run but things are
-# still changing.
-
-DEFAULT_DIRS = [
-    get_cwd() / cons.REPOSITORY_DIR,
-    get_cwd() / "src",
-    get_cwd() / "logs",
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.DATASET_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.REQUIREMENTS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.PARAMETER_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.EXPERIMENTS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.METRICS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR, cons.WEIGHTS_BINARIES_DIR),
-    get_cwd() / os.path.join(cons.REPOSITORY_DIR, cons.CODE_METADATA_DIR)
-]
 
 
 def get_default_dirs():
@@ -109,10 +85,10 @@ def execute_commands(parser: argparse.ArgumentParser) -> None:
 
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_RM:
             data_command_checker(parser)
-            run_rm(parsed)
+            run_rm(parsed, selected_dir=get_cwd())
         if hasattr(parsed, "subcommand2") and parsed.subcommand2 == cons.DATA_ADD:
             data_command_checker(parser)
-            run_add(parsed, selected_dir=os.getcwd())
+            run_add(parsed, selected_dir=get_cwd())
         else:
             parser.error("Unknown command for data")
     elif parsed.subcommand == cons.METRICS:
@@ -139,7 +115,7 @@ def data_command_checker(parser: argparse.ArgumentParser):
 
 def parameters(cwd: str = '', **kwargs):
     if cwd == '':
-        cwd = os.getcwd()
+        cwd = get_cwd()
 
     from .experiment_parser import ExperimentArgParser
 
@@ -149,10 +125,18 @@ def parameters(cwd: str = '', **kwargs):
         if param not in p.known_params:
             p.parser.add_argument(f'-{param}', required=False, default=default)
 
-    p.parse_args()
+    parsed_args = p.parser.parse_args()
 
-    if len(p.unknown_params) > 0:
-        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)}")
+    # Give people the option to avoid parameter checking.
+    if 'unsafe_parameter_checking' in kwargs.keys():
+        unsafe_parameter_checking = kwargs['unsafe_parameter_checking']
+    elif p.known_params.unsafe_parameter_checking:
+        unsafe_parameter_checking = True
+    else:
+        unsafe_parameter_checking = False
+
+    if len(p.unknown_params) > 0 and not unsafe_parameter_checking:
+        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)} || {parsed_args}")
 
     new_dict = {**kwargs, **p.known_params.__dict__}
 
@@ -181,7 +165,7 @@ def parameters(cwd: str = '', **kwargs):
 
 def register_metrics(cwd: str = '', **kwargs):
     if cwd == '':
-        cwd = os.getcwd()
+        cwd = get_cwd()
 
     swap_mem = psutil.swap_memory()
     virtual_memory = psutil.virtual_memory()
@@ -214,11 +198,12 @@ def register_metrics(cwd: str = '', **kwargs):
     save_metrics(cwd=cwd, **metrics)
 
 
-def gpu_info():
-    info = {}
+def gpu_info() -> dict:
+    info = dict()
+
     try:
         nvmlInit()
-    except Exception:
+    except NVMLError:
         info['no-gpu'] = 'No Nvidia GPU detected'
         return info
 
@@ -235,6 +220,7 @@ def gpu_info():
         info['device'][i]['name'] = str(nvmlDeviceGetName(handle))
 
         info['device'][i]['memory'] = dict()
+
         info['device'][i]['memory']['total'] = str(size_in_gb(memory.total))
 
     nvmlShutdown()
@@ -264,7 +250,7 @@ def save_weights(model_encoded, cwd: str = "", ):
     meta_data_file_name = None
     wmd = WeightsMetaData()
     if cwd == "":
-        cwd = os.getcwd()
+        cwd = get_cwd()
 
     if Theorem().has_any_change():
         wmd.save_binary(model_encoded)
@@ -284,7 +270,7 @@ def save_weights(model_encoded, cwd: str = "", ):
 
 def load_weights(cwd: str = ""):
     if cwd == "":
-        cwd = os.getcwd()
+        cwd = get_cwd()
 
     wmd = WeightsMetaData().get_latest(subdir_path=os.path.join(cwd, cons.REPOSITORY_DIR, cons.WEIGHTS_METADATA_DIR))
 
@@ -339,14 +325,30 @@ def end_experiment() -> bool:
 
         mdt.commit_hash = git.last_commit_hash()
         mdt.save(destination)
+
+        # Parent branch
+        parent_branch = get_parent_from_lock(os.getcwd())
+
+        # Remove lock
+        remove_lock_file(os.getcwd())
+
+        # Commit and push branch once the experiment is ended
         git.add_dirs(get_default_dirs())
         git.commit(f"Experiment ID {theorem.experiment_id}", commit_msg)
         git.tag(theorem.experiment_id, commit_msg)
 
         # git push all branches
         git.push()
+
         # git push all tags
         git.push_tags()
+
+        # Return to parent and
+        git.checkout_branch(parent_branch)
+
+        # Delete local experiment branch
+        # current_branch = git.current_branch_name()
+        # git.delete_branch(current_branch)
 
         return True
 

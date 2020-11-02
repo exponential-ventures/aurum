@@ -1,26 +1,3 @@
-#!/usr/bin/env python3
-##
-## Authors: Adriano Marques
-##          Nathan Martins
-##          Thales Ribeiro
-##
-## Copyright (C) 2019 Exponential Ventures LLC
-##
-##    This library is free software; you can redistribute it and/or
-##    modify it under the terms of the GNU Library General Public
-##    License as published by the Free Software Foundation; either
-##    version 2 of the License, or (at your option) any later version.
-##
-##    This library is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-##    Library General Public License for more details.
-##
-##    You should have received a copy of the GNU Library General Public
-##    License along with this library; if not, write to the Free Software
-##    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-##
-
 import logging
 import os
 import subprocess
@@ -145,23 +122,100 @@ def current_branch_name() -> str:
 
 def push() -> str:
     if not has_remote():
-        return ''
-    sub = run_git('push', '-u', '--all')
+        return 'no remote has been set, unable to push'
+    sub = run_git('push', '-u')
     output, error = sub.communicate()
+
     if sub.returncode != 0:
-        raise GitCommandError(f"Failed to run 'git push --all': {error}")
+        raise GitCommandError(f"Failed to run 'git push': {error}")
 
     return output.decode('utf-8').replace('\n', '')
 
 
 def push_tags() -> str:
     if not has_remote():
-        return ''
+        return 'no remote has been set, unable to push tags'
     sub = run_git('push', '--tags')
     output, error = sub.communicate()
     if sub.returncode != 0:
         raise GitCommandError(f"Failed to run 'git push --tags': {error}")
     return output.decode('utf-8').replace('\n', '')
+
+
+def pull() -> str:
+    if not has_remote():
+        return 'no remote has been set, unable to pull'
+
+    sub = run_git('pull', 'origin', 'master')
+    output, error = sub.communicate()
+
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git pull': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def stash(pop=False) -> str:
+    if pop:
+        sub = run_git('stash', 'pop')
+    else:
+        sub = run_git('stash')
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git stash(pop={pop})': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def stash_apply() -> str:
+    sub = run_git('stash', 'apply')
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git stash apply: {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def create_branch(branch_name: str) -> str:
+    sub = run_git('checkout', '-b', branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git checkout -b {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def checkout_branch(branch_name: str) -> str:
+    sub = run_git('checkout', branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git checkout  {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def delete_branch(branch_name: str) -> str:
+    sub = run_git('branch', "-d", branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git branch -d {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def has_changes() -> bool:
+    sub = run_git('diff-index', '--name-only', 'HEAD', '--', )
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git diff-index --name-only HEAD --': {error}")
+
+    return bool(output)
 
 
 def has_remote() -> bool:

@@ -12,21 +12,10 @@ tests:
 unit-test:
 	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest python  -m unittest -v $(test_name)
 
+.PHONY: coverage
+coverage:
+	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest /bin/bash -c "pip install coverage && coverage run -m unittest discover -v -f  tests && coverage report"
+
 .PHONY: ssh
 ssh:
 	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest /bin/bash
-
-
-.PHONY: au
-au:
-	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest au
-
-
-.PHONY: example
-example:
-	docker run -it --rm --name aurum k2so.xnv.io/aurum:latest /bin/bash -c "au init && examples/src/experiment.py -v -n"
-
-build_package:
-	docker run -v $(shell pwd):/usr/src/app -it --rm k2so.xnv.io/aurum python3 setup.py sdist bdist_wheel
-	scp -r dist/* robot@l337:/home/robot/pypi_server/packages
-	sudo rm -rf build/ dist/ aurum.egg-info

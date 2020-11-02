@@ -6,7 +6,10 @@ ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/"
 
 RUN pip install --upgrade pip
 
-RUN apt-get update && apt-get install gcc python3-dev -y
+RUN apt-get update && apt-get install gcc python3-dev git -y
+
+RUN git config --global user.name "mercury"
+RUN git config --global user.email mercury@mercury.ai
 
 COPY . /usr/src/app/
 
