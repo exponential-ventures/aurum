@@ -168,6 +168,56 @@ def stash(pop=False) -> str:
     return output.decode('utf-8').replace('\n', '')
 
 
+def stash_apply() -> str:
+    sub = run_git('stash', 'apply')
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git stash apply: {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def create_branch(branch_name: str) -> str:
+    sub = run_git('checkout', '-b', branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git checkout -b {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def checkout_branch(branch_name: str) -> str:
+    sub = run_git('checkout', branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git checkout  {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def delete_branch(branch_name: str) -> str:
+    sub = run_git('branch', "-d", branch_name)
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git branch -d {branch_name}': {error}")
+
+    return output.decode('utf-8').replace('\n', '')
+
+
+def has_changes() -> bool:
+    sub = run_git('diff-index', '--name-only', 'HEAD', '--', )
+
+    output, error = sub.communicate()
+    if sub.returncode != 0:
+        raise GitCommandError(f"Failed to run 'git diff-index --name-only HEAD --': {error}")
+
+    return bool(output)
+
+
 def has_remote() -> bool:
     sub = run_git('remote', 'show')
     output, error = sub.communicate()
