@@ -125,7 +125,9 @@ def parameters(cwd: str = '', **kwargs):
         if param not in p.known_params:
             p.parser.add_argument(f'-{param}', required=False, default=default)
 
-    parsed_args = p.parser.parse_args()
+    p.parse_args()
+
+    new_dict = {**kwargs, **p.known_params.__dict__}
 
     # Give people the option to avoid parameter checking.
     if 'unsafe_parameter_checking' in kwargs.keys():
@@ -136,9 +138,10 @@ def parameters(cwd: str = '', **kwargs):
         unsafe_parameter_checking = False
 
     if len(p.unknown_params) > 0 and not unsafe_parameter_checking:
-        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)} || {parsed_args}")
+        raise RuntimeError(f"Unknown parameters passed to experiment: {' '.join(p.unknown_params)} || {p.known_params}")
 
-    new_dict = {**kwargs, **p.known_params.__dict__}
+    if unsafe_parameter_checking:
+        new_dict.update({"unknown_parameters": p.unknown_params})
 
     for key in new_dict.keys():
         setattr(sys.modules['aurum'], key, new_dict[key])
@@ -345,6 +348,11 @@ def end_experiment() -> bool:
 
         # Return to parent and
         git.checkout_branch(parent_branch)
+
+        try:
+            git.stash(pop=True)
+        except git.GitCommandError as e:
+            logging.debug(f"Error popping stash: {e}")
 
         # Delete local experiment branch
         # current_branch = git.current_branch_name()
