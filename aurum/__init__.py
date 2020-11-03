@@ -20,6 +20,8 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
+import argparse
+
 import pkg_resources
 
 __author__ = "Adriano Marques, Nathan Martins, Thales Ribeiro"
@@ -57,12 +59,18 @@ else:
 if command is not 'au' and 'unittest' not in command:
 
     check_inside_au()
-    parser = ExperimentArgParser()
 
-    if parser.known_params.verbose:
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument("--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("--no-tracking", help="Don't store any metadata about this experiment",
+                        action="store_true")
+
+    args, unknown = parser.parse_known_args()
+
+    if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    if parser.known_params.no_tracking is True:
+    if args.no_tracking is True:
         Dehydrator().on()
 
     LoggingTracker()
@@ -76,6 +84,9 @@ if command is not 'au' and 'unittest' not in command:
         Theorem().code_did_change(c_hash)
 
     if Theorem().has_any_change():
+
+        # Handle locked files
+
         exp_id = str(Theorem().experiment_id)
         parent_branch = current_branch_name()
 
