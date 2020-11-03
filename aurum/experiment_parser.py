@@ -47,11 +47,8 @@ class ExperimentArgParser:
 
         self.parser = argparse.ArgumentParser(description=description, epilog=epilog, add_help=True)
 
-        self.parser.add_argument("--verbose", help="increase output verbosity", action="store_true")
         self.parser.add_argument("--unsafe-parameter-checking", help="Allows you to run without parameter checking. "
                                                                      "Be careful!", action="store_true")
-        self.parser.add_argument("--no-tracking", help="Don't store any metadata about this experiment",
-                                 action="store_true")
 
         try:
             known_params = load_parameters()
@@ -65,7 +62,7 @@ class ExperimentArgParser:
 
         # TODO: Save preference on verbose or dry run into the instance for easy access
 
-    def parse_args(self):
+    def parse_args(self) -> None:
         self.known_params, self.unknown_params = self.parser.parse_known_args()
 
 
@@ -81,5 +78,5 @@ def load_parameters() -> dict:
         with open(filepath, 'r') as f:
             root_json = json.loads(f.read())
             return json.loads(root_json['parameters'])
-    else:
-        return {}
+
+    return dict()
