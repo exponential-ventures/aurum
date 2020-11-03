@@ -123,7 +123,7 @@ def current_branch_name() -> str:
 def push() -> str:
     if not has_remote():
         return 'no remote has been set, unable to push'
-    sub = run_git('push', '-u')
+    sub = run_git('push', '-u', 'origin', 'HEAD')
     output, error = sub.communicate()
 
     if sub.returncode != 0:
@@ -159,7 +159,7 @@ def stash(pop=False) -> str:
     if pop:
         sub = run_git('stash', 'pop')
     else:
-        sub = run_git('stash')
+        sub = run_git('stash', 'save', '-u')
 
     output, error = sub.communicate()
     if sub.returncode != 0:
