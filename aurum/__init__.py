@@ -56,7 +56,7 @@ if os.name == 'nt':
 else:
     command = PurePosixPath(sys.argv[0]).name
 
-if command is not 'au' and 'unittest' not in command:
+if command != 'au' and 'unittest' not in command:
 
     check_inside_au()
 

@@ -85,7 +85,7 @@ def tag(experiment_id: str, message: str) -> None:
 
 
 def commit(commit_message: str, secondary_msg: str = '', cwd: str = '') -> (str, str):
-    if secondary_msg is not '':
+    if secondary_msg != '':
         process = run_git('commit', '-am', commit_message, '-m', secondary_msg, cwd=cwd)
     else:
         process = run_git('commit', '-am', commit_message, cwd=cwd)
